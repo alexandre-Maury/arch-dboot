@@ -135,7 +135,7 @@ while true; do
             echo "⚠️ Remarque importante : Veuillez être prudent lors de la réduction des partitions existantes."
             echo "     La réduction incorrecte d'une partition système pourrait entraîner une perte de données."
             echo "     Assurez-vous d'avoir effectué une sauvegarde complète avant de procéder."
-
+            echo
             show_disk_partitions "Préparation de l'installation" "$disk"
 
             log_prompt "INFO" && read -p "1- Saisir le nom de la partition de démarrage /EFI de votre système (ex. sda1) : " partition_boot_windows

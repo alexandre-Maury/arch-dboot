@@ -199,6 +199,9 @@ preparation_disk() {
     echo
     echo "Vous pouvez modifier le fichier config.sh pour adapter la configuration selon vos besoins."
     echo
+    echo "Partition /EFI : $partition_boot_windows"
+    echo "Partition /Racine : $partition_root"
+    echo
     read -rp "Continuer ? (y/n): " confirm
     [[ "$confirm" != [yY] ]] && exit 1
 
