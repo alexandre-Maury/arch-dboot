@@ -182,6 +182,8 @@ erase_disk() {
 # Crée et formate les partitions
 preparation_disk() {
     local disk="$1"
+    local partition_boot_windows="$2"
+    local partition_root="$3"
     local partition_prefix=$(get_disk_prefix "$disk")
     local start="1MiB"
     local partition_num=1

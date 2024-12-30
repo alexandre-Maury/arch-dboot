@@ -94,7 +94,7 @@ while true; do
         echo
 
     else
-
+        clear
         echo
         echo "$(show_disk_partitions "Le disque n'est pas vierge" "$disk")"
         echo
@@ -103,8 +103,8 @@ while true; do
 
     echo "Que souhaitez-vous faire : " && echo
 
-    echo "1) Formatage du disque          ==> Suppression des données sur /dev/$disk"
-    echo "2) Installation de Arch Linux   ==> Espace total sur le disque /dev/$disk"
+    echo "1) Nettoyage du disque          ==> Suppression des données sur /dev/$disk"
+    echo "2) Installation de Arch Linux   ==> Double boot"
     echo
     echo "0) Annuler"
     echo
@@ -120,13 +120,34 @@ while true; do
         2)
             clear
             echo
-            preparation_disk "$disk"
+        
+            echo "Pour procéder à une installation en double boot, vous devez préparer les partitions nécessaires."
+            echo "Voici les partitions à spécifier :"
+            echo
+            echo "1. Partition '/EFI' :"
+            echo "   - Cette partition est créée au préalable par Windows."
+            echo "   - Assurez-vous de connaître le nom de la partition (ex. /dev/sda1) => Elle vous sera demandé lors de l'installation"
+            echo
+            echo "2. Partition '/root' :"
+            echo "   - La partition racine doit être créée par vos soins, généralement en réduisant la partition système existante."
+            echo "   - Vous pouvez utiliser un outil de partitionnement pour redimensionner la partition actuelle afin de libérer de l'espace pour la partition 'root'."
+            echo
+            echo "⚠️ Remarque importante : Veuillez être prudent lors de la réduction des partitions existantes."
+            echo "     La réduction incorrecte d'une partition système pourrait entraîner une perte de données."
+            echo "     Assurez-vous d'avoir effectué une sauvegarde complète avant de procéder."
+
+            show_disk_partitions "Préparation de l'installation" "$disk"
+
+            log_prompt "INFO" && read -p "1- Saisir le nom de la partition de démarrage /EFI de votre système (ex. sda1) : " partition_boot_windows
+            log_prompt "INFO" && read -p "2- Saisir le nom de la partition racine /root pour l'installation de Arch Linux (ex. sda3) : " partition_root
+
+            preparation_disk "$disk" "$partition_boot_windows" "$partition_root"
             mount_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk"
-            install_base "$disk"
-            install_base_chroot "$disk"
-            install_base_secu
-            activate_service
+            # install_base "$disk"
+            # install_base_chroot "$disk"
+            # install_base_secu
+            # activate_service
 
             log_prompt "INFO" && echo "Installation terminée ==> redémarrer votre systeme"
             break
