@@ -179,60 +179,133 @@ erase_disk() {
     fi
 }
 
-# Crée et formate les partitions
 preparation_disk() {
-    local disk="$1"
-    local partition_prefix=$(get_disk_prefix "$disk")
-    local start="1MiB"
-    local partition_num=1
 
-    # Afficher le résumé
-    log_prompt "INFO" && echo "Création des partitions sur /dev/$disk :" && echo
-    printf "%-10s %-10s %-10s\n" "Partition" "Taille" "Type"
-    echo "--------------------------------"
-    for part in "${PARTITIONS_CREATE[@]}"; do
-        IFS=':' read -r name size type <<< "$part"
-        printf "%-10s %-10s %-10s\n" "$name" "$size" "$type"
-    done
-    echo
-    echo "Vous pouvez modifier le fichier config.sh pour adapter la configuration selon vos besoins."
-    echo
-    read -rp "Continuer ? (y/n): " confirm
-    [[ "$confirm" != [yY] ]] && exit 1
+    disk="$1"
 
-    # Créer la table de partitions GPT
-    parted --script /dev/$disk mklabel gpt
+    DISK_PATH="/dev/$disk"
 
-    # Créer chaque partition
-    for part in "${PARTITIONS_CREATE[@]}"; do
-        IFS=':' read -r name size type <<< "$part"
-        local device="/dev/${disk}${partition_prefix}${partition_num}"
-        local end=$([ "$size" = "100%" ] && echo "100%" || echo "$(convert_to_mib "$size")MiB")
+    # Affiche les partitions existantes pour confirmation
+    echo "Voici les partitions actuelles sur $DISK_PATH :"
+    lsblk "$DISK_PATH"
+    read -p "Êtes-vous sûr de vouloir continuer ? (oui/non) : " CONFIRM
+    if [[ "$CONFIRM" != "oui" ]]; then
+        echo "Abandon."
+        exit 1
+    fi
 
-        # Créer la partition
-        parted --script -a optimal /dev/$disk mkpart primary "$start" "$end"
+    # Récupère la taille totale et l'espace utilisé
+    TOTAL_SIZE=$(lsblk -b -n -d -o SIZE "$DISK_PATH")
+    USED_SIZE=$(lsblk -b -n -o SIZE | awk -v disk="$DISK_PATH" '$1 ~ disk {used+=$1} END {print used}')
 
-        # Configurer les flags et formater
-        case "$name" in
-            "boot")
-                parted --script /dev/$disk set "$partition_num" esp on
-                mkfs.vfat -F32 -n "$name" "$device"
-                ;;
-            "swap")
-                parted --script /dev/$disk set "$partition_num" swap on
-                mkswap -L "$name" "$device" && swapon "$device"
-                ;;
-            "root")
-                mkfs.btrfs -f -L "$name" "$device"
-                ;;
-        esac
+    # Calcule l'espace disponible en octets
+    AVAILABLE_SIZE=$((TOTAL_SIZE - USED_SIZE))
 
-        start="$end"
-        ((partition_num++))
-    done
+    echo "Espace restante disponible : $AVAILABLE_SIZE " 
+    log_prompt "INFO" && read -p "=> continuer : " choice_user
 
-    echo "Partitionnement terminé avec succès"
+    [[ "$choice_user" != [yY] ]] && exit 1
+
+
+    if [[ $AVAILABLE_SIZE -lt $((5 * 1024 * 1024 * 1024)) ]]; then
+        echo "L'espace disponible est insuffisant (minimum 5 GiB requis)."
+        exit 1
+    fi
+
+    # Définir les tailles des partitions
+    BOOT_SIZE=$((512 * 1024 * 1024))  # 512 MiB pour la partition boot
+    ROOT_SIZE=$((AVAILABLE_SIZE - BOOT_SIZE))  # Le reste pour la partition root
+
+    # Supprimer les partitions existantes s'il y a un conflit
+    echo "Création des nouvelles partitions sur $DISK_PATH..."
+    parted --script "$DISK_PATH" mklabel gpt
+
+    # Crée la partition boot
+    parted --script "$DISK_PATH" mkpart primary fat32 1MiB "$((BOOT_SIZE / 1024 / 1024 + 1))MiB"
+    parted --script "$DISK_PATH" set 1 esp on
+
+    # Crée la partition root
+    parted --script "$DISK_PATH" mkpart primary btrfs "$((BOOT_SIZE / 1024 / 1024 + 1))MiB" 100%
+
+    # Formate les partitions
+    BOOT_PART="${DISK_PATH}1"
+    ROOT_PART="${DISK_PATH}2"
+
+    echo "Formatage de la partition boot en vfat..."
+    mkfs.vfat "$BOOT_PART"
+
+    echo "Formatage de la partition root en btrfs..."
+    mkfs.btrfs "$ROOT_PART"
+
+    # Affiche les résultats finaux
+    echo "Partitionnement terminé avec succès !"
+    lsblk "$DISK_PATH"
+
+    echo "Résumé des partitions :"
+    echo "Partition boot : $BOOT_PART (512 MiB, vfat)"
+    echo "Partition root : $ROOT_PART (btrfs, reste de l'espace disponible)"
+
+
+
+
+
+
 }
+
+# Crée et formate les partitions
+# preparation_disk() {
+#     local disk="$1"
+#     local partition_prefix=$(get_disk_prefix "$disk")
+#     local start="1MiB"
+#     local partition_num=1
+
+#     # Afficher le résumé
+#     log_prompt "INFO" && echo "Création des partitions sur /dev/$disk :" && echo
+#     printf "%-10s %-10s %-10s\n" "Partition" "Taille" "Type"
+#     echo "--------------------------------"
+#     for part in "${PARTITIONS_CREATE[@]}"; do
+#         IFS=':' read -r name size type <<< "$part"
+#         printf "%-10s %-10s %-10s\n" "$name" "$size" "$type"
+#     done
+#     echo
+#     echo "Vous pouvez modifier le fichier config.sh pour adapter la configuration selon vos besoins."
+#     echo
+#     read -rp "Continuer ? (y/n): " confirm
+#     [[ "$confirm" != [yY] ]] && exit 1
+
+#     # Créer la table de partitions GPT
+#     parted --script /dev/$disk mklabel gpt
+
+#     # Créer chaque partition
+#     for part in "${PARTITIONS_CREATE[@]}"; do
+#         IFS=':' read -r name size type <<< "$part"
+#         local device="/dev/${disk}${partition_prefix}${partition_num}"
+#         local end=$([ "$size" = "100%" ] && echo "100%" || echo "$(convert_to_mib "$size")MiB")
+
+#         # Créer la partition
+#         parted --script -a optimal /dev/$disk mkpart primary "$start" "$end"
+
+#         # Configurer les flags et formater
+#         case "$name" in
+#             "boot")
+#                 parted --script /dev/$disk set "$partition_num" esp on
+#                 mkfs.vfat -F32 -n "$name" "$device"
+#                 ;;
+#             "swap")
+#                 parted --script /dev/$disk set "$partition_num" swap on
+#                 mkswap -L "$name" "$device" && swapon "$device"
+#                 ;;
+#             "root")
+#                 mkfs.btrfs -f -L "$name" "$device"
+#                 ;;
+#         esac
+
+#         start="$end"
+#         ((partition_num++))
+#     done
+
+#     echo "Partitionnement terminé avec succès"
+# }
 
 mount_partitions() {
     local disk="$1"
