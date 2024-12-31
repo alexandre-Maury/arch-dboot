@@ -182,8 +182,6 @@ erase_disk() {
 # Crée et formate les partitions
 preparation_disk() {
     local disk="$1"
-    local partition_boot_windows="$2"
-    local partition_root="$3"
     local partition_prefix=$(get_disk_prefix "$disk")
     local start="1MiB"
     local partition_num=1
@@ -198,9 +196,6 @@ preparation_disk() {
     done
     echo
     echo "Vous pouvez modifier le fichier config.sh pour adapter la configuration selon vos besoins."
-    echo
-    echo "Partition /EFI : $partition_boot_windows"
-    echo "Partition /Racine : $partition_root"
     echo
     read -rp "Continuer ? (y/n): " confirm
     [[ "$confirm" != [yY] ]] && exit 1

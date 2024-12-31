@@ -141,7 +141,7 @@ while true; do
             log_prompt "INFO" && read -p "1- Saisir le nom de la partition de démarrage /EFI de votre système (ex. sda1) : " partition_boot_windows
             log_prompt "INFO" && read -p "2- Saisir le nom de la partition racine /root pour l'installation de Arch Linux (ex. sda3) : " partition_root
 
-            preparation_disk "$disk" "$partition_boot_windows" "$partition_root"
+            preparation_disk "$partition_root"
             mount_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk"
             # install_base "$disk"
