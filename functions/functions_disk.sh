@@ -262,61 +262,6 @@ preparation_disk() {
 
 }
 
-# Crée et formate les partitions
-# preparation_disk() {
-#     local disk="$1"
-#     local partition_prefix=$(get_disk_prefix "$disk")
-#     local start="1MiB"
-#     local partition_num=1
-
-#     # Afficher le résumé
-#     log_prompt "INFO" && echo "Création des partitions sur /dev/$disk :" && echo
-#     printf "%-10s %-10s %-10s\n" "Partition" "Taille" "Type"
-#     echo "--------------------------------"
-#     for part in "${PARTITIONS_CREATE[@]}"; do
-#         IFS=':' read -r name size type <<< "$part"
-#         printf "%-10s %-10s %-10s\n" "$name" "$size" "$type"
-#     done
-#     echo
-#     echo "Vous pouvez modifier le fichier config.sh pour adapter la configuration selon vos besoins."
-#     echo
-#     read -rp "Continuer ? (y/n): " confirm
-#     [[ "$confirm" != [yY] ]] && exit 1
-
-#     # Créer la table de partitions GPT
-#     parted --script /dev/$disk mklabel gpt
-
-#     # Créer chaque partition
-#     for part in "${PARTITIONS_CREATE[@]}"; do
-#         IFS=':' read -r name size type <<< "$part"
-#         local device="/dev/${disk}${partition_prefix}${partition_num}"
-#         local end=$([ "$size" = "100%" ] && echo "100%" || echo "$(convert_to_mib "$size")MiB")
-
-#         # Créer la partition
-#         parted --script -a optimal /dev/$disk mkpart primary "$start" "$end"
-
-#         # Configurer les flags et formater
-#         case "$name" in
-#             "boot")
-#                 parted --script /dev/$disk set "$partition_num" esp on
-#                 mkfs.vfat -F32 -n "$name" "$device"
-#                 ;;
-#             "swap")
-#                 parted --script /dev/$disk set "$partition_num" swap on
-#                 mkswap -L "$name" "$device" && swapon "$device"
-#                 ;;
-#             "root")
-#                 mkfs.btrfs -f -L "$name" "$device"
-#                 ;;
-#         esac
-
-#         start="$end"
-#         ((partition_num++))
-#     done
-
-#     echo "Partitionnement terminé avec succès"
-# }
-
 mount_partitions() {
     local disk="$1"
     
