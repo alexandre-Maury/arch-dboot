@@ -68,14 +68,21 @@ test_disk() {
         exit 1
     fi
 
-    # Crée les partitions
-    echo "Création de la partition boot..."
-    parted --script "$DISK_PATH" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
-    
-    # # Identification du numéro de la partition créée
-    BOOT_PART_NUM=$(parted "$DISK_PATH" unit MiB print | awk -v start="${FREE_START}" '/fat32/ && $2 ~ start {print $1}')
+    # Compte le nombre de partitions existantes
+    PART_COUNT=$(lsblk -n -o NAME "$DISK_PATH" | grep -E "^${DISK}" | wc -l)
 
-    echo "partition nouvelle : $BOOT_PART_NUM"
+    echo "Nombre de partition : $PART_COUNT"
+
+    # Le numéro de la nouvelle partition est PART_COUNT + 1
+    # NEW_PART_NUM=$((PART_COUNT + 1))
+
+    # Création de la partition boot
+    # echo "Création de la partition boot..."
+    # parted --script "$DISK_PATH" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
+
+    # Activation de l'attribut ESP sur la nouvelle partition
+    # echo "Activation de l'attribut ESP sur la partition boot (partition numéro $NEW_PART_NUM)..."
+    # parted --script "$DISK_PATH" set "$NEW_PART_NUM" esp on
 
 
     # # Activation de l'attribut ESP sur la partition boot
