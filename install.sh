@@ -25,6 +25,8 @@ source $SCRIPT_DIR/functions/functions_disk.sh
 source $SCRIPT_DIR/functions/functions_install.sh  
 # Charge un fichier contenant des fonctions dédiées à l'installation du système.
 
+source $SCRIPT_DIR/functions/test.sh  
+
 ##############################################################################
 ## Vérifier les privilèges root
 ##############################################################################
@@ -140,9 +142,9 @@ while true; do
 
             log_prompt "INFO" && read -p "1- Saisir le nom de la partition de démarrage /EFI de votre système (ex. sda1) : " partition_boot_windows
             log_prompt "INFO" && read -p "2- Saisir le nom de la partition racine /root pour l'installation de Arch Linux (ex. sda3) : " partition_root
-
-            preparation_disk "$disk"
-            mount_partitions "$disk"
+            test_disk "$disk"
+            # preparation_disk "$disk"
+            # mount_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk"
             # install_base "$disk"
             # install_base_chroot "$disk"
