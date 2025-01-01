@@ -3,18 +3,18 @@
 
 test_disk() {
 
-    DISK="$1"
-    DISK_PATH="/dev/$DISK"
+    disk="$1"
+    DISK_PATH="/dev/$disk"
 
-    if [[ ! -b "$DISK_PATH" ]]; then
-        echo "Le disque $DISK_PATH n'existe pas."
+    if [[ ! -b "/dev/$disk" ]]; then
+        echo "Le disque /dev/$disk n'existe pas."
         exit 1
     fi
 
-    AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
+    AVAILABLE_SPACES=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
 
     if [[ -z "$AVAILABLE_SPACES" ]]; then
-        echo "Aucun espace libre détecté sur $DISK_PATH."
+        echo "Aucun espace libre détecté sur /dev/$disk."
         exit 1
     fi
 
@@ -69,39 +69,33 @@ test_disk() {
     fi
 
     # Compte le nombre de partitions existantes
-    PART_COUNT=$(lsblk -n -o NAME "$DISK_PATH" | grep -E "$(basename "$DISK_PATH")[0-9]+" | wc -l)
+    PART_COUNT=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
 
-
-
-    echo "Nombre de partition : $PART_COUNT"
+    echo "nb de partitions existante : $PART_COUNT"
 
     # Le numéro de la nouvelle partition est PART_COUNT + 1
-    # NEW_PART_NUM=$((PART_COUNT + 1))
+    # BOOT_PART_NUM=$((PART_COUNT + 1))
+    # SWAP_PART_NUM=$((PART_COUNT + 2))
 
-    # Création de la partition boot
+    # # Création de la partition boot
     # echo "Création de la partition boot..."
-    # parted --script "$DISK_PATH" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
+    # parted --script "/dev/$disk" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
 
-    # Activation de l'attribut ESP sur la nouvelle partition
-    # echo "Activation de l'attribut ESP sur la partition boot (partition numéro $NEW_PART_NUM)..."
-    # parted --script "$DISK_PATH" set "$NEW_PART_NUM" esp on
-
-
-    # # Activation de l'attribut ESP sur la partition boot
+    # # Activation de l'attribut ESP sur la nouvelle partition boot
     # echo "Activation de l'attribut ESP sur la partition boot (partition numéro $BOOT_PART_NUM)..."
-    # parted --script "$DISK_PATH" set "$BOOT_PART_NUM" esp on
+    # parted --script "/dev/$disk" set "$BOOT_PART_NUM" esp on
 
     # echo "Création de la partition swap..."
-    # parted --script "$DISK_PATH" mkpart primary linux-swap "$((FREE_START + BOOT_SIZE))MiB" "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB"
-    # # parted --script "$DISK_PATH" set "$BOOT_PART_NUM" swap on
+    # parted --script "/dev/$disk" mkpart primary linux-swap "$((FREE_START + BOOT_SIZE))MiB" "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB"
+    # parted --script "/dev/$disk" set "$SWAP_PART_NUM" swap on
 
     # echo "Création de la partition root..."
-    # parted --script "$DISK_PATH" mkpart primary ext4 "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB" "$FREE_END"MiB
+    # parted --script "/dev/$disk" mkpart primary ext4 "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB" "$FREE_END"MiB
 
     # # Formate les partitions
-    # BOOT_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*1$')"
-    # SWAP_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*2$')"
-    # ROOT_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*3$')"
+    # BOOT_PART="${DISK_PATH}$(lsblk -n -o NAME "/dev/$disk" | grep -E '^.*1$')"
+    # SWAP_PART="${DISK_PATH}$(lsblk -n -o NAME "/dev/$disk" | grep -E '^.*2$')"
+    # ROOT_PART="${DISK_PATH}$(lsblk -n -o NAME "/dev/$disk" | grep -E '^.*3$')"
 
     # echo "Formatage de la partition boot en vfat..."
     # mkfs.vfat "$BOOT_PART"
@@ -115,6 +109,6 @@ test_disk() {
 
     # # Résumé
     # echo "Partitionnement terminé avec succès !"
-    # lsblk "$DISK_PATH"
+    # lsblk "/dev/$disk"
 
 }
