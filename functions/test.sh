@@ -11,13 +11,6 @@ test_disk() {
         exit 1
     fi
 
-    # Affiche les partitions existantes
-    echo "Voici les partitions actuelles sur $DISK_PATH :"
-    lsblk "$DISK_PATH"
-
-    # Liste les plages d'espace libre
-    echo "Liste des espaces libres disponibles :"
-
     # AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Start="$2", End="$3", Size="$4}')
     AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | column -t | grep 'Free')
 
@@ -31,7 +24,7 @@ test_disk() {
 
     echo "$AVAILABLE_SPACES" | while read -r LINE; do
         START=$(echo "$LINE" | awk '{print $2}' | sed 's/MiB//')
-        END=$(echo "$LINE" | awk '{print $4}' | sed 's/MiB//')
+        END=$(echo "$LINE" | awk '{print $3}' | sed 's/MiB//')
 
         # Valide que Start < End
         if (( $(echo "$START > $END" | bc -l) )); then
