@@ -11,7 +11,7 @@ test_disk() {
         exit 1
     fi
 
-    AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Start="$2", End="$3", Size="$4}')
+    AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Disponible = "$3"}')
 
     if [[ -z "$AVAILABLE_SPACES" ]]; then
         echo "Aucun espace libre détecté sur $DISK_PATH."
