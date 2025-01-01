@@ -11,7 +11,6 @@ test_disk() {
         exit 1
     fi
 
-    # AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Disponible = "$3}')
     AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
 
     if [[ -z "$AVAILABLE_SPACES" ]]; then
@@ -20,7 +19,7 @@ test_disk() {
     fi
 
     echo "Liste des espaces libres disponibles :"
-    echo "$AVAILABLE_SPACES"
+    echo "$AVAILABLE_SPACES" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
 
     # Propose à l'utilisateur de choisir un espace libre
     read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " SPACE_CHOICE
@@ -34,10 +33,6 @@ test_disk() {
     FREE_START=$(echo "$SELECTED_SPACE" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
     FREE_END=$(echo "$SELECTED_SPACE" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
     FREE_TOTAL=$(echo "$SELECTED_SPACE" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
-
-    FREE_START=$(printf "%.0f" "$FREE_START") # Convertit en entier
-    FREE_END=$(printf "%.0f" "$FREE_END")     # Convertit en entier
-    FREE_TOTAL=$(printf "%.0f" "$FREE_TOTAL") # Convertit en entier
 
     echo "Sur l'espace sélectionné :"
     echo "FREE_START ==> $FREE_START"
