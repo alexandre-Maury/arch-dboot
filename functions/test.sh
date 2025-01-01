@@ -34,13 +34,6 @@ test_disk() {
     FREE_END=$(echo "$SELECTED_SPACE" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
     FREE_TOTAL=$(echo "$SELECTED_SPACE" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
-    echo "Sur l'espace sélectionné :"
-    echo "FREE_START ==> $FREE_START"
-    echo "FREE_END ==> $FREE_END"
-    echo "FREE_TOTAL ==> $FREE_TOTAL"
-
-    read -p "continuer : y/n" choice_user
-
     if [[ $FREE_TOTAL -le 0 ]]; then
         echo "Erreur : L'espace sélectionné est insuffisant pour créer des partitions."
         exit 1
@@ -80,7 +73,10 @@ test_disk() {
     parted --script "$DISK_PATH" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
     
     # # Identification du numéro de la partition créée
-    # BOOT_PART_NUM=$(parted "$DISK_PATH" unit MiB print | awk "/fat32/ {print \$1}" | tail -n 1)
+    BOOT_PART_NUM=$(parted "$DISK_PATH" unit MiB print | awk -v start="${FREE_START}" '/fat32/ && $2 ~ start {print $1}')
+
+    echo "partition nouvelle : $BOOT_PART_NUM"
+
 
     # # Activation de l'attribut ESP sur la partition boot
     # echo "Activation de l'attribut ESP sur la partition boot (partition numéro $BOOT_PART_NUM)..."
