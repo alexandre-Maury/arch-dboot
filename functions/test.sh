@@ -71,8 +71,6 @@ test_disk() {
     # Compte le nombre de partitions existantes
     PART_COUNT=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
 
-    echo "nb de partitions existante : $PART_COUNT"
-
     # Le numéro de la nouvelle partition est PART_COUNT + 1
     # BOOT_PART_NUM=$((PART_COUNT + 1))
     # SWAP_PART_NUM=$((PART_COUNT + 2))
