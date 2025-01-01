@@ -11,7 +11,8 @@ test_disk() {
         exit 1
     fi
 
-    AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Disponible = "$3}')
+    # AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Disponible = "$3}')
+    AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Start="$2", End="$3", Size="$4}')
 
     if [[ -z "$AVAILABLE_SPACES" ]]; then
         echo "Aucun espace libre détecté sur $DISK_PATH."
@@ -34,6 +35,7 @@ test_disk() {
 
     FREE_START=$(echo "$SELECTED_SPACE" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
     FREE_END=$(echo "$SELECTED_SPACE" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+
     FREE_TOTAL=$(echo "$SELECTED_SPACE" | sed -n 's/.*Disponible = \([0-9.]*\)MiB.*/\1/p')
 
     echo "Sur l'espace sélectionné :"
