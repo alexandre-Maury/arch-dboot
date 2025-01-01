@@ -79,37 +79,37 @@ test_disk() {
     echo "Création de la partition boot..."
     parted --script "$DISK_PATH" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
     
-    # Identification du numéro de la partition créée
-    BOOT_PART_NUM=$(parted "$DISK_PATH" unit MiB print | awk "/fat32/ {print \$1}" | tail -n 1)
+    # # Identification du numéro de la partition créée
+    # BOOT_PART_NUM=$(parted "$DISK_PATH" unit MiB print | awk "/fat32/ {print \$1}" | tail -n 1)
 
-    # Activation de l'attribut ESP sur la partition boot
-    echo "Activation de l'attribut ESP sur la partition boot (partition numéro $BOOT_PART_NUM)..."
-    parted --script "$DISK_PATH" set "$BOOT_PART_NUM" esp on
+    # # Activation de l'attribut ESP sur la partition boot
+    # echo "Activation de l'attribut ESP sur la partition boot (partition numéro $BOOT_PART_NUM)..."
+    # parted --script "$DISK_PATH" set "$BOOT_PART_NUM" esp on
 
-    echo "Création de la partition swap..."
-    parted --script "$DISK_PATH" mkpart primary linux-swap "$((FREE_START + BOOT_SIZE))MiB" "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB"
-    # parted --script "$DISK_PATH" set "$BOOT_PART_NUM" swap on
+    # echo "Création de la partition swap..."
+    # parted --script "$DISK_PATH" mkpart primary linux-swap "$((FREE_START + BOOT_SIZE))MiB" "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB"
+    # # parted --script "$DISK_PATH" set "$BOOT_PART_NUM" swap on
 
-    echo "Création de la partition root..."
-    parted --script "$DISK_PATH" mkpart primary ext4 "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB" "$FREE_END"MiB
+    # echo "Création de la partition root..."
+    # parted --script "$DISK_PATH" mkpart primary ext4 "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB" "$FREE_END"MiB
 
-    # Formate les partitions
-    BOOT_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*1$')"
-    SWAP_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*2$')"
-    ROOT_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*3$')"
+    # # Formate les partitions
+    # BOOT_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*1$')"
+    # SWAP_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*2$')"
+    # ROOT_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*3$')"
 
-    echo "Formatage de la partition boot en vfat..."
-    mkfs.vfat "$BOOT_PART"
+    # echo "Formatage de la partition boot en vfat..."
+    # mkfs.vfat "$BOOT_PART"
 
-    echo "Activation de la partition swap..."
-    mkswap "$SWAP_PART"
-    swapon "$SWAP_PART"
+    # echo "Activation de la partition swap..."
+    # mkswap "$SWAP_PART"
+    # swapon "$SWAP_PART"
 
-    echo "Formatage de la partition root en ext4..."
-    mkfs.ext4 "$ROOT_PART"
+    # echo "Formatage de la partition root en ext4..."
+    # mkfs.ext4 "$ROOT_PART"
 
-    # Résumé
-    echo "Partitionnement terminé avec succès !"
-    lsblk "$DISK_PATH"
+    # # Résumé
+    # echo "Partitionnement terminé avec succès !"
+    # lsblk "$DISK_PATH"
 
 }
