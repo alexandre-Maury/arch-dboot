@@ -31,11 +31,13 @@ test_disk() {
         exit 1
     fi
 
-    echo "SELECTED_SPACE ==> $SELECTED_SPACE"
-
     FREE_START=$(echo "$SELECTED_SPACE" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
     FREE_END=$(echo "$SELECTED_SPACE" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
     FREE_TOTAL=$(echo "$SELECTED_SPACE" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
+
+    FREE_START=$(printf "%.0f" "$FREE_START") # Convertit en entier
+    FREE_END=$(printf "%.0f" "$FREE_END")     # Convertit en entier
+    FREE_TOTAL=$(printf "%.0f" "$FREE_TOTAL") # Convertit en entier
 
     echo "Sur l'espace sélectionné :"
     echo "FREE_START ==> $FREE_START"
@@ -43,10 +45,6 @@ test_disk() {
     echo "FREE_TOTAL ==> $FREE_TOTAL"
 
     read -p "continuer : y/n" choice_user
-
-    FREE_START=$(printf "%.0f" "$FREE_START") # Convertit en entier
-    FREE_END=$(printf "%.0f" "$FREE_END")     # Convertit en entier
-    FREE_TOTAL=$(printf "%.0f" "$FREE_TOTAL") # Convertit en entier
 
     if [[ $FREE_TOTAL -le 0 ]]; then
         echo "Erreur : L'espace sélectionné est insuffisant pour créer des partitions."
