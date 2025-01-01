@@ -11,8 +11,7 @@ test_disk() {
         exit 1
     fi
 
-    # AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Start="$2", End="$3", Size="$4}')
-    AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | column -t | grep 'Free')
+    AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Start="$2", End="$3", Size="$4}')
 
     if [[ -z "$AVAILABLE_SPACES" ]]; then
         echo "Aucun espace libre détecté sur $DISK_PATH."
@@ -21,18 +20,6 @@ test_disk() {
 
     echo "Liste des espaces libres disponibles :"
     echo "$AVAILABLE_SPACES"
-
-    echo "$AVAILABLE_SPACES" | while read -r LINE; do
-        START=$(echo "$LINE" | awk '{print $2}' | sed 's/MiB//')
-        END=$(echo "$LINE" | awk '{print $3}' | sed 's/MiB//')
-
-        # Valide que Start < End
-        if (( $(echo "$START > $END" | bc -l) )); then
-            echo "Inversion détectée dans la plage : $LINE"
-        else
-            echo "Plage valide : Start=${START}MiB, End=${END}MiB"
-        fi
-    done
 
     # Propose à l'utilisateur de choisir un espace libre
     read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " SPACE_CHOICE
