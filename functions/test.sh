@@ -78,10 +78,17 @@ test_disk() {
     # Crée les partitions
     echo "Création de la partition boot..."
     parted --script "$DISK_PATH" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
-    parted --script "$DISK_PATH" set 1 esp on
+    
+    # Identification du numéro de la partition créée
+    BOOT_PART_NUM=$(parted "$DISK_PATH" unit MiB print | awk "/fat32/ {print \$1}" | tail -n 1)
+
+    # Activation de l'attribut ESP sur la partition boot
+    echo "Activation de l'attribut ESP sur la partition boot (partition numéro $BOOT_PART_NUM)..."
+    parted --script "$DISK_PATH" set "$BOOT_PART_NUM" esp on
 
     echo "Création de la partition swap..."
     parted --script "$DISK_PATH" mkpart primary linux-swap "$((FREE_START + BOOT_SIZE))MiB" "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB"
+    # parted --script "$DISK_PATH" set "$BOOT_PART_NUM" swap on
 
     echo "Création de la partition root..."
     parted --script "$DISK_PATH" mkpart primary ext4 "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB" "$FREE_END"MiB
