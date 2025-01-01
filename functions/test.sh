@@ -11,42 +11,50 @@ test_disk() {
         exit 1
     fi
 
-    # Affiche les partitions existantes pour confirmation
+    # Affiche les partitions existantes
     echo "Voici les partitions actuelles sur $DISK_PATH :"
     lsblk "$DISK_PATH"
-    read -p "Êtes-vous sûr de vouloir continuer sans modifier les partitions existantes ? (oui/non) : " CONFIRM
-    if [[ "$CONFIRM" != "oui" ]]; then
-        echo "Abandon."
+
+    # Liste les plages d'espace libre
+    echo "Liste des espaces libres disponibles :"
+    AVAILABLE_SPACES=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print NR": Start="$2", End="$3", Size="$4}')
+    if [[ -z "$AVAILABLE_SPACES" ]]; then
+        echo "Aucun espace libre détecté sur $DISK_PATH."
         exit 1
     fi
 
-    # Vérifie l'espace non alloué
-    FREE_START=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print $2}' | tail -n1 | tr -d 'MiB')
-    FREE_END=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print $3}' | tail -n1 | tr -d 'MiB')
+    echo "$AVAILABLE_SPACES"
 
-    # Vérifie si les valeurs sont valides
-    if [[ -z "$FREE_START" || -z "$FREE_END" ]]; then
-        echo "Erreur : Impossible de déterminer l'espace libre sur le disque."
+    # Propose à l'utilisateur de choisir un espace libre
+    read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " SPACE_CHOICE
+
+    SELECTED_SPACE=$(echo "$AVAILABLE_SPACES" | grep "^${SPACE_CHOICE}:")
+    if [[ -z "$SELECTED_SPACE" ]]; then
+        echo "Choix invalide. Veuillez réessayer."
         exit 1
     fi
+
+    FREE_START=$(echo "$SELECTED_SPACE" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
+    FREE_END=$(echo "$SELECTED_SPACE" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+    FREE_TOTAL=$(echo "$SELECTED_SPACE" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
     FREE_START=$(printf "%.0f" "$FREE_START") # Convertit en entier
     FREE_END=$(printf "%.0f" "$FREE_END")     # Convertit en entier
-    FREE_TOTAL=$((FREE_END - FREE_START))
+    FREE_TOTAL=$(printf "%.0f" "$FREE_TOTAL") # Convertit en entier
 
     if [[ $FREE_TOTAL -le 0 ]]; then
-        echo "Erreur : Aucun espace non alloué disponible sur $DISK_PATH."
+        echo "Erreur : L'espace sélectionné est insuffisant pour créer des partitions."
         exit 1
     fi
 
-    echo "Espace total disponible : ${FREE_TOTAL} MiB"
+    echo "Espace total disponible dans la plage sélectionnée : ${FREE_TOTAL} MiB"
 
     # Lecture des tailles de partitions
     read -p "Taille de la partition boot (en MiB, par défaut 512) : " BOOT_SIZE
-    BOOT_SIZE=${BOOT_SIZE:-512}  # Valeur par défaut : 512 MiB
+    BOOT_SIZE=${BOOT_SIZE:-512}
 
     read -p "Taille de la partition swap (en MiB, par défaut 4096) : " SWAP_SIZE
-    SWAP_SIZE=${SWAP_SIZE:-4096}  # Valeur par défaut : 4096 MiB
+    SWAP_SIZE=${SWAP_SIZE:-4096}
 
     # Calcul de la partition root
     ROOT_SIZE=$((FREE_TOTAL - BOOT_SIZE - SWAP_SIZE))
@@ -68,18 +76,16 @@ test_disk() {
         exit 1
     fi
 
-    # Crée la partition boot
+    # Crée les partitions
     echo "Création de la partition boot..."
     parted --script "$DISK_PATH" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
     parted --script "$DISK_PATH" set 1 esp on
 
-    # Crée la partition swap
     echo "Création de la partition swap..."
     parted --script "$DISK_PATH" mkpart primary linux-swap "$((FREE_START + BOOT_SIZE))MiB" "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB"
 
-    # Crée la partition root
     echo "Création de la partition root..."
-    parted --script "$DISK_PATH" mkpart primary btrfs "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB" "${FREE_END}MiB"
+    parted --script "$DISK_PATH" mkpart primary ext4 "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB" "$FREE_END"MiB
 
     # Formate les partitions
     BOOT_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*1$')"
@@ -93,16 +99,11 @@ test_disk() {
     mkswap "$SWAP_PART"
     swapon "$SWAP_PART"
 
-    echo "Formatage de la partition root en btrfs..."
-    mkfs.btrfs "$ROOT_PART"
+    echo "Formatage de la partition root en ext4..."
+    mkfs.ext4 "$ROOT_PART"
 
-    # Affiche les résultats finaux
+    # Résumé
     echo "Partitionnement terminé avec succès !"
     lsblk "$DISK_PATH"
-
-    echo "Résumé des partitions :"
-    echo "Partition boot : $BOOT_PART (${BOOT_SIZE} MiB, vfat)"
-    echo "Partition swap : $SWAP_PART (${SWAP_SIZE} MiB, swap activé)"
-    echo "Partition root : $ROOT_PART (${ROOT_SIZE} MiB, btrfs)"
 
 }
