@@ -11,18 +11,34 @@ test_disk() {
         exit 1
     fi
 
-    # Vérifie l'espace non alloué
-    FREE_SPACE=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print $2, $3}' | tail -n1)
-    FREE_START=$(echo "$FREE_SPACE" | awk '{print $1}' | tr -d 'MiB' | awk '{printf "%d", $1}')
-    FREE_END=$(echo "$FREE_SPACE" | awk '{print $2}' | tr -d 'MiB' | awk '{printf "%d", $1}')
-
-    if [[ -z "$FREE_START" || -z "$FREE_END" || "$FREE_START" == "$FREE_END" ]]; then
-        echo "Aucun espace non alloué disponible sur $DISK_PATH."
+    # Affiche les partitions existantes pour confirmation
+    echo "Voici les partitions actuelles sur $DISK_PATH :"
+    lsblk "$DISK_PATH"
+    read -p "Êtes-vous sûr de vouloir continuer sans modifier les partitions existantes ? (oui/non) : " CONFIRM
+    if [[ "$CONFIRM" != "oui" ]]; then
+        echo "Abandon."
         exit 1
     fi
 
-    # Calcul de l'espace disponible total
+    # Vérifie l'espace non alloué
+    FREE_START=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print $2}' | tail -n1 | tr -d 'MiB')
+    FREE_END=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print $3}' | tail -n1 | tr -d 'MiB')
+
+    # Vérifie si les valeurs sont valides
+    if [[ -z "$FREE_START" || -z "$FREE_END" ]]; then
+        echo "Erreur : Impossible de déterminer l'espace libre sur le disque."
+        exit 1
+    fi
+
+    FREE_START=$(printf "%.0f" "$FREE_START") # Convertit en entier
+    FREE_END=$(printf "%.0f" "$FREE_END")     # Convertit en entier
     FREE_TOTAL=$((FREE_END - FREE_START))
+
+    if [[ $FREE_TOTAL -le 0 ]]; then
+        echo "Erreur : Aucun espace non alloué disponible sur $DISK_PATH."
+        exit 1
+    fi
+
     echo "Espace total disponible : ${FREE_TOTAL} MiB"
 
     # Lecture des tailles de partitions
@@ -32,11 +48,11 @@ test_disk() {
     read -p "Taille de la partition swap (en MiB, par défaut 4096) : " SWAP_SIZE
     SWAP_SIZE=${SWAP_SIZE:-4096}  # Valeur par défaut : 4096 MiB
 
-    # Le reste pour la partition root
+    # Calcul de la partition root
     ROOT_SIZE=$((FREE_TOTAL - BOOT_SIZE - SWAP_SIZE))
 
     if [[ $ROOT_SIZE -le 0 ]]; then
-        echo "L'espace non alloué est insuffisant pour créer les partitions."
+        echo "Erreur : L'espace non alloué est insuffisant pour créer les partitions."
         exit 1
     fi
 
