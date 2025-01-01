@@ -69,7 +69,8 @@ test_disk() {
     fi
 
     # Compte le nombre de partitions existantes
-    PART_COUNT=$(lsblk -n -o NAME "$DISK_PATH" | grep -E "^${DISK}[0-9]+" | wc -l)
+    PART_COUNT=$(lsblk -n -o NAME "$DISK_PATH" | grep -E "$(basename "$DISK_PATH")[0-9]+" | wc -l)
+
 
 
     echo "Nombre de partition : $PART_COUNT"
