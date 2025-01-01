@@ -30,6 +30,8 @@ test_disk() {
         exit 1
     fi
 
+    echo "SELECTED_SPACE ==> $SELECTED_SPACE"
+
     FREE_START=$(echo "$SELECTED_SPACE" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
     FREE_END=$(echo "$SELECTED_SPACE" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
     FREE_TOTAL=$(echo "$SELECTED_SPACE" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')^
