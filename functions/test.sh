@@ -32,7 +32,14 @@ test_disk() {
 
     FREE_START=$(echo "$SELECTED_SPACE" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
     FREE_END=$(echo "$SELECTED_SPACE" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
-    FREE_TOTAL=$(echo "$SELECTED_SPACE" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
+    FREE_TOTAL=$(echo "$SELECTED_SPACE" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')^
+
+    echo "Sur l'espace sélectionné :"
+    echo "FREE_START ==> $FREE_START"
+    echo "FREE_END ==> $FREE_END"
+    echo "FREE_TOTAL ==> $FREE_TOTAL"
+
+    read -p "continuer : y/n" choice_user
 
     FREE_START=$(printf "%.0f" "$FREE_START") # Convertit en entier
     FREE_END=$(printf "%.0f" "$FREE_END")     # Convertit en entier
