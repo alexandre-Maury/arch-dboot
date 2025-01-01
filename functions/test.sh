@@ -22,8 +22,8 @@ test_disk() {
 
     # Vérifie l'espace non alloué
     FREE_SPACE=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print $2, $3}' | tail -n1)
-    FREE_START=$(echo "$FREE_SPACE" | awk '{print $1}' | tr -d 'MiB')
-    FREE_END=$(echo "$FREE_SPACE" | awk '{print $2}' | tr -d 'MiB')
+    FREE_START=$(echo "$FREE_SPACE" | awk '{print $1}' | tr -d 'MiB' | awk '{printf "%d", $1}')
+    FREE_END=$(echo "$FREE_SPACE" | awk '{print $2}' | tr -d 'MiB' | awk '{printf "%d", $1}')
 
     if [[ -z "$FREE_START" || -z "$FREE_END" || "$FREE_START" == "$FREE_END" ]]; then
         echo "Aucun espace non alloué disponible sur $DISK_PATH."
@@ -78,8 +78,8 @@ test_disk() {
     lsblk "$DISK_PATH"
 
     echo "Résumé des partitions :"
-    echo "Partition boot : $BOOT_PART (512 MiB, vfat)"
-    echo "Partition swap : $SWAP_PART (4 GiB, swap activé)"
+    echo "Partition boot : $BOOT_PART ($BOOT_SIZE MiB, vfat)"
+    echo "Partition swap : $SWAP_PART ($SWAP_SIZE MiB, swap activé)"
     echo "Partition root : $ROOT_PART (btrfs, reste de l'espace disponible)"
 
 }
