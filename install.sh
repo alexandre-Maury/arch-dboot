@@ -144,14 +144,13 @@ while true; do
             echo
             log_prompt "INFO" && read -p "Saisir la partition de votre système : " partition_boot_windows
             echo
-            # preparation_disk "$disk"
-            # mount_partitions "$disk"
-            manage_disk_and_partitions "$disk"
-            show_disk_partitions "Montage des partitions terminée" "$disk" "$partition_boot_windows"
-            install_base "$disk"
-            install_base_chroot "$disk"
-            install_base_secu
-            activate_service
+            
+            manage_disk_and_partitions "$disk" "$partition_boot_windows"
+            show_disk_partitions "Montage des partitions terminée" "$disk" 
+            # install_base "$disk"
+            # install_base_chroot "$disk"
+            # install_base_secu
+            # activate_service
 
             log_prompt "INFO" && echo "Installation terminée ==> redémarrer votre systeme"
             break
