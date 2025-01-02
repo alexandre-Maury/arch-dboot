@@ -7,10 +7,10 @@ convert_to_mib() {
     local size="$1"
     case "$size" in
         *"GiB"|*"G") 
-            echo "$size" | sed 's/[GiB|G]//' | awk '{print $1 * 1024}'
+            echo "$size" | sed 's/GiB//;s/G//' | awk '{print $1 * 1024}'
             ;;
         *"MiB"|*"M")
-            echo "$size" | sed 's/[MiB|M]//'
+            echo "$size" | sed 's/MiB//;s/M//'
             ;;
         *"%")
             echo "$size"
