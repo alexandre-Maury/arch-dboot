@@ -4,96 +4,95 @@
 test_disk() {
 
     disk="$1"
-    DISK_PATH="/dev/$disk"
 
     if [[ ! -b "/dev/$disk" ]]; then
         echo "Le disque /dev/$disk n'existe pas."
         exit 1
     fi
 
-    AVAILABLE_SPACES=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
+    available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
 
-    if [[ -z "$AVAILABLE_SPACES" ]]; then
+    if [[ -z "$available_spaces" ]]; then
         echo "Aucun espace libre détecté sur /dev/$disk."
         exit 1
     fi
 
     echo "Liste des espaces libres disponibles :"
-    echo "$AVAILABLE_SPACES" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
+    echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
 
     # Propose à l'utilisateur de choisir un espace libre
-    read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " SPACE_CHOICE
+    read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
 
-    SELECTED_SPACE=$(echo "$AVAILABLE_SPACES" | grep "^${SPACE_CHOICE}:")
-    if [[ -z "$SELECTED_SPACE" ]]; then
+    selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
+    if [[ -z "$selected_space" ]]; then
         echo "Choix invalide. Veuillez réessayer."
         exit 1
     fi
 
-    FREE_START=$(echo "$SELECTED_SPACE" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
-    FREE_END=$(echo "$SELECTED_SPACE" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
-    FREE_TOTAL=$(echo "$SELECTED_SPACE" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
+    free_start=$(echo "$selected_space" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
+    free_end=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+    free_total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
-    if [[ $FREE_TOTAL -le 0 ]]; then
+    if [[ $free_total -le 0 ]]; then
         echo "Erreur : L'espace sélectionné est insuffisant pour créer des partitions."
         exit 1
     fi
 
-    echo "Espace total disponible dans la plage sélectionnée : ${FREE_TOTAL} MiB"
+    echo "Espace total disponible dans la plage sélectionnée : ${free_total} MiB"
 
     # Lecture des tailles de partitions
-    read -p "Taille de la partition boot (en MiB, par défaut 512) : " BOOT_SIZE
-    BOOT_SIZE=${BOOT_SIZE:-512}
+    read -p "Taille de la partition boot (en MiB, par défaut 512) : " boot_size
+    boot_size=${boot_size:-512}
 
-    read -p "Taille de la partition swap (en MiB, par défaut 4096) : " SWAP_SIZE
-    SWAP_SIZE=${SWAP_SIZE:-4096}
+    read -p "Taille de la partition swap (en MiB, par défaut 4096) : " swap_size
+    swap_size=${swap_size:-4096}
 
     # Calcul de la partition root
-    ROOT_SIZE=$((FREE_TOTAL - BOOT_SIZE - SWAP_SIZE))
+    root_size=$((free_total - boot_size - swap_size))
 
-    if [[ $ROOT_SIZE -le 0 ]]; then
+    if [[ $root_size -le 0 ]]; then
         echo "Erreur : L'espace non alloué est insuffisant pour créer les partitions."
         exit 1
     fi
 
     # Affichage des tailles
-    echo "Taille de la partition boot : ${BOOT_SIZE} MiB"
-    echo "Taille de la partition swap : ${SWAP_SIZE} MiB"
-    echo "Taille de la partition root (calculée) : ${ROOT_SIZE} MiB"
+    echo "Taille de la partition boot : ${boot_size} MiB"
+    echo "Taille de la partition swap : ${swap_size} MiB"
+    echo "Taille de la partition root (calculée) : ${root_size} MiB"
 
     # Confirmation avant de créer les partitions
-    read -p "Souhaitez-vous continuer avec ces paramètres ? (oui/non) : " CONTINUE
-    if [[ "$CONTINUE" != "oui" ]]; then
+    read -p "Souhaitez-vous continuer avec ces paramètres ? (oui/non) : " continue
+    if [[ "$continue" != "oui" ]]; then
         echo "Abandon."
         exit 1
     fi
 
     # Compte le nombre de partitions existantes
-    PART_COUNT=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
+    part_count=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
 
-    # Le numéro de la nouvelle partition est PART_COUNT + 1
-    # BOOT_PART_NUM=$((PART_COUNT + 1))
-    # SWAP_PART_NUM=$((PART_COUNT + 2))
+    # Le numéro de la nouvelle partition est part_count + 1
+    # BOOT_PART_NUM=$((part_count + 1))
+    # SWAP_PART_NUM=$((part_count + 2))
 
     # # Création de la partition boot
     # echo "Création de la partition boot..."
-    # parted --script "/dev/$disk" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
+    # parted --script "/dev/$disk" mkpart primary fat32 "${free_start}MiB" "$((free_start + boot_size))MiB"
 
     # # Activation de l'attribut ESP sur la nouvelle partition boot
     # echo "Activation de l'attribut ESP sur la partition boot (partition numéro $BOOT_PART_NUM)..."
     # parted --script "/dev/$disk" set "$BOOT_PART_NUM" esp on
 
     # echo "Création de la partition swap..."
-    # parted --script "/dev/$disk" mkpart primary linux-swap "$((FREE_START + BOOT_SIZE))MiB" "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB"
+    # parted --script "/dev/$disk" mkpart primary linux-swap "$((free_start + boot_size))MiB" "$((free_start + boot_size + swap_size))MiB"
     # parted --script "/dev/$disk" set "$SWAP_PART_NUM" swap on
 
     # echo "Création de la partition root..."
-    # parted --script "/dev/$disk" mkpart primary ext4 "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB" "$FREE_END"MiB
+    # parted --script "/dev/$disk" mkpart primary ext4 "$((free_start + boot_size + swap_size))MiB" "$free_end"MiB
 
     # # Formate les partitions
-    # BOOT_PART="${DISK_PATH}$(lsblk -n -o NAME "/dev/$disk" | grep -E '^.*1$')"
-    # SWAP_PART="${DISK_PATH}$(lsblk -n -o NAME "/dev/$disk" | grep -E '^.*2$')"
-    # ROOT_PART="${DISK_PATH}$(lsblk -n -o NAME "/dev/$disk" | grep -E '^.*3$')"
+    # BOOT_PART="/dev/$disk $(lsblk -n -o NAME "/dev/$disk" | grep -E '^.*1$')"
+    # SWAP_PART="/dev/$disk $(lsblk -n -o NAME "/dev/$disk" | grep -E '^.*2$')"
+    # ROOT_PART="/dev/$disk $(lsblk -n -o NAME "/dev/$disk" | grep -E '^.*3$')"
 
     # echo "Formatage de la partition boot en vfat..."
     # mkfs.vfat "$BOOT_PART"
