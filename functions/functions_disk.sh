@@ -26,22 +26,6 @@ get_disk_prefix() {
     [[ "$1" == nvme* ]] && echo "p" || echo ""
 }
 
-# Fonction pour formater l'affichage de la taille d'une partition en GiB ou MiB
-format_space() {
-    local space=$1
-    local space_in_gib
-
-    # Si la taille est supérieur ou égal à 1 Go (1024 MiB), afficher en GiB
-    if (( space >= 1024 )); then
-        # Convertion en GiB
-        space_in_gib=$(echo "scale=2; $space / 1024" | bc)
-        echo "${space_in_gib} GiB"
-    else
-        # Si la taille est inférieur à 1 GiB, afficher en MiB
-        echo "${space} MiB"
-    fi
-}
-
 # Fonction pour afficher les informations des partitions
 show_disk_partitions() {
     
