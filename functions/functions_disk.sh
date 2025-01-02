@@ -197,25 +197,7 @@ preparation_disk() {
         exit 1
     fi
 
-    # Afficher le résumé
-    log_prompt "INFO" && echo "Création des partitions sur /dev/$disk :"
-    echo
-    printf "%-10s %-10s %-10s\n" "Partition" "Taille" "Type"
-    echo "--------------------------------"
-    for part in "${PARTITIONS_CREATE[@]}"; do
-        IFS=':' read -r name size type <<< "$part"
-        printf "%-10s %-10s %-10s\n" "$name" "$size" "$type"
-    done
-    echo
-
-    echo "Vous pouvez modifier le fichier config.sh pour adapter la configuration selon vos besoins."
-    echo
-    read -rp "Continuer ? (y/n): " confirm
-    [[ "$confirm" != [yY] ]] && exit 1
-    echo
-
     log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
-    echo
     echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
     echo
     read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
@@ -226,9 +208,9 @@ preparation_disk() {
         exit 1
     fi
 
-    local start=$(echo "$selected_space" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
-    # end=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
-    local total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
+    start=$(echo "$selected_space" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
+    end_space=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+    total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
     if [[ $total -le 0 ]]; then
         log_prompt "ERROR" && echo "L'espace sélectionné est insuffisant pour créer des partitions."
@@ -237,26 +219,34 @@ preparation_disk() {
 
     log_prompt "INFO" && echo "Espace total disponible dans la plage sélectionnée : ${total} MiB"
 
-        # Créer chaque partition
+    # Créer chaque partition
     for part in "${PARTITIONS_CREATE[@]}"; do
         IFS=':' read -r name size type <<< "$part"
-        local device="/dev/${disk}${partition_prefix}${partition_num}"
-        local end=$([ "$size" = "100%" ] && echo "100%" || echo "$(convert_to_mib "$size")MiB")
+        local device="/dev/${disk}${partition_prefix}$((partition_num + 1))"
+        
+        if [[ "$size" == "100%" ]]; then
+            end="$end_space"  # Pour 100%, la partition occupe tout l'espace restant
+        else
+            size_mib=$(convert_to_mib "$size")
+            end=$(bc <<< "$start + $size_mib")
+        fi
 
-        echo "Taille de debut de la partition $name : $start"
-        echo "Taille de fin de la partition $name : $end"
+        if (( $(bc <<< "$end > $end_space") )); then
+            log_prompt "ERROR" && echo "Pas assez d'espace pour créer la partition '$name'."
+            exit 1
+        fi
 
         # Créer la partition
-        parted --script -a optimal /dev/$disk mkpart primary "$start" "$end"
+        parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB"
 
         # Configurer les flags et formater
         case "$name" in
             "boot")
-                parted --script /dev/$disk set "$partition_num" esp on
+                parted --script /dev/$disk set "$((partition_num + 1))" esp on
                 mkfs.vfat -F32 -n "$name" "$device"
                 ;;
             "swap")
-                parted --script /dev/$disk set "$partition_num" swap on
+                parted --script /dev/$disk set "$((partition_num + 1))" swap on
                 mkswap -L "$name" "$device" && swapon "$device"
                 ;;
             "root")
@@ -264,8 +254,8 @@ preparation_disk() {
                 ;;
         esac
 
-        start="$end"
-        ((partition_num++))
+        start="$end"  # Mettre à jour le début pour la prochaine partition
+        ((partition_num++))  # Incrémenter le numéro de partition
     done
 
     echo "Partitionnement terminé avec succès"
