@@ -166,7 +166,7 @@ erase_disk() {
 manage_disk_and_partitions() {
 
     local disk="$1"
-    local partition_boot_windows="$2"
+    
 
     # Vérifier si le disque existe
     if [[ ! -b "/dev/$disk" ]]; then
@@ -281,11 +281,17 @@ manage_disk_and_partitions() {
             "boot")
                 mkdir -p "${MOUNT_POINT}/boot"
                 mount "/dev/$part" "${MOUNT_POINT}/boot"
-
-                mkdir -p "${MOUNT_POINT}/win"
-                mount /dev/$partition_boot_windows ${MOUNT_POINT}/win
-                cp -r ${MOUNT_POINT}/win/EFI/Microsoft ${MOUNT_POINT}/boot/EFI
                 ;;
         esac
     done
+}
+
+
+windows_part() {
+
+    local partition_boot_windows="$2"
+
+    mkdir -p "${MOUNT_POINT}/win"
+    mount /dev/$partition_boot_windows ${MOUNT_POINT}/win
+    cp -rf ${MOUNT_POINT}/win/EFI/Microsoft ${MOUNT_POINT}/boot/EFI
 }
