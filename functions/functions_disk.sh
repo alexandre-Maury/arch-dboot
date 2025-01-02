@@ -221,6 +221,7 @@ preparation_disk() {
 
     # Créer chaque partition
     partition_num=$(($partition_num + 1))
+    echo "La prochaine partition sera sda : $partition_num"
     for part in "${PARTITIONS_CREATE[@]}"; do
         IFS=':' read -r name size type <<< "$part"
         local device="/dev/${disk}${partition_prefix}${partition_num}"
