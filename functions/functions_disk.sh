@@ -220,9 +220,10 @@ preparation_disk() {
     log_prompt "INFO" && echo "Espace total disponible dans la plage sélectionnée : ${total} MiB"
 
     # Créer chaque partition
+    partition_num=$(($partition_num + 1))
     for part in "${PARTITIONS_CREATE[@]}"; do
         IFS=':' read -r name size type <<< "$part"
-        local device="/dev/${disk}${partition_prefix}$((partition_num + 1))"
+        local device="/dev/${disk}${partition_prefix}${partition_num}"
         
         if [[ "$size" == "100%" ]]; then
             end="$end_space"  # Pour 100%, la partition occupe tout l'espace restant
@@ -242,11 +243,11 @@ preparation_disk() {
         # Configurer les flags et formater
         case "$name" in
             "boot")
-                parted --script /dev/$disk set "$((partition_num + 1))" esp on
+                parted --script /dev/$disk set "$partition_num" esp on
                 mkfs.vfat -F32 -n "$name" "$device"
                 ;;
             "swap")
-                parted --script /dev/$disk set "$((partition_num + 1))" swap on
+                parted --script /dev/$disk set "$partition_num" swap on
                 mkswap -L "$name" "$device" && swapon "$device"
                 ;;
             "root")
