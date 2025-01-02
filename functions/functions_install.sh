@@ -87,8 +87,6 @@ install_base() {
         echo "DNS=1.1.1.1 9.9.9.9" 
         echo "FallbackDNS=8.8.8.8"
     } > ${MOUNT_POINT}/etc/systemd/resolved.conf
-
-
 }
 
 install_base_chroot() {

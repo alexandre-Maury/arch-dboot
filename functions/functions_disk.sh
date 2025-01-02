@@ -166,7 +166,6 @@ erase_disk() {
 manage_disk_and_partitions() {
 
     local disk="$1"
-    
 
     # Vérifier si le disque existe
     if [[ ! -b "/dev/$disk" ]]; then
@@ -235,6 +234,8 @@ manage_disk_and_partitions() {
         case "$name" in
             "boot")
                 parted --script /dev/$disk set "$partition_num" esp on
+                parted --script /dev/$disk set "$partition_num" boot on
+
                 mkfs.vfat -F32 -n "$name" "$device"
                 ;;
             "swap")
@@ -291,7 +292,7 @@ windows_part() {
 
     local partition_boot_windows="$2"
 
-    mkdir -p "${MOUNT_POINT}/win"
-    mount /dev/$partition_boot_windows ${MOUNT_POINT}/win
-    cp -rf ${MOUNT_POINT}/win/EFI/Microsoft ${MOUNT_POINT}/boot/EFI
+    mkdir -p "${MOUNT_POINT}/efi"
+    mount /dev/$partition_boot_windows ${MOUNT_POINT}/efi
+    cp -rf ${MOUNT_POINT}/efi/EFI/Microsoft ${MOUNT_POINT}/boot/efi
 }
