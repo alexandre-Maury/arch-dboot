@@ -224,15 +224,23 @@ preparation_disk() {
     for part in "${PARTITIONS_CREATE[@]}"; do
         IFS=':' read -r name size type <<< "$part"
         local device="/dev/${disk}${partition_prefix}${partition_num}"
-
-        echo "Device : $device"
         
-        # if [[ "$size" == "100%" ]]; then
-        #     end="$end_space"  # Pour 100%, la partition occupe tout l'espace restant
-        # else
-        #     size_mib=$(convert_to_mib "$size")
-        #     end=$(bc <<< "$start + $size_mib")
-        # fi
+        if [[ "$size" == "100%" ]]; then
+            end="$end_space"  # Pour 100%, la partition occupe tout l'espace restant
+
+            echo "CHOIX 1"
+            echo "Taille de la partition : $size"
+            echo "Taille de la fin de la partition : $end"
+
+        else
+            size_mib=$(convert_to_mib "$size")
+            end=$(bc <<< "$start + $size_mib")
+
+            echo "CHOIX 2"
+            echo "Taille de la partition : $size_mib"
+            echo "Taille de la fin de la partition : $end"
+
+        fi
 
         # if (( $(bc <<< "$end > $end_space") )); then
         #     log_prompt "ERROR" && echo "Pas assez d'espace pour créer la partition '$name'."
