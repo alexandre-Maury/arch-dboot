@@ -147,7 +147,7 @@ while true; do
             # preparation_disk "$disk"
             # mount_partitions "$disk"
             manage_disk_and_partitions "$disk"
-            show_disk_partitions "Montage des partitions terminée" "$disk"
+            show_disk_partitions "Montage des partitions terminée" "$disk" "$partition_boot_windows"
             install_base "$disk"
             install_base_chroot "$disk"
             install_base_secu
