@@ -138,19 +138,21 @@ while true; do
             echo "     La réduction incorrecte d'une partition système pourrait entraîner une perte de données."
             echo "     Assurez-vous d'avoir effectué une sauvegarde complète avant de procéder."
             echo
+
             show_disk_partitions "Partitions existantes" "$disk"
+
             echo
             echo "Habituellement, la partition de démarrage EFI est de type VFAT (par exemple, sda1)."
             echo
             log_prompt "INFO" && read -p "Saisir la partition de votre système : " partition_boot_windows
             echo
-            
+
             manage_disk_and_partitions "$disk" "$partition_boot_windows"
             show_disk_partitions "Montage des partitions terminée" "$disk" 
-            # install_base "$disk"
-            # install_base_chroot "$disk"
-            # install_base_secu
-            # activate_service
+            install_base "$disk"
+            install_base_chroot "$disk"
+            install_base_secu
+            activate_service
 
             log_prompt "INFO" && echo "Installation terminée ==> redémarrer votre systeme"
             break

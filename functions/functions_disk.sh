@@ -298,7 +298,7 @@ manage_disk_and_partitions() {
                 mkdir -p "${MOUNT_POINT}/boot"
                 mount "/dev/$part" "${MOUNT_POINT}/boot"
 
-                mkdir "${MOUNT_POINT}/Windows"
+                mkdir -p "${MOUNT_POINT}/Windows"
                 mount /dev/$partition_boot_windows ${MOUNT_POINT}/Windows
                 cp -r ${MOUNT_POINT}/Windows/EFI/Microsoft /boot/EFI
                 ;;
