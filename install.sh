@@ -125,8 +125,9 @@ while true; do
             echo "Voici les partitions à spécifier :"
             echo
             echo "1. Partition '/EFI' :"
-            echo "   - Cette partition est créée au préalable par Windows."
-            echo "   - Assurez-vous de connaître le nom de la partition (ex. /dev/sda1) => Elle vous sera demandé lors de l'installation"
+            echo "  - Cette partition est créée au préalable par Windows."
+            echo "  - Assurez-vous de connaître le nom de la partition (ex. /dev/sda1)"
+            echo "  - Elle vous sera demandé lors de l'installation"
             echo
             echo "2. Partition '/root' :"
             echo "   - La partition racine doit être créée par vos soins, généralement en réduisant la partition système existante."
@@ -136,9 +137,12 @@ while true; do
             echo "     La réduction incorrecte d'une partition système pourrait entraîner une perte de données."
             echo "     Assurez-vous d'avoir effectué une sauvegarde complète avant de procéder."
             echo
-            show_disk_partitions "Préparation de l'installation" "$disk"
-
-            log_prompt "INFO" && read -p "1- Saisir le nom de la partition de démarrage /EFI de votre système (ex. sda1) : " partition_boot_windows
+            show_disk_partitions "Partitions existantes" "$disk"
+            echo
+            echo "Habituellement, la partition de démarrage EFI est de type VFAT (par exemple, sda1)."
+            echo
+            log_prompt "INFO" && read -p "Saisir la partition de votre système : " partition_boot_windows
+            echo
             preparation_disk "$disk"
             mount_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk"
