@@ -144,8 +144,9 @@ while true; do
             echo
             log_prompt "INFO" && read -p "Saisir la partition de votre système : " partition_boot_windows
             echo
-            preparation_disk "$disk"
-            mount_partitions "$disk"
+            # preparation_disk "$disk"
+            # mount_partitions "$disk"
+            manage_disk_and_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk"
             # install_base "$disk"
             # install_base_chroot "$disk"
