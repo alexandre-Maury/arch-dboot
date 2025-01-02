@@ -126,7 +126,7 @@ while true; do
             echo
             echo "1. Partition '/EFI' :"
             echo "  - Cette partition est créée au préalable par Windows."
-            echo "  - Assurez-vous de connaître le nom de la partition (ex. /dev/sda1)"
+            echo "  - Assurez-vous de connaître le nom de la partition (ex. sda1)"
             echo "  - Elle vous sera demandé lors de l'installation"
             echo
             echo "2. Partition '/root' :"
@@ -134,6 +134,7 @@ while true; do
             echo "   - Vous pouvez utiliser un outil de partitionnement pour redimensionner la partition actuelle afin de libérer de l'espace pour la partition 'root'."
             echo
             echo "⚠️ Remarque importante : Veuillez être prudent lors de la réduction des partitions existantes."
+            echo
             echo "     La réduction incorrecte d'une partition système pourrait entraîner une perte de données."
             echo "     Assurez-vous d'avoir effectué une sauvegarde complète avant de procéder."
             echo
