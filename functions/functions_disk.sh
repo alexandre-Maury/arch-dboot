@@ -181,84 +181,91 @@ erase_disk() {
 
 preparation_disk() {
 
-    DISK="$1"
-    DISK_PATH="/dev/$DISK"
+    local disk="$1"
+    local partition_prefix=$(get_disk_prefix "$disk")
+    local partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
 
-    if [[ ! -b "$DISK_PATH" ]]; then
-        echo "Le disque $DISK_PATH n'existe pas."
+    if [[ ! -b "/dev/$disk" ]]; then
+        log_prompt "ERROR" && echo "Le disque /dev/$disk n'existe pas."
         exit 1
     fi
 
-    # Affiche les partitions existantes pour confirmation
-    echo "Voici les partitions actuelles sur $DISK_PATH :"
-    lsblk "$DISK_PATH"
-    read -p "Êtes-vous sûr de vouloir continuer sans modifier les partitions existantes ? (oui/non) : " CONFIRM
-    if [[ "$CONFIRM" != "oui" ]]; then
-        echo "Abandon."
+    available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
+
+    if [[ -z "$available_spaces" ]]; then
+        log_prompt "ERROR" && echo "Aucun espace libre détecté sur /dev/$disk."
         exit 1
     fi
 
-    # Vérifie l'espace non alloué
-    FREE_SPACE=$(parted "$DISK_PATH" unit MiB print free | awk '/Free Space/ {print $2, $3}' | tail -n1)
-    FREE_START=$(echo "$FREE_SPACE" | awk '{print $1}' | tr -d 'MiB')
-    FREE_END=$(echo "$FREE_SPACE" | awk '{print $2}' | tr -d 'MiB')
+    # Afficher le résumé
+    log_prompt "INFO" && echo "Création des partitions sur /dev/$disk :"
+    echo
+    printf "%-10s %-10s %-10s\n" "Partition" "Taille" "Type"
+    echo "--------------------------------"
+    for part in "${PARTITIONS_CREATE[@]}"; do
+        IFS=':' read -r name size type <<< "$part"
+        printf "%-10s %-10s %-10s\n" "$name" "$size" "$type"
+    done
+    echo
 
-    if [[ -z "$FREE_START" || -z "$FREE_END" || "$FREE_START" == "$FREE_END" ]]; then
-        echo "Aucun espace non alloué disponible sur $DISK_PATH."
+    echo "Vous pouvez modifier le fichier config.sh pour adapter la configuration selon vos besoins."
+    echo
+    read -rp "Continuer ? (y/n): " confirm
+    [[ "$confirm" != [yY] ]] && exit 1
+    echo
+
+    log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
+    echo
+    echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
+    echo
+    read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
+
+    selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
+    if [[ -z "$selected_space" ]]; then
+        log_prompt "ERROR" && echo "Choix invalide. Veuillez réessayer."
         exit 1
     fi
 
-    # Calcule les tailles des partitions
-    read -p "Taille de la partition boot (en MiB, par défaut 512) : " BOOT_SIZE
-    BOOT_SIZE=${BOOT_SIZE:-512}  # Valeur par défaut : 512 MiB
+    start=$(echo "$selected_space" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
+    end=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+    total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
-    read -p "Taille de la partition swap (en MiB, par défaut 4096) : " SWAP_SIZE
-    SWAP_SIZE=${SWAP_SIZE:-4096}  # Valeur par défaut : 4096 MiB
-
-    # Le reste pour la partition root
-    ROOT_SIZE=$((FREE_END - FREE_START - BOOT_SIZE - SWAP_SIZE))  
-
-    if [[ $ROOT_SIZE -le 0 ]]; then
-        echo "L'espace non alloué est insuffisant pour créer les partitions."
+    if [[ $total -le 0 ]]; then
+        log_prompt "ERROR" && echo "L'espace sélectionné est insuffisant pour créer des partitions."
         exit 1
     fi
 
-    # Crée la partition boot
-    echo "Création de la partition boot..."
-    parted --script "$DISK_PATH" mkpart primary fat32 "${FREE_START}MiB" "$((FREE_START + BOOT_SIZE))MiB"
-    parted --script "$DISK_PATH" set 1 esp on
+    log_prompt "INFO" && echo "Espace total disponible dans la plage sélectionnée : ${total} MiB"
 
-    # Crée la partition swap
-    echo "Création de la partition swap..."
-    parted --script "$DISK_PATH" mkpart primary linux-swap "$((FREE_START + BOOT_SIZE))MiB" "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB"
+        # Créer chaque partition
+    for part in "${PARTITIONS_CREATE[@]}"; do
+        IFS=':' read -r name size type <<< "$part"
+        local device="/dev/${disk}${partition_prefix}${partition_num}"
+        local end=$([ "$size" = "100%" ] && echo "100%" || echo "$(convert_to_mib "$size")MiB")
 
-    # Crée la partition root
-    echo "Création de la partition root..."
-    parted --script "$DISK_PATH" mkpart primary btrfs "$((FREE_START + BOOT_SIZE + SWAP_SIZE))MiB" "${FREE_END}MiB"
+        # Créer la partition
+        parted --script -a optimal /dev/$disk mkpart primary "$start" "$end"
 
-    # Formate les partitions
-    BOOT_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*1$')"
-    SWAP_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*2$')"
-    ROOT_PART="${DISK_PATH}$(lsblk -n -o NAME "$DISK_PATH" | grep -E '^.*3$')"
+        # Configurer les flags et formater
+        case "$name" in
+            "boot")
+                parted --script /dev/$disk set "$partition_num" esp on
+                mkfs.vfat -F32 -n "$name" "$device"
+                ;;
+            "swap")
+                parted --script /dev/$disk set "$partition_num" swap on
+                mkswap -L "$name" "$device" && swapon "$device"
+                ;;
+            "root")
+                mkfs.btrfs -f -L "$name" "$device"
+                ;;
+        esac
 
-    echo "Formatage de la partition boot en vfat..."
-    mkfs.vfat "$BOOT_PART"
+        start="$end"
+        ((partition_num++))
+    done
 
-    echo "Activation de la partition swap..."
-    mkswap "$SWAP_PART"
-    swapon "$SWAP_PART"
-
-    echo "Formatage de la partition root en btrfs..."
-    mkfs.btrfs "$ROOT_PART"
-
-    # Affiche les résultats finaux
-    echo "Partitionnement terminé avec succès !"
-    lsblk "$DISK_PATH"
-
-    echo "Résumé des partitions :"
-    echo "Partition boot : $BOOT_PART (512 MiB, vfat)"
-    echo "Partition swap : $SWAP_PART (4 GiB, swap activé)"
-    echo "Partition root : $ROOT_PART (btrfs, reste de l'espace disponible)"
+    echo "Partitionnement terminé avec succès"
 
 }
 
