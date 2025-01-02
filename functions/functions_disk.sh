@@ -233,11 +233,15 @@ preparation_disk() {
             echo "Taille de la fin de la partition : $end"
 
         else
+
+            echo "CHOIX 2"
+            echo "Taille de la partition avant passage dans conversion: $size"
+
             size_mib=$(convert_to_mib "$size")
             end=$(bc <<< "$start + $size_mib")
 
-            echo "CHOIX 2"
-            echo "Taille de la partition : $size_mib"
+            
+            echo "Taille de la partition aprés passage dans conversion: $size_mib"
             echo "Taille de la fin de la partition : $end"
 
         fi
