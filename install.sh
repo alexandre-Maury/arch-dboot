@@ -142,7 +142,7 @@ while true; do
 
             log_prompt "INFO" && read -p "1- Saisir le nom de la partition de démarrage /EFI de votre système (ex. sda1) : " partition_boot_windows
             preparation_disk "$disk"
-            # mount_partitions "$disk"
+            mount_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk"
             # install_base "$disk"
             # install_base_chroot "$disk"

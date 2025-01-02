@@ -263,6 +263,7 @@ preparation_disk() {
 }
 
 mount_partitions() {
+    
     local disk="$1"
     
     # Récupérer toutes les partitions du disque
