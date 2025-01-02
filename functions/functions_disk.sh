@@ -221,42 +221,43 @@ preparation_disk() {
 
     # Créer chaque partition
     partition_num=$(($partition_num + 1))
-    echo "La prochaine partition sera sda : $partition_num"
     for part in "${PARTITIONS_CREATE[@]}"; do
         IFS=':' read -r name size type <<< "$part"
         local device="/dev/${disk}${partition_prefix}${partition_num}"
+
+        echo "Device : $device"
         
-        if [[ "$size" == "100%" ]]; then
-            end="$end_space"  # Pour 100%, la partition occupe tout l'espace restant
-        else
-            size_mib=$(convert_to_mib "$size")
-            end=$(bc <<< "$start + $size_mib")
-        fi
+        # if [[ "$size" == "100%" ]]; then
+        #     end="$end_space"  # Pour 100%, la partition occupe tout l'espace restant
+        # else
+        #     size_mib=$(convert_to_mib "$size")
+        #     end=$(bc <<< "$start + $size_mib")
+        # fi
 
-        if (( $(bc <<< "$end > $end_space") )); then
-            log_prompt "ERROR" && echo "Pas assez d'espace pour créer la partition '$name'."
-            exit 1
-        fi
+        # if (( $(bc <<< "$end > $end_space") )); then
+        #     log_prompt "ERROR" && echo "Pas assez d'espace pour créer la partition '$name'."
+        #     exit 1
+        # fi
 
-        # Créer la partition
-        parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB"
+        # # Créer la partition
+        # parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB"
 
-        # Configurer les flags et formater
-        case "$name" in
-            "boot")
-                parted --script /dev/$disk set "$partition_num" esp on
-                mkfs.vfat -F32 -n "$name" "$device"
-                ;;
-            "swap")
-                parted --script /dev/$disk set "$partition_num" swap on
-                mkswap -L "$name" "$device" && swapon "$device"
-                ;;
-            "root")
-                mkfs.btrfs -f -L "$name" "$device"
-                ;;
-        esac
+        # # Configurer les flags et formater
+        # case "$name" in
+        #     "boot")
+        #         parted --script /dev/$disk set "$partition_num" esp on
+        #         mkfs.vfat -F32 -n "$name" "$device"
+        #         ;;
+        #     "swap")
+        #         parted --script /dev/$disk set "$partition_num" swap on
+        #         mkswap -L "$name" "$device" && swapon "$device"
+        #         ;;
+        #     "root")
+        #         mkfs.btrfs -f -L "$name" "$device"
+        #         ;;
+        # esac
 
-        start="$end"  # Mettre à jour le début pour la prochaine partition
+        # start="$end"  # Mettre à jour le début pour la prochaine partition
         ((partition_num++))  # Incrémenter le numéro de partition
     done
 
