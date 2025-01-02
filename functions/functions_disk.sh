@@ -425,20 +425,20 @@ manage_disk_and_partitions() {
                 mount -o "${BTRFS_MOUNT_OPTIONS},subvol=@" "/dev/$part" "${MOUNT_POINT}"
 
                 # Monter les autres sous-volumes
-                # declare -A mount_points=(
-                #     ["@home"]="${MOUNT_POINT}/home"
-                #     ["@srv"]="${MOUNT_POINT}/srv"
-                #     ["@log"]="${MOUNT_POINT}/var/log"
-                #     ["@cache"]="${MOUNT_POINT}/var/cache"
-                #     ["@tmp"]="${MOUNT_POINT}/tmp"
-                #     ["@snapshots"]="${MOUNT_POINT}/snapshots"
-                # )
+                declare -A mount_points=(
+                    ["@home"]="${MOUNT_POINT}/home"
+                    ["@srv"]="${MOUNT_POINT}/srv"
+                    ["@log"]="${MOUNT_POINT}/var/log"
+                    ["@cache"]="${MOUNT_POINT}/var/cache"
+                    ["@tmp"]="${MOUNT_POINT}/tmp"
+                    ["@snapshots"]="${MOUNT_POINT}/snapshots"
+                )
 
-                # for subvol in "${!mount_points[@]}"; do
-                #     mkdir -p "${mount_points[$subvol]}"
-                #     mount -o "${BTRFS_MOUNT_OPTIONS},subvol=$subvol" "/dev/$part" "${mount_points[$subvol]}"
-                # done
-                
+                for subvol in "${!mount_points[@]}"; do
+                    mkdir -p "${mount_points[$subvol]}"
+                    mount -o "${BTRFS_MOUNT_OPTIONS},subvol=$subvol" "/dev/$part" "${mount_points[$subvol]}"
+                done
+
                 ;;
             "boot")
                 mkdir -p "${MOUNT_POINT}/boot"
