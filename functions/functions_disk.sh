@@ -198,6 +198,7 @@ preparation_disk() {
     fi
 
     log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
+    echo
     echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
     echo
     read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
@@ -258,8 +259,6 @@ preparation_disk() {
         start="$end"  # Mettre à jour le début pour la prochaine partition
         ((partition_num++))  # Incrémenter le numéro de partition
     done
-
-    echo "Partitionnement terminé avec succès"
 
 }
 
