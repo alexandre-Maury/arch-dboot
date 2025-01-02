@@ -243,6 +243,9 @@ preparation_disk() {
         local device="/dev/${disk}${partition_prefix}${partition_num}"
         local end=$([ "$size" = "100%" ] && echo "100%" || echo "$(convert_to_mib "$size")MiB")
 
+        echo "Taille de debut de la partition $name : $start"
+        echo "Taille de fin de la partition $name : $end"
+
         # Créer la partition
         parted --script -a optimal /dev/$disk mkpart primary "$start" "$end"
 
