@@ -327,7 +327,7 @@ mount_partitions() {
 }
 
 manage_disk_and_partitions() {
-    
+
     local disk="$1"
 
     # Vérifier si le disque existe
@@ -349,7 +349,9 @@ manage_disk_and_partitions() {
 
     # Demander à l'utilisateur de sélectionner une plage d'espace libre
     log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
+    echo
     echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
+    echo
     read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
 
     local selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
