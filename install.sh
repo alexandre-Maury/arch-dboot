@@ -25,8 +25,6 @@ source $SCRIPT_DIR/functions/functions_disk.sh
 source $SCRIPT_DIR/functions/functions_install.sh  
 # Charge un fichier contenant des fonctions dédiées à l'installation du système.
 
-source $SCRIPT_DIR/functions/test.sh  
-
 ##############################################################################
 ## Vérifier les privilèges root
 ##############################################################################
