@@ -218,9 +218,6 @@ manage_partitions() {
         local end_space=$(echo "$available_spaces" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
         local total=$(echo "$available_spaces" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
-        # local start="1MiB"
-        # local disk_size=$(lsblk "/dev/$disk" -b -o SIZE | tail -n 1)  # Taille en octets
-        # local end_space=$((disk_size / 1024 / 1024))  # Conversion en MiB
     fi
 
     if [[ $total -le 0 ]]; then
@@ -266,12 +263,11 @@ manage_partitions() {
             echo "Taille de la partition : $partition_name"
             echo
             echo "ex. "
-            echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB "
-            echo "Pour convertir une valeur donnée en GiB (gibioctets) en MiB (mebioctets), il suffit de multiplier par 1024."
+            echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
             echo "Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
             echo
-            read -p "Votre Choix (par défaut : 1024) : " partition_size
-            partition_size="${partition_size:-1024}"
+            read -p "Votre Choix (unité obligatoire ex. MiB|GiB ou % ) : " partition_size
+            partition_size="${partition_size}"
 
             clear
             echo
