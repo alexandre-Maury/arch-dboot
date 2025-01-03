@@ -238,7 +238,7 @@ manage_partitions() {
             echo "Total Disponible : $total MiB"
             echo "Total Restant :    $disk_size MiB"
             echo
-            log_prompt "INFO" && echo "Partitions définies :"
+            log_prompt "INFO" && echo "Partitions définies :" # mettre nombre de partitions
             echo
             echo "----------------------------------------"
             printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
@@ -314,7 +314,7 @@ manage_partitions() {
             read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
             [[ "$continue_choice" =~ ^[Yy]$ ]] || break
             
-            disk_size=$(($disk_size - $partition_size))
+            disk_size=$(($disk_size - $(convert_to_mib "$partition_size")))
         done
 
         # Vérification des partitions avant la création
