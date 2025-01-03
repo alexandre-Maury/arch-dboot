@@ -18,7 +18,7 @@ SSH_PORT=2222  # Remplacez 2222 par le port que vous souhaitez utiliser
 MOUNT_POINT="/mnt" # Point de montage    
 
 PARTITIONS_TYPE=(
-    "swap"
+    "linux-swap"
     "ext4"
     "btrfs"
     "fat32"

@@ -207,28 +207,37 @@ manage_partitions() {
         local end_space=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
         local total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
-        if [[ $total -le 0 ]]; then
-            log_prompt "ERROR" && echo "L'espace sélectionné est insuffisant pour créer des partitions."
-            exit 1
-        fi
-
     else
 
         parted --script /dev/$disk mklabel gpt
 
-        local start="1MiB"
-        local disk_size=$(lsblk "/dev/$disk" -b -o SIZE | tail -n 1)  # Taille en octets
-        local end_space=$((disk_size / 1024 / 1024))  # Conversion en MiB
+        local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print " Start="$1", End="$2", Size="$3}')
+
+        local start=$(echo "$available_spaces" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
+        local end_space=$(echo "$available_spaces" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+        local total=$(echo "$available_spaces" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
+
+        # local start="1MiB"
+        # local disk_size=$(lsblk "/dev/$disk" -b -o SIZE | tail -n 1)  # Taille en octets
+        # local end_space=$((disk_size / 1024 / 1024))  # Conversion en MiB
+    fi
+
+    if [[ $total -le 0 ]]; then
+        log_prompt "ERROR" && echo "L'espace sélectionné est insuffisant pour créer des partitions."
+        exit 1
     fi
 
     while true; do
         # Réinitialiser le tableau des partitions
         partition_create=()
+        disk_size="$total"
 
         # Boucle pour demander les informations à l'utilisateur
         while true; do
-            
             clear
+            echo "Total Disponible : $total MiB"
+            echo "Total Restant :    $disk_size MiB"
+            echo
             log_prompt "INFO" && echo "Partitions définies :"
             echo
             echo "----------------------------------------"
@@ -253,7 +262,7 @@ manage_partitions() {
 
             clear
             echo
-            echo "Taille de la partition : "
+            echo "Taille de la partition : $partition_name"
             echo
             echo "ex. "
             echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB "
@@ -298,9 +307,14 @@ manage_partitions() {
 
             clear
             echo
+
+            [[ "$partition_size" != "100%" ]] || break
+
             # Demander si l'utilisateur souhaite ajouter une autre partition
             read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
             [[ "$continue_choice" =~ ^[Yy]$ ]] || break
+            
+            disk_size=$(($disk_size - $partition_size))
         done
 
         # Vérification des partitions avant la création
@@ -341,10 +355,10 @@ manage_partitions() {
             end="$end_space"
         else
 
-            local start_mib=$(convert_to_mib "$start")
+            # local start_mib=$(convert_to_mib "$start")
             local size_mib=$(convert_to_mib "$size")
 
-            end=$(bc <<< "$start_mib + $size_mib")
+            end=$(bc <<< "$start + $size_mib")
 
         fi
 
@@ -384,7 +398,7 @@ manage_partitions() {
         start="$end"
         end_space=$(($end_space - $end))
         ((partition_num++))
-        
+
     done
 }
 
