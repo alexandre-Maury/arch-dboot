@@ -330,6 +330,7 @@ manage_partitions() {
     partition_num=$(($partition_num + 1))
 
     for part in "${partition_create[@]}"; do
+
         IFS=':' read -r name size type <<< "$part"
 
         local device="/dev/${disk}${partition_prefix}${partition_num}"
@@ -337,7 +338,6 @@ manage_partitions() {
         # Calculer les tailles de partitions
         local end
         if [[ "$size" == "100%" ]]; then
-
             end="$end_space"
         else
 
@@ -382,7 +382,9 @@ manage_partitions() {
         esac
 
         start="$end"
+        end_space=$(($end_space - $end))
         ((partition_num++))
+        
     done
 }
 
