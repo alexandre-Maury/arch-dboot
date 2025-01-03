@@ -341,19 +341,11 @@ manage_partitions() {
             end="$end_space"
         else
 
-            
-            echo "size $device a créer avant convertion : $size"
-            read -p "1- correctes ? (y/N) : " confirm
-
+            local start_mib=$(convert_to_mib "$start")
             local size_mib=$(convert_to_mib "$size")
 
-            echo "size $device a créer après convertion : $size_mib"
-            read -p "2- correctes ? (y/N) : " confirm
+            end=$(bc <<< "$start_mib + $size_mib")
 
-            end=$(bc <<< "$start + $size_mib")
-
-            echo "size $device de fin après convertion : $end"
-            read -p "3- correctes ? (y/N) : " confirm
         fi
 
         if (( $(bc <<< "$end > $end_space") )); then
