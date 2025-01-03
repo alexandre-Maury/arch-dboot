@@ -216,7 +216,7 @@ manage_partitions() {
 
         parted --script /dev/$disk mklabel gpt
 
-        local start="1MiB"
+        local start="1"
         local disk_size=$(lsblk "/dev/$disk" -b -o SIZE | tail -n 1)  # Taille en octets
         local end_space=$((disk_size / 1024 / 1024))  # Conversion en MiB
     fi
