@@ -15,9 +15,9 @@ test() {
     for part in "${partitions[@]}"; do
 
         local label=$(lsblk "/dev/$part" -n -o LABEL)
-        local fs_type=$(lsblk "/dev/$part" -n -o FS_TYPE)
+        local fs_type=$(lsblk "/dev/$part" -n -o TYPE)
 
         echo "type de la partition $fs_type"
-        
+
     done
 }
