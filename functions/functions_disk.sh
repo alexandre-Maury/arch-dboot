@@ -163,145 +163,14 @@ erase_disk() {
     fi
 }
 
-# manage_disk_and_partitions() {
 
-#     local disk="$1"
-
-#     # Vérifier si le disque existe
-#     if [[ ! -b "/dev/$disk" ]]; then
-#         log_prompt "ERROR" && echo "Le disque /dev/$disk n'existe pas."
-#         exit 1
-#     fi
-
-#     # Récupérer le préfixe des partitions (p pour /dev/sdX, rien pour /dev/nvmeXnY)
-#     local partition_prefix=$(get_disk_prefix "$disk")
-#     local partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
-
-#     # Lister les espaces libres disponibles
-#     local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
-#     if [[ -z "$available_spaces" ]]; then
-#         log_prompt "ERROR" && echo "Aucun espace libre détecté sur /dev/$disk."
-#         exit 1
-#     fi
-
-#     # Demander à l'utilisateur de sélectionner une plage d'espace libre
-#     log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
-#     echo
-#     echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
-#     echo
-#     read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
-
-#     local selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
-#     if [[ -z "$selected_space" ]]; then
-#         log_prompt "ERROR" && echo "Choix invalide. Veuillez réessayer."
-#         exit 1
-#     fi
-
-#     # Extraire les limites de la plage sélectionnée
-#     local start=$(echo "$selected_space" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
-#     local end_space=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
-#     local total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
-
-#     if [[ $total -le 0 ]]; then
-#         log_prompt "ERROR" && echo "L'espace sélectionné est insuffisant pour créer des partitions."
-#         exit 1
-#     fi
-
-#     # Création des partitions à partir de la liste définie
-#     partition_num=$(($partition_num + 1))
-#     for part in "${PARTITIONS_CREATE[@]}"; do
-#         IFS=':' read -r name size type <<< "$part"
-#         local device="/dev/${disk}${partition_prefix}${partition_num}"
-        
-#         # Calculer les tailles de partitions
-#         local end
-#         if [[ "$size" == "100%" ]]; then
-#             end="$end_space"
-#         else
-#             local size_mib=$(convert_to_mib "$size")
-#             end=$(bc <<< "$start + $size_mib")
-#         fi
-
-#         if (( $(bc <<< "$end > $end_space") )); then
-#             log_prompt "ERROR" && echo "Pas assez d'espace pour créer la partition '$name'."
-#             exit 1
-#         fi
-
-#         # Créer la partition
-#         parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB"
-
-#         # Configurer et formater la partition
-#         case "$name" in
-#             "boot")
-#                 parted --script /dev/$disk set "$partition_num" esp on
-#                 parted --script /dev/$disk set "$partition_num" boot on
-
-#                 mkfs.vfat -F32 -n "$name" "$device"
-#                 ;;
-#             "swap")
-#                 mkswap -L "$name" "$device" && swapon "$device"
-#                 ;;
-#             "root")
-#                 mkfs.btrfs -f -L "$name" "$device"
-#                 ;;
-#         esac
-
-#         start="$end"
-#         ((partition_num++))
-#     done
-
-#     # Monter les partitions en fonction des labels
-#     local partitions=($(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p"))
-#     for part in "${partitions[@]}"; do
-#         local label=$(lsblk "/dev/$part" -n -o LABEL)
-#         case "$label" in
-#             "root")
-#                 mount "/dev/$part" "${MOUNT_POINT}"
-#                 for subvol in "${BTRFS_SUBVOLUMES[@]}"; do
-#                     btrfs subvolume create "${MOUNT_POINT}/${subvol}"
-#                 done
-#                 umount "${MOUNT_POINT}"
-#                 mount -o "${BTRFS_MOUNT_OPTIONS},subvol=@" "/dev/$part" "${MOUNT_POINT}"
-
-#                 # Monter les autres sous-volumes
-#                 declare -A mount_points=(
-#                     ["@home"]="${MOUNT_POINT}/home"
-#                     ["@srv"]="${MOUNT_POINT}/srv"
-#                     ["@log"]="${MOUNT_POINT}/var/log"
-#                     ["@cache"]="${MOUNT_POINT}/var/cache"
-#                     ["@tmp"]="${MOUNT_POINT}/tmp"
-#                     ["@snapshots"]="${MOUNT_POINT}/snapshots"
-#                 )
-
-#                 for subvol in "${!mount_points[@]}"; do
-#                     mkdir -p "${mount_points[$subvol]}"
-#                     mount -o "${BTRFS_MOUNT_OPTIONS},subvol=$subvol" "/dev/$part" "${mount_points[$subvol]}"
-#                 done
-
-#                 ;;
-#             "boot")
-#                 mkdir -p "${MOUNT_POINT}/boot"
-#                 mount "/dev/$part" "${MOUNT_POINT}/boot"
-#                 ;;
-#         esac
-#     done
-# }
-
-
-windows_part() {
-
-    local partition_boot_windows="$2"
-
-    mkdir -p "${MOUNT_POINT}/efi"
-    mount /dev/$partition_boot_windows ${MOUNT_POINT}/efi
-    cp -rf ${MOUNT_POINT}/efi/EFI/Microsoft ${MOUNT_POINT}/boot/efi
-}
-
-
-manage_disk_and_partitions() {
+manage_partitions() {
 
     local disk="$1"
-    local partition_boot_windows="$2"
+    local dboot="$2"
+    local partition_create=()
+    local partition_prefix=$(get_disk_prefix "$disk")
+    local partition_num=0
 
     # Vérifier si le disque existe
     if [[ ! -b "/dev/$disk" ]]; then
@@ -309,45 +178,131 @@ manage_disk_and_partitions() {
         exit 1
     fi
 
-    # Récupérer le préfixe des partitions (p pour /dev/sdX, rien pour /dev/nvmeXnY)
-    local partition_prefix=$(get_disk_prefix "$disk")
-    local partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
+    if [[ "$dboot" == "True" ]]; then
 
-    # Lister les espaces libres disponibles
-    local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
-    if [[ -z "$available_spaces" ]]; then
-        log_prompt "ERROR" && echo "Aucun espace libre détecté sur /dev/$disk."
-        exit 1
+        partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
+
+        # Lister les espaces libres disponibles
+        local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
+        if [[ -z "$available_spaces" ]]; then
+            log_prompt "ERROR" && echo "Aucun espace libre détecté sur /dev/$disk."
+            exit 1
+        fi
+
+        # Demander à l'utilisateur de sélectionner une plage d'espace libre
+        log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
+        echo
+        echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
+        echo
+        read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
+
+        local selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
+        if [[ -z "$selected_space" ]]; then
+            log_prompt "ERROR" && echo "Choix invalide. Veuillez réessayer."
+            exit 1
+        fi
+
+        # Extraire les limites de la plage sélectionnée
+        local start=$(echo "$selected_space" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
+        local end_space=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+        local total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
+
+        if [[ $total -le 0 ]]; then
+            log_prompt "ERROR" && echo "L'espace sélectionné est insuffisant pour créer des partitions."
+            exit 1
+        fi
+
+    else
+
+        local start="1MiB"
+        local disk_size=$(lsblk "/dev/$disk" -b -o SIZE | tail -n 1)  # Taille en octets
+        local end_space=$((disk_size / 1024 / 1024))  # Conversion en MiB
+
     fi
 
-    # Demander à l'utilisateur de sélectionner une plage d'espace libre
-    log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
-    echo
-    echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
-    echo
-    read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
+    while true; do
+        # Réinitialiser le tableau des partitions
+        partition_create=()
 
-    local selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
-    if [[ -z "$selected_space" ]]; then
-        log_prompt "ERROR" && echo "Choix invalide. Veuillez réessayer."
-        exit 1
-    fi
+        # Boucle pour demander les informations à l'utilisateur
+        while true; do
+            clear
+            echo
+            log_prompt "INFO" && echo "Création d'une nouvelle partition :"
+            echo
+            read -p "Nom de la partition à créer (ex. swap, root, home, boot) : " partition_name
+            if [[ -z "$partition_name" ]]; then
+                log_prompt "ERROR" && echo "Nom invalide. Veuillez réessayer."
+                continue
+            fi
 
-    # Extraire les limites de la plage sélectionnée
-    local start=$(echo "$selected_space" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
-    local end_space=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
-    local total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
+            clear
+            echo
+            read -p "Taille de la partition en MiB ex. 1024 pour 1GiB (par défaut : 1024) : " partition_size
+            partition_size="${partition_size:-1024}MiB"
 
-    if [[ $total -le 0 ]]; then
-        log_prompt "ERROR" && echo "L'espace sélectionné est insuffisant pour créer des partitions."
-        exit 1
-    fi
+            clear
+            echo
+            echo "Types disponibles pour la partition $partition_name:"
+            echo
+            local index=1
+            for type in "${PARTITIONS_TYPE[@]}"; do
+                echo "$index. $type"
+                ((index++))
+            done
+            echo
+            read -p "Choisissez un type de fichier : " partition_type
+            case "$partition_type" in
+                "1"|"swap")
+                    partition_type="swap"
+                    ;;
+                "2"|"ext4"|"")
+                    partition_type="ext4"
+                    ;;
+                "3"|"btrfs")
+                    partition_type="btrfs"
+                    ;;
+                "4"|"fat32")
+                    partition_type="fat32"
+                    ;;
+                *)
+                    echo "Type inconnu, veuillez réessayer."
+                    continue
+                    ;;
+            esac
 
-    # Création des partitions à partir de la liste définie
+            # Ajouter la partition au tableau
+            partition_create+=("${partition_name}:${partition_size}:${partition_type}")
+
+            clear
+            echo
+            # Demander si l'utilisateur souhaite ajouter une autre partition
+            read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
+            [[ "$continue_choice" =~ ^[Yy]$ ]] || break
+        done
+
+        # Vérification des partitions avant la création
+        clear
+        log_prompt "INFO" && echo "Partitions définies :"
+        echo
+        for partition in "${partition_create[@]}"; do
+            echo "  - $partition"
+        done
+
+        echo
+        read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
+        if [[ "$confirm_choice" =~ ^[Yy]$ ]]; then
+            break # Sortir de la boucle principale si les partitions sont correctes
+        fi
+
+        # Si l'utilisateur veut recommencer
+        log_prompt "INFO" && echo "Recommençons la sélection des partitions."
+    done
+
     partition_num=$(($partition_num + 1))
-
-    for part in "${PARTITIONS_CREATE[@]}"; do
+    for part in "${partition_create[@]}"; do
         IFS=':' read -r name size type <<< "$part"
+
         local device="/dev/${disk}${partition_prefix}${partition_num}"
         
         # Calculer les tailles de partitions
@@ -367,31 +322,61 @@ manage_disk_and_partitions() {
         # Créer la partition
         parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB"
 
-        # Configurer et formater la partition
-        case "$name" in
-            "swap")
-                mkswap -L "$name" "$device" && swapon "$device"
+        # formater la partition : pour plus de choix ajouter ici ex. ext4, xfs ...
+        case "$type" in
+            "fat32")
+                parted --script /dev/$disk set "$partition_num" esp on
+                parted --script /dev/$disk set "$partition_num" boot on
+
+                mkfs.vfat -F32 -n "$name" "$device"
                 ;;
-            "root")
-                mkfs.btrfs -f -L "$name" "$device"
+            "swap")
+                mkswap -L "$name" "/dev/$part" && swapon "/dev/$part"
+                ;;
+            "btrfs")
+                mkfs.btrfs -f -L "$name" "/dev/$part"
+                ;;
+            "ext4")
+                mkfs.ext4 -L "$name" "/dev/$part"
+                ;;
+
+            *)
+                echo "Type de partition inconnu ou non pris en charge : $type"
+                echo "Aucune action n'a été effectuée pour la partition /dev/$part."
                 ;;
         esac
 
         start="$end"
         ((partition_num++))
     done
+}
 
-    # Monter les partitions en fonction des labels
+mount_partitions () {
+
+    local disk="$1"
     local partitions=($(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p"))
     
     for part in "${partitions[@]}"; do
+
         local label=$(lsblk "/dev/$part" -n -o LABEL)
-        case "$label" in
-            "root")
-                mount "/dev/$part" "${MOUNT_POINT}"
+        local fs_type=$(lsblk "/dev/$part" -n -o FSTYPE)
+
+        echo "Préparation de la partition $part en : $fs_type"
+
+        # Configurer et formater la partition
+        case "$fs_type" in
+            "vfat")
+                # Montage de la partition vfat (par exemple, pour /boot/efi)
+                mount --mkdir "/dev/$part" "${MOUNT_POINT}/boot"
+                ;;
+            "btrfs")
+                # Création et montage des sous-volumes pour btrfs
+                mount --mkdir "/dev/$part" "${MOUNT_POINT}"
+
                 for subvol in "${BTRFS_SUBVOLUMES[@]}"; do
                     btrfs subvolume create "${MOUNT_POINT}/${subvol}"
                 done
+
                 umount "${MOUNT_POINT}"
                 mount -o "${BTRFS_MOUNT_OPTIONS},subvol=@" "/dev/$part" "${MOUNT_POINT}"
 
@@ -409,8 +394,24 @@ manage_disk_and_partitions() {
                     mkdir -p "${mount_points[$subvol]}"
                     mount -o "${BTRFS_MOUNT_OPTIONS},subvol=$subvol" "/dev/$part" "${mount_points[$subvol]}"
                 done
-
                 ;;
+            "ext4")
+                # Montage de la partition ext4
+                if [[ "$label" == "root" ]]; then
+                    mount --mkdir "/dev/$part" "${MOUNT_POINT}"
+                else
+                    # Montage d'une partition ext4
+                    mount --mkdir "/dev/$part" "${MOUNT_POINT}/$label"
+                fi
+                ;;
+
+            *)
+                echo "Type de partition inconnu ou non pris en charge : $fs_type"
+                echo "Aucune action n'a été effectuée pour la partition /dev/$part."
+                ;;
+
         esac
+
     done
+
 }

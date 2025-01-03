@@ -25,8 +25,6 @@ source $SCRIPT_DIR/functions/functions_disk.sh
 source $SCRIPT_DIR/functions/functions_install.sh  
 # Charge un fichier contenant des fonctions dédiées à l'installation du système.
 
-source $SCRIPT_DIR/functions/test.sh  
-
 ##############################################################################
 ## Vérifier les privilèges root
 ##############################################################################
@@ -98,7 +96,7 @@ while true; do
     else
         clear
         echo
-        echo "$(show_disk_partitions "Le disque n'est pas vierge" "$disk")"
+        echo "$(show_disk_partitions "Partitions présente sur le disque" "$disk")"
         echo
 
     fi
@@ -106,7 +104,7 @@ while true; do
     echo "Que souhaitez-vous faire : " && echo
 
     echo "1) Nettoyage du disque          ==> Suppression des données sur /dev/$disk"
-    echo "2) Installation de Arch Linux   ==> Double boot"
+    echo "2) Installation de Arch Linux   ==> Single boot ou Dual boot"
     echo
     echo "0) Annuler"
     echo
@@ -122,41 +120,47 @@ while true; do
         2)
             clear
             echo
-        
-            echo "Pour procéder à une installation en double boot, vous devez préparer les partitions nécessaires."
-            echo "Voici les partitions à spécifier :"
-            echo
-            echo "1. Création de la partition '/EFI' :"
-            echo
-            echo "  - La partition EFI doit être créée avant l'installation de Windows en utilisant l'outil de votre choix."
-            echo "  - Je recommande d'utiliser le live CD d'Arch Linux avec l'outil 'cfdisk' pour gérer les partitions."
-            echo "    Commande : cfdisk /dev/sda"
-            echo "  - Assurez-vous de créer une partition de type 'EFI System Partition' (ESP) avec une taille minimale de 512 Mo."
-            echo "  - Prenez note du nom de cette partition (par exemple, /dev/sda1)."
-            echo "  - Cette partition sera utilisée lors de l'installation d'Arch Linux pour le bootloader."
-            echo
-            echo "2. Partition '/root' :"
-            echo
-            echo "   - La partition racine doit être créée par vos soins, généralement en réduisant la partition système existante."
-            echo "   - Vous pouvez utiliser un outil de partitionnement pour redimensionner la partition actuelle afin de libérer de l'espace pour la partition 'root'."
-            echo
-            echo "⚠️ Remarque importante : Veuillez être prudent lors de la réduction des partitions existantes."
-            echo
-            echo "     La réduction incorrecte d'une partition système pourrait entraîner une perte de données."
-            echo "     Assurez-vous d'avoir effectué une sauvegarde complète avant de procéder."
-            echo
 
-            show_disk_partitions "Partitions existantes" "$disk"
+            log_prompt "INFO" && read -p "Souhaitez-vous procéder à un double démarrage (Dual Boot) ? (y/N) : " dual_boot
+            if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
+                dboot=True
+            else
+                dboot=False
+            fi
+
+            # Exploitation de la variable dboot dans une condition
+            if [[ "$dboot" == "True" ]]; then
+
+                echo "Vous avez choisi de procéder à un Dual Boot."
+                echo
+                echo "Pour procéder à une installation en double boot, vous devez préparer les partitions nécessaires."
+                echo "Voici les partitions à spécifier :"
+                echo
+                echo "1. Création de la partition '/EFI' :"
+                echo
+                echo "  - La partition EFI doit être créée avant l'installation de Windows en utilisant l'outil de votre choix."
+                echo "  - Je recommande d'utiliser le live CD d'Arch Linux avec l'outil 'cfdisk' pour gérer les partitions."
+                echo "    Commande : cfdisk /dev/sda"
+                echo "  - Assurez-vous de créer une partition de type 'EFI System Partition' (ESP) avec une taille minimale de 512 Mo."
+                echo "  - Prenez note du nom de cette partition (par exemple, /dev/sda1)."
+                echo "  - Cette partition sera utilisée lors de l'installation d'Arch Linux pour le bootloader."
+                echo
+                echo "2. Partition '/root' :"
+                echo
+                echo "   - La partition racine doit être créée par vos soins, généralement en réduisant la partition système existante."
+                echo "   - Vous pouvez utiliser un outil de partitionnement pour redimensionner la partition actuelle afin de libérer de l'espace pour la partition 'root'."
+                echo
+                echo "⚠️ Remarque importante : Veuillez être prudent lors de la réduction des partitions existantes."
+                echo
+                echo "     La réduction incorrecte d'une partition système pourrait entraîner une perte de données."
+                echo "     Assurez-vous d'avoir effectué une sauvegarde complète avant de procéder."
+                echo
+            fi
 
             echo
-            echo "Habituellement, la partition de démarrage EFI est de type VFAT (par exemple, sda1)."
-            echo
-            log_prompt "INFO" && read -p "Saisir la partition de votre système : " partition_boot_windows
-            echo
-            test "$disk" "$partition_boot_windows"
-            # manage_disk_and_partitions "$disk" "$partition_boot_windows"
-            # show_disk_partitions "Montage des partitions terminée" "$disk" 
-            # windows_part "$partition_boot_windows"
+            manage_partitions "$disk" "$dboot"
+            mount_partitions "$disk"
+            show_disk_partitions "Montage des partitions terminée" "$disk" 
             # install_base "$disk"
             # install_base_chroot "$disk"
             # install_base_secu
@@ -169,6 +173,7 @@ while true; do
 
         0)
             log_prompt "WARNING" && echo "Opération annulée"
+            echo
             exit 0
             ;;
         *)
