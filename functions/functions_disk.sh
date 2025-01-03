@@ -226,7 +226,21 @@ manage_partitions() {
 
         # Boucle pour demander les informations à l'utilisateur
         while true; do
+            
             clear
+            log_prompt "INFO" && echo "Partitions définies :"
+            echo
+            echo "----------------------------------------"
+            printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
+            echo "----------------------------------------"
+            echo
+            for partition in "${partition_create[@]}"; do
+                IFS=':' read -r partition_name partition_size partition_type <<< "$partition"
+                printf "%-15s %-10s %-10s\n" "$partition_name" "$partition_size" "$partition_type"
+            done
+            echo
+            echo "----------------------------------------"
+            echo
             echo
             log_prompt "INFO" && echo "Création d'une nouvelle partition :"
             echo
