@@ -163,9 +163,145 @@ erase_disk() {
     fi
 }
 
+# manage_disk_and_partitions() {
+
+#     local disk="$1"
+
+#     # Vérifier si le disque existe
+#     if [[ ! -b "/dev/$disk" ]]; then
+#         log_prompt "ERROR" && echo "Le disque /dev/$disk n'existe pas."
+#         exit 1
+#     fi
+
+#     # Récupérer le préfixe des partitions (p pour /dev/sdX, rien pour /dev/nvmeXnY)
+#     local partition_prefix=$(get_disk_prefix "$disk")
+#     local partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
+
+#     # Lister les espaces libres disponibles
+#     local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
+#     if [[ -z "$available_spaces" ]]; then
+#         log_prompt "ERROR" && echo "Aucun espace libre détecté sur /dev/$disk."
+#         exit 1
+#     fi
+
+#     # Demander à l'utilisateur de sélectionner une plage d'espace libre
+#     log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
+#     echo
+#     echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
+#     echo
+#     read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
+
+#     local selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
+#     if [[ -z "$selected_space" ]]; then
+#         log_prompt "ERROR" && echo "Choix invalide. Veuillez réessayer."
+#         exit 1
+#     fi
+
+#     # Extraire les limites de la plage sélectionnée
+#     local start=$(echo "$selected_space" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
+#     local end_space=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+#     local total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
+
+#     if [[ $total -le 0 ]]; then
+#         log_prompt "ERROR" && echo "L'espace sélectionné est insuffisant pour créer des partitions."
+#         exit 1
+#     fi
+
+#     # Création des partitions à partir de la liste définie
+#     partition_num=$(($partition_num + 1))
+#     for part in "${PARTITIONS_CREATE[@]}"; do
+#         IFS=':' read -r name size type <<< "$part"
+#         local device="/dev/${disk}${partition_prefix}${partition_num}"
+        
+#         # Calculer les tailles de partitions
+#         local end
+#         if [[ "$size" == "100%" ]]; then
+#             end="$end_space"
+#         else
+#             local size_mib=$(convert_to_mib "$size")
+#             end=$(bc <<< "$start + $size_mib")
+#         fi
+
+#         if (( $(bc <<< "$end > $end_space") )); then
+#             log_prompt "ERROR" && echo "Pas assez d'espace pour créer la partition '$name'."
+#             exit 1
+#         fi
+
+#         # Créer la partition
+#         parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB"
+
+#         # Configurer et formater la partition
+#         case "$name" in
+#             "boot")
+#                 parted --script /dev/$disk set "$partition_num" esp on
+#                 parted --script /dev/$disk set "$partition_num" boot on
+
+#                 mkfs.vfat -F32 -n "$name" "$device"
+#                 ;;
+#             "swap")
+#                 mkswap -L "$name" "$device" && swapon "$device"
+#                 ;;
+#             "root")
+#                 mkfs.btrfs -f -L "$name" "$device"
+#                 ;;
+#         esac
+
+#         start="$end"
+#         ((partition_num++))
+#     done
+
+#     # Monter les partitions en fonction des labels
+#     local partitions=($(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p"))
+#     for part in "${partitions[@]}"; do
+#         local label=$(lsblk "/dev/$part" -n -o LABEL)
+#         case "$label" in
+#             "root")
+#                 mount "/dev/$part" "${MOUNT_POINT}"
+#                 for subvol in "${BTRFS_SUBVOLUMES[@]}"; do
+#                     btrfs subvolume create "${MOUNT_POINT}/${subvol}"
+#                 done
+#                 umount "${MOUNT_POINT}"
+#                 mount -o "${BTRFS_MOUNT_OPTIONS},subvol=@" "/dev/$part" "${MOUNT_POINT}"
+
+#                 # Monter les autres sous-volumes
+#                 declare -A mount_points=(
+#                     ["@home"]="${MOUNT_POINT}/home"
+#                     ["@srv"]="${MOUNT_POINT}/srv"
+#                     ["@log"]="${MOUNT_POINT}/var/log"
+#                     ["@cache"]="${MOUNT_POINT}/var/cache"
+#                     ["@tmp"]="${MOUNT_POINT}/tmp"
+#                     ["@snapshots"]="${MOUNT_POINT}/snapshots"
+#                 )
+
+#                 for subvol in "${!mount_points[@]}"; do
+#                     mkdir -p "${mount_points[$subvol]}"
+#                     mount -o "${BTRFS_MOUNT_OPTIONS},subvol=$subvol" "/dev/$part" "${mount_points[$subvol]}"
+#                 done
+
+#                 ;;
+#             "boot")
+#                 mkdir -p "${MOUNT_POINT}/boot"
+#                 mount "/dev/$part" "${MOUNT_POINT}/boot"
+#                 ;;
+#         esac
+#     done
+# }
+
+
+windows_part() {
+
+    local partition_boot_windows="$2"
+
+    mkdir -p "${MOUNT_POINT}/efi"
+    mount /dev/$partition_boot_windows ${MOUNT_POINT}/efi
+    cp -rf ${MOUNT_POINT}/efi/EFI/Microsoft ${MOUNT_POINT}/boot/efi
+}
+
+
 manage_disk_and_partitions() {
 
     local disk="$1"
+    local partition_boot_windows="$2"
 
     # Vérifier si le disque existe
     if [[ ! -b "/dev/$disk" ]]; then
@@ -209,6 +345,7 @@ manage_disk_and_partitions() {
 
     # Création des partitions à partir de la liste définie
     partition_num=$(($partition_num + 1))
+
     for part in "${PARTITIONS_CREATE[@]}"; do
         IFS=':' read -r name size type <<< "$part"
         local device="/dev/${disk}${partition_prefix}${partition_num}"
@@ -232,12 +369,6 @@ manage_disk_and_partitions() {
 
         # Configurer et formater la partition
         case "$name" in
-            "boot")
-                parted --script /dev/$disk set "$partition_num" esp on
-                parted --script /dev/$disk set "$partition_num" boot on
-
-                mkfs.vfat -F32 -n "$name" "$device"
-                ;;
             "swap")
                 mkswap -L "$name" "$device" && swapon "$device"
                 ;;
@@ -252,6 +383,7 @@ manage_disk_and_partitions() {
 
     # Monter les partitions en fonction des labels
     local partitions=($(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p"))
+    
     for part in "${partitions[@]}"; do
         local label=$(lsblk "/dev/$part" -n -o LABEL)
         case "$label" in
@@ -279,20 +411,6 @@ manage_disk_and_partitions() {
                 done
 
                 ;;
-            "boot")
-                mkdir -p "${MOUNT_POINT}/boot"
-                mount "/dev/$part" "${MOUNT_POINT}/boot"
-                ;;
         esac
     done
-}
-
-
-windows_part() {
-
-    local partition_boot_windows="$2"
-
-    mkdir -p "${MOUNT_POINT}/efi"
-    mount /dev/$partition_boot_windows ${MOUNT_POINT}/efi
-    cp -rf ${MOUNT_POINT}/efi/EFI/Microsoft ${MOUNT_POINT}/boot/efi
 }

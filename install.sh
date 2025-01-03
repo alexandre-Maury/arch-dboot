@@ -25,6 +25,8 @@ source $SCRIPT_DIR/functions/functions_disk.sh
 source $SCRIPT_DIR/functions/functions_install.sh  
 # Charge un fichier contenant des fonctions dédiées à l'installation du système.
 
+source $SCRIPT_DIR/functions/test.sh  
+
 ##############################################################################
 ## Vérifier les privilèges root
 ##############################################################################
@@ -124,12 +126,17 @@ while true; do
             echo "Pour procéder à une installation en double boot, vous devez préparer les partitions nécessaires."
             echo "Voici les partitions à spécifier :"
             echo
-            echo "1. Partition '/EFI' :"
-            echo "  - Cette partition est créée au préalable par Windows."
-            echo "  - Assurez-vous de connaître le nom de la partition (ex. sda1)"
-            echo "  - Elle vous sera demandé lors de l'installation"
+            echo "1. Création de la partition '/EFI' :"
+            echo
+            echo "  - La partition EFI doit être créée avant l'installation de Windows en utilisant l'outil de votre choix."
+            echo "  - Je recommande d'utiliser le live CD d'Arch Linux avec l'outil 'cfdisk' pour gérer les partitions."
+            echo "    Commande : cfdisk /dev/sda"
+            echo "  - Assurez-vous de créer une partition de type 'EFI System Partition' (ESP) avec une taille minimale de 512 Mo."
+            echo "  - Prenez note du nom de cette partition (par exemple, /dev/sda1)."
+            echo "  - Cette partition sera utilisée lors de l'installation d'Arch Linux pour le bootloader."
             echo
             echo "2. Partition '/root' :"
+            echo
             echo "   - La partition racine doit être créée par vos soins, généralement en réduisant la partition système existante."
             echo "   - Vous pouvez utiliser un outil de partitionnement pour redimensionner la partition actuelle afin de libérer de l'espace pour la partition 'root'."
             echo
@@ -146,11 +153,11 @@ while true; do
             echo
             log_prompt "INFO" && read -p "Saisir la partition de votre système : " partition_boot_windows
             echo
-
-            manage_disk_and_partitions "$disk"
-            show_disk_partitions "Montage des partitions terminée" "$disk" 
-            windows_part "$partition_boot_windows"
-            install_base "$disk"
+            test "$disk" "$partition_boot_windows"
+            # manage_disk_and_partitions "$disk" "$partition_boot_windows"
+            # show_disk_partitions "Montage des partitions terminée" "$disk" 
+            # windows_part "$partition_boot_windows"
+            # install_base "$disk"
             # install_base_chroot "$disk"
             # install_base_secu
             # activate_service
