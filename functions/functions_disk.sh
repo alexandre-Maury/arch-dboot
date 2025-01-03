@@ -213,7 +213,8 @@ manage_partitions() {
 
         local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print " Start="$1", End="$2", Size="$3}')
 
-        local start=$(echo "$available_spaces" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
+        # local start=$(echo "$available_spaces" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
+        local start=1
         local end_space=$(echo "$available_spaces" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
         local total=$(echo "$available_spaces" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
@@ -238,7 +239,7 @@ manage_partitions() {
             echo "Total Disponible : $total MiB"
             echo "Total Restant :    $disk_size MiB"
             echo
-            log_prompt "INFO" && echo "Partitions définies :" # mettre nombre de partitions
+            log_prompt "INFO" && echo "Partitions définies : ${#partition_create[@]}" 
             echo
             echo "----------------------------------------"
             printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
