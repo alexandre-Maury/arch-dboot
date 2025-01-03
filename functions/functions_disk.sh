@@ -329,24 +329,33 @@ manage_partitions() {
 
     partition_num=$(($partition_num + 1))
 
-    echo "partition a créer : $partition_num"
-    read -p "Le numéro de partitions sont-elles correctes ? (y/N) : " confirm_choice
-
     for part in "${partition_create[@]}"; do
         IFS=':' read -r name size type <<< "$part"
 
         local device="/dev/${disk}${partition_prefix}${partition_num}"
-
-        echo "partition device a créer : $device"
-        read -p "correctes ? (y/N) : " confirm
         
         # Calculer les tailles de partitions
         local end
         if [[ "$size" == "100%" ]]; then
+
+            echo "size partition $device a créer : $size"
+            read -p "correctes ? (y/N) : " confirm
+
             end="$end_space"
         else
+
+            echo "size partition $device a créer : $size"
+            read -p "correctes ? (y/N) : " confirm
+
             local size_mib=$(convert_to_mib "$size")
+
+            echo "size partition $device a créer convertion mib: $size_mib"
+            read -p "correctes ? (y/N) : " confirm
+
             end=$(bc <<< "$start + $size_mib")
+
+            echo "size partition $device après convertion mib: $end"
+            read -p "correctes ? (y/N) : " confirm
         fi
 
         if (( $(bc <<< "$end > $end_space") )); then
