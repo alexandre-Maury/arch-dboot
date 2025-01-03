@@ -328,10 +328,17 @@ manage_partitions() {
     done
 
     partition_num=$(($partition_num + 1))
+
+    echo "partition a créer : $partition_num"
+    read -p "Le numéro de partitions sont-elles correctes ? (y/N) : " confirm_choice
+
     for part in "${partition_create[@]}"; do
         IFS=':' read -r name size type <<< "$part"
 
         local device="/dev/${disk}${partition_prefix}${partition_num}"
+
+        echo "partition device a créer : $device"
+        read -p "correctes ? (y/N) : " confirm
         
         # Calculer les tailles de partitions
         local end
