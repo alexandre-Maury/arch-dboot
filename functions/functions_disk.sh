@@ -252,7 +252,7 @@ manage_partitions() {
 
             clear
             echo
-            read -p "Taille de la partition en MiB ex. 1024 pour 1GiB (par défaut : 1024) : " partition_size
+            read -p "Taille de la partition en MiB ex. 1024 pour 1GiB ou 100% (par défaut : 1024) : " partition_size
             partition_size="${partition_size:-1024}MiB"
 
             clear
@@ -350,7 +350,7 @@ manage_partitions() {
 
                 mkfs.vfat -F32 -n "$name" "$device"
                 ;;
-            "swap")
+            "linux-swap")
                 parted --script /dev/$disk set "$partition_num" swap on
                 mkswap -L "$name" "$device" && swapon "$device"
                 ;;
@@ -363,7 +363,7 @@ manage_partitions() {
 
             *)
                 echo "Type de partition inconnu ou non pris en charge : $type"
-                echo "Aucune action n'a été effectuée pour la partition /dev/$part."
+                echo "Aucune action n'a été effectuée pour la partition : $device."
                 ;;
         esac
 
