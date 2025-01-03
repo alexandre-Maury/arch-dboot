@@ -268,7 +268,7 @@ manage_partitions() {
             read -p "Choisissez un type de fichier : " partition_type
             case "$partition_type" in
                 "1"|"swap")
-                    partition_type="swap"
+                    partition_type="linux-swap"
                     ;;
                 "2"|"ext4"|"")
                     partition_type="ext4"
@@ -351,13 +351,14 @@ manage_partitions() {
                 mkfs.vfat -F32 -n "$name" "$device"
                 ;;
             "swap")
-                mkswap -L "$name" "/dev/$part" && swapon "/dev/$part"
+                parted --script /dev/$disk set "$partition_num" swap on
+                mkswap -L "$name" "$device" && swapon "$device"
                 ;;
             "btrfs")
-                mkfs.btrfs -f -L "$name" "/dev/$part"
+                mkfs.btrfs -f -L "$name" "$device"
                 ;;
             "ext4")
-                mkfs.ext4 -L "$name" "/dev/$part"
+                mkfs.ext4 -L "$name" "$device"
                 ;;
 
             *)
