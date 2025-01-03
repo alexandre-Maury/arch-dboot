@@ -285,16 +285,22 @@ manage_partitions() {
         clear
         log_prompt "INFO" && echo "Partitions définies :"
         echo
+        echo "----------------------------------------"
+        printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
+        echo "----------------------------------------"
+        echo
         for partition in "${partition_create[@]}"; do
-            echo "  - $partition"
+            IFS=':' read -r partition_name partition_size partition_type <<< "$partition"
+            printf "%-15s %-10s %-10s\n" "$partition_name" "$partition_size" "$partition_type"
         done
-
+        echo
+        echo "----------------------------------------"
         echo
         read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
         if [[ "$confirm_choice" =~ ^[Yy]$ ]]; then
             break # Sortir de la boucle principale si les partitions sont correctes
         fi
-
+        echo
         # Si l'utilisateur veut recommencer
         log_prompt "INFO" && echo "Recommençons la sélection des partitions."
     done
