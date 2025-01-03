@@ -252,8 +252,15 @@ manage_partitions() {
 
             clear
             echo
-            read -p "Taille de la partition en MiB ex. 1024 pour 1GiB ou 100% (par défaut : 1024) : " partition_size
-            partition_size="${partition_size:-1024}MiB"
+            echo "Taille de la partition : "
+            echo
+            echo "ex. "
+            echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB "
+            echo "Pour convertir une valeur donnée en GiB (gibioctets) en MiB (mebioctets), il suffit de multiplier par 1024."
+            echo "Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
+            echo
+            read -p "Votre Choix (par défaut : 1024) : " partition_size
+            partition_size="${partition_size:-1024}"
 
             clear
             echo
