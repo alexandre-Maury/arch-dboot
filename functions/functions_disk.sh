@@ -264,7 +264,7 @@ manage_partitions() {
         esac
     done
 
-    if [[ "$dboot" == "True" && "$mode_partitions" == "mode_avance" ]];
+    if [[ "$dboot" == "True" && "$mode_partitions" == "mode_avance" ]]; then
 
         partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
 
