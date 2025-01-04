@@ -349,7 +349,15 @@ manage_partitions() {
                 echo
 
                 while true; do
+                    clear
+                    echo
                     log_prompt "INFO" && echo "Création d'une nouvelle partition :"
+                    echo
+                    # Message d'erreur
+                    if [[ -n "$part_error" ]]; then
+                        log_prompt "ERROR" && echo $part_error
+                    fi
+
                     echo
                     echo "Voici les partitions recommandées à créer pour une installation réussie :"
                     echo
@@ -409,7 +417,7 @@ manage_partitions() {
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         *)
-                            echo "Nom de partition : $partition_name non valide. Veuillez choisir parmi [boot, swap, root, home]."
+                            part_error="Nom de partition : $partition_name non valide. Veuillez choisir parmi [boot, swap, root, home]."
                             ;;
                     esac
                 done
