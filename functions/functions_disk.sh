@@ -233,7 +233,7 @@ manage_partitions() {
         # Boucle pour demander les informations à l'utilisateur
         while true; do
             clear
-            echo "Total Disponible : $total MiB"
+            echo "Total Disponible : $end_space MiB"
             echo "Total Restant :    $disk_size MiB"
             echo
             log_prompt "INFO" && echo "Partitions définies : ${#partition_create[@]}" 
