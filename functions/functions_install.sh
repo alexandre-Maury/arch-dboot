@@ -87,6 +87,8 @@ install_base() {
         echo "DNS=1.1.1.1 9.9.9.9" 
         echo "FallbackDNS=8.8.8.8"
     } > ${MOUNT_POINT}/etc/systemd/resolved.conf
+
+
 }
 
 install_base_chroot() {
@@ -187,8 +189,8 @@ install_base_chroot() {
     root_uuid=$(blkid -s UUID -o value /dev/${root_part})
     root_options="root=UUID=${root_uuid} rootflags=subvol=@ rw"
 
-    arch-chroot ${MOUNT_POINT} bootctl --path=/boot install
-    # arch-chroot ${MOUNT_POINT} bootctl --esp-path=/boot --boot-path=/boot install
+    # arch-chroot ${MOUNT_POINT} bootctl --path=/boot install
+    arch-chroot ${MOUNT_POINT} bootctl --esp-path=/boot --boot-path=/boot install
 
     {
         echo "title   Arch Linux"

@@ -493,8 +493,6 @@ manage_partitions() {
         case "$type" in
             "fat32")
                 parted --script /dev/$disk set "$partition_num" esp on
-                parted --script /dev/$disk set "$partition_num" boot on
-
                 mkfs.vfat -F32 -n "$name" "$device"
                 ;;
             "linux-swap")
