@@ -522,63 +522,99 @@ mount_partitions () {
 
     local disk="$1"
     local partitions=($(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p"))
-    
+    local root_part="" boot_part="" home_part=""
+    local root_label="" boot_label="" home_label=""
+
     for part in "${partitions[@]}"; do
 
         local label=$(lsblk "/dev/$part" -n -o LABEL)
         local fs_type=$(lsblk "/dev/$part" -n -o FSTYPE)
 
-        echo "Préparation de la partition $part en : $fs_type"
-
         # Configurer et formater la partition
         case "$fs_type" in
-            "vfat")
-                # Montage de la partition vfat (par exemple, pour /boot/efi)
-                mount --mkdir "/dev/$part" "${MOUNT_POINT}/boot"
+            "vfat")  
+                boot_part=$part 
+                boot_label="boot"
                 ;;
-            "btrfs")
-                # Création et montage des sous-volumes pour btrfs
-                mount --mkdir "/dev/$part" "${MOUNT_POINT}"
 
-                for subvol in "${BTRFS_SUBVOLUMES[@]}"; do
-                    btrfs subvolume create "${MOUNT_POINT}/${subvol}"
-                done
-
-                umount "${MOUNT_POINT}"
-                mount -o "${BTRFS_MOUNT_OPTIONS},subvol=@" "/dev/$part" "${MOUNT_POINT}"
-
-                # Monter les autres sous-volumes
-                declare -A mount_points=(
-                    ["@home"]="${MOUNT_POINT}/home"
-                    ["@srv"]="${MOUNT_POINT}/srv"
-                    ["@log"]="${MOUNT_POINT}/var/log"
-                    ["@cache"]="${MOUNT_POINT}/var/cache"
-                    ["@tmp"]="${MOUNT_POINT}/tmp"
-                    ["@snapshots"]="${MOUNT_POINT}/snapshots"
-                )
-
-                for subvol in "${!mount_points[@]}"; do
-                    mkdir -p "${mount_points[$subvol]}"
-                    mount -o "${BTRFS_MOUNT_OPTIONS},subvol=$subvol" "/dev/$part" "${mount_points[$subvol]}"
-                done
-                ;;
-            "ext4")
-                # Montage de la partition ext4
+            "btrfs") 
                 if [[ "$label" == "root" ]]; then
-                    mount --mkdir "/dev/$part" "${MOUNT_POINT}"
-                else
-                    # Montage d'une partition ext4
-                    mount --mkdir "/dev/$part" "${MOUNT_POINT}/$label"
+                    root_part=$part
+                    root_label="btrfs"
                 fi
                 ;;
 
-            *)
-                echo "Type de partition inconnu ou non pris en charge : $fs_type"
-                echo "Aucune action n'a été effectuée pour la partition /dev/$part."
+            "ext4")
+                if [[ "$label" == "root" ]]; then
+                    root_part=$part
+                    root_label="ext4"
+                else
+                    home_part=$part
+                    home_label="ext4"
+                fi
                 ;;
+
+            "swap") continue ;;
+
+            *) echo "Partition ignorée: /dev/$part (Label: $label)" ;;
 
         esac
 
     done
+
+    # Monter et configurer la partition root avec BTRFS ou EXT4
+    if [[ -n "$root_part" ]]; then
+
+        if [[ "$root_label" == "btrfs" ]]; then
+
+            echo "Configuration de la partition root (/dev/$root_part)..."
+        
+            # Montage initial pour création des sous-volumes
+            mount --mkdir "/dev/$root_part" "${MOUNT_POINT}"
+            
+            # Créer les sous-volumes BTRFS
+            for subvol in "${BTRFS_SUBVOLUMES[@]}"; do
+                btrfs subvolume create "${MOUNT_POINT}/${subvol}"
+            done
+            
+            # Démonter pour remonter avec les sous-volumes
+            umount "${MOUNT_POINT}"
+            
+            # Monter le sous-volume principal
+            mount -o "${BTRFS_MOUNT_OPTIONS},subvol=@" "/dev/$root_part" "${MOUNT_POINT}"
+            
+            # Créer et monter les points de montage pour chaque sous-volume
+            declare -A mount_points=(
+                ["@root"]="/root"
+                ["@home"]="/home"
+                ["@srv"]="/srv"
+                ["@log"]="/var/log"
+                ["@cache"]="/var/cache"
+                ["@tmp"]="/tmp"
+                ["@snapshots"]="/snapshots"
+            )
+            
+            for subvol in "${!mount_points[@]}"; do
+                local mount_point="${MOUNT_POINT}${mount_points[$subvol]}"
+                mkdir -p "$mount_point"
+                mount -o "${BTRFS_MOUNT_OPTIONS},subvol=${subvol}" "/dev/$root_part" "$mount_point"
+            done
+
+        fi
+
+        if [[ "$root_label" == "ext4" ]]; then
+            mount --mkdir "/dev/$root_part" "${MOUNT_POINT}"
+        fi
+    fi
+
+    # Monter la partition boot
+    if [[ -n "$boot_part" ]]; then
+        mount --mkdir "/dev/$boot_part" "${MOUNT_POINT}/boot"
+    fi
+
+    # Monter la partition home
+    if [[ -n "$home_part" ]]; then
+        mount --mkdir "/dev/$home_part" "${MOUNT_POINT}/home"
+    fi
 
 }
