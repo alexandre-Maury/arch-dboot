@@ -349,7 +349,6 @@ manage_partitions() {
                 echo
 
                 while true; do
-                    clear
                     echo
                     log_prompt "INFO" && echo "Création d'une nouvelle partition :"
                     echo
@@ -395,12 +394,14 @@ manage_partitions() {
                             echo "Type : fat32"
                             echo "Taille recommandée : 512MiB"
                             echo "Assurez-vous de sélectionner une partition EFI System Partition (ESP) dans l'outil de partitionnement."
+                            part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         swap)
                             echo "Création de la partition Swap..."
                             echo "Type : linux-swap"
                             echo "Taille recommandée : selon vos besoins (ex. 2-4GiB)"
+                            part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         root)
@@ -408,12 +409,14 @@ manage_partitions() {
                             echo "Type recommandé : btrfs ou ext4"
                             echo "Si vous choisissez btrfs, configurez les subvolumes selon config.sh."
                             echo "Taille recommandée : 100% pour btrfs ou selon vos besoins pour ext4 (ex. 20-50GiB)"
+                            part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         home)
                             echo "Création de la partition Home..."
                             echo "Type : ext4"
                             echo "Taille recommandée : selon vos besoins"
+                            part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         *)
@@ -477,6 +480,7 @@ manage_partitions() {
                 [[ "$continue_choice" =~ ^[Yy]$ ]] || break
                 
                 disk_size=$(($disk_size - $(convert_to_mib "$partition_size")))
+                clear
             done
 
             # Vérification des partitions avant la création
