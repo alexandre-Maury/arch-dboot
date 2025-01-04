@@ -233,7 +233,7 @@ manage_partitions() {
         # Boucle pour demander les informations à l'utilisateur
         while true; do
             clear
-            echo "Total Disponible : $end_space MiB"
+            echo "Total Disponible : $total MiB"
             echo "Total Restant :    $disk_size MiB"
             echo
             log_prompt "INFO" && echo "Partitions définies : ${#partition_create[@]}" 
@@ -390,7 +390,7 @@ manage_partitions() {
         esac
 
         start="$end"
-        end_space=$(($end_space - $end))
+        # end_space=$(($end_space - $end))
         ((partition_num++))
 
     done
