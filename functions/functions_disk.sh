@@ -351,12 +351,8 @@ manage_partitions() {
         if [[ "$size" == "100%" ]]; then
             end="$end_space"
         else
-
-            # local start_mib=$(convert_to_mib "$start")
             local size_mib=$(convert_to_mib "$size")
-
             end=$(bc <<< "$start + $size_mib")
-
         fi
 
         if (( $(bc <<< "$end > $end_space") )); then
@@ -365,7 +361,8 @@ manage_partitions() {
         fi
 
         # Créer la partition
-        parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB"
+        log_prompt "INFO" && echo "Création de la partition $name - Start ==> $start et End ==> $end"
+        parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB" > /dev/null 2>&1
 
         # formater la partition : pour plus de choix ajouter ici ex. ext4, xfs ...
         case "$type" in

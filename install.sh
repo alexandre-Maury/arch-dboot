@@ -159,8 +159,8 @@ while true; do
 
             echo
             manage_partitions "$disk" "$dboot"
-            mount_partitions "$disk"
-            show_disk_partitions "Montage des partitions terminée" "$disk" 
+            # mount_partitions "$disk"
+            # show_disk_partitions "Montage des partitions terminée" "$disk" 
             # install_base "$disk"
             # install_base_chroot "$disk"
             # install_base_secu
