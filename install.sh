@@ -91,6 +91,7 @@ while true; do
         echo "Device : /dev/$disk"
         echo "Taille : $(lsblk -n -o SIZE "/dev/$disk" | head -1)"
         echo "Type   : $(lsblk -n -o TRAN "/dev/$disk")"
+        echo "Dual Boot : Impossible"
         echo
 
         dboot=False

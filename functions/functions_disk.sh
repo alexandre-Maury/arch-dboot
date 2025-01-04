@@ -192,7 +192,9 @@ manage_partitions() {
         echo "2. Mode Avancé (configuration manuelle)"
         echo
         echo "   - Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme."
-        echo "   - Le double boot est possible dans ce mode."
+        if [[ "$dboot" == "True" ]]; then
+            echo "   - Le double boot est possible dans ce mode."
+        fi
         echo
         echo "====================================================="
         echo
