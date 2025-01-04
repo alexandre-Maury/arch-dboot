@@ -390,7 +390,7 @@ manage_partitions() {
         esac
 
         start="$end"
-        # end_space=$(($end_space - $end))
+        end_space=$(($end_space - $size_mib))
         ((partition_num++))
 
     done
