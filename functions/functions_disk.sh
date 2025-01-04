@@ -215,7 +215,9 @@ manage_partitions() {
 
         # local start=$(echo "$available_spaces" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
         local start=1
-        local end_space=$(echo "$available_spaces" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+        # local end_space=$(echo "$available_spaces" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+        local end_space=$(echo "$available_spaces" | awk '/End=/ {match($0, /End=([0-9.]+)MiB/, a); print a[1] - 1}')
+
         local total=$(echo "$available_spaces" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
     fi
@@ -390,7 +392,7 @@ manage_partitions() {
         esac
 
         start="$end"
-        end_space=$(($end_space - $size_mib))
+        # end_space=$(($end_space - $size_mib))
         ((partition_num++))
 
     done
