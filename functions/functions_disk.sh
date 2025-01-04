@@ -167,6 +167,7 @@ erase_disk() {
 manage_partitions() {
 
     local disk="$1"
+    local dboot="$2"
     local partition_prefix=$(get_disk_prefix "$disk")
     local partition_num=0
 
@@ -205,55 +206,59 @@ manage_partitions() {
                 ;;
             2)
                 mode_partitions="mode_avance"
+                echo
 
-                log_prompt "INFO" && read -p "Souhaitez-vous procéder à un Dual Boot ? (y/N) : " dual_boot
+                if [[ "$dboot" == "True" ]]; then
 
-                if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
+                    log_prompt "INFO" && read -p "Souhaitez-vous procéder à un Dual Boot ? (y/N) : " dual_boot
+                    echo
+                    if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
 
-                    echo "====================================================="
-                    echo "            Configuration pour un Dual Boot"
-                    echo "====================================================="
-                    echo
-                    echo "⚠️ Vous avez choisi de procéder à une installation en Dual Boot."
-                    echo
-                    echo "Avant de continuer, assurez-vous d'avoir préparé les partitions nécessaires."
-                    echo "Voici les étapes à suivre :"
-                    echo
-                    echo "1️⃣ Création de la partition '/EFI' :"
-                    echo "   - Cette partition doit être créée avant l'installation de Windows."
-                    echo "   - Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk'."
-                    echo "     ➡️ Commande recommandée : cfdisk /dev/sda"
-                    echo "   - Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
-                    echo "   - Taille minimale requise : 512 Mo."
-                    echo "   - Prenez note du chemin de cette partition (par exemple, /dev/sda1)."
-                    echo "   - Cette partition sera utilisée par le bootloader lors de l'installation d'Arch Linux."
-                    echo
-                    echo "2️⃣ Création de la partition '/root' :"
-                    echo "   - Réduisez la taille d'une partition existante pour libérer de l'espace."
-                    echo "   - La nouvelle partition 'root' sera utilisée pour le système Arch Linux."
-                    echo "   - Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions."
-                    echo
-                    echo "⚠️ Remarque importante :"
-                    echo "   Soyez extrêmement prudent lors du redimensionnement des partitions existantes."
-                    echo "   Une mauvaise manipulation peut entraîner une perte de données."
-                    echo "   Assurez-vous d'avoir effectué une sauvegarde complète de vos données avant de continuer."
-                    echo
-                    echo "====================================================="
-                    echo
-                    log_prompt "INFO" && read -p "Avez-vous bien préparé vos partitions ? (y/N) : " choice_boot
+                        echo "====================================================="
+                        echo "            Configuration pour un Dual Boot"
+                        echo "====================================================="
+                        echo
+                        echo "⚠️ Vous avez choisi de procéder à une installation en Dual Boot."
+                        echo
+                        echo "Avant de continuer, assurez-vous d'avoir préparé les partitions nécessaires."
+                        echo "Voici les étapes à suivre :"
+                        echo
+                        echo "1️⃣ Création de la partition '/EFI' :"
+                        echo "   - Cette partition doit être créée avant l'installation de Windows."
+                        echo "   - Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk'."
+                        echo "     ➡️ Commande recommandée : cfdisk /dev/sda"
+                        echo "   - Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
+                        echo "   - Taille minimale requise : 512 Mo."
+                        echo "   - Prenez note du chemin de cette partition (par exemple, /dev/sda1)."
+                        echo "   - Cette partition sera utilisée par le bootloader lors de l'installation d'Arch Linux."
+                        echo
+                        echo "2️⃣ Création de la partition '/root' :"
+                        echo "   - Réduisez la taille d'une partition existante pour libérer de l'espace."
+                        echo "   - La nouvelle partition 'root' sera utilisée pour le système Arch Linux."
+                        echo "   - Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions."
+                        echo
+                        echo "⚠️ Remarque importante :"
+                        echo "   Soyez extrêmement prudent lors du redimensionnement des partitions existantes."
+                        echo "   Une mauvaise manipulation peut entraîner une perte de données."
+                        echo "   Assurez-vous d'avoir effectué une sauvegarde complète de vos données avant de continuer."
+                        echo
+                        echo "====================================================="
+                        echo
+                        log_prompt "INFO" && read -p "Avez-vous bien préparé vos partitions ? (y/N) : " choice_boot
 
-                    if [[ "$choice_boot" =~ ^[Yy]$ ]]; then
-                        dboot=True
+                        if [[ ! "$choice_boot" =~ ^[Yy]$ ]]; then
+                            echo
+                            log_prompt "ERROR" && echo "Installation annulé par l'utilisateur."
+                            echo
+                            exit 1
+                        fi
+
                     else
-                        echo
-                        log_prompt "ERROR" && echo "Installation annulé par l'utilisateur."
-                        echo
-                        exit 1
+                        dboot=False
                     fi
 
-                else
-                    dboot=False
                 fi
+
 
                 break
                 ;;

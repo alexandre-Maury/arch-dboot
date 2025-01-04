@@ -93,11 +93,17 @@ while true; do
         echo "Type   : $(lsblk -n -o TRAN "/dev/$disk")"
         echo
 
+        dboot=False
+
     else
+
         clear
         echo
         echo "$(show_disk_partitions "Partitions présente sur le disque" "$disk")"
         echo
+
+        dboot=True
+
 
     fi
 
@@ -120,7 +126,7 @@ while true; do
         2)
             clear
             echo
-            manage_partitions "$disk"
+            manage_partitions "$disk" "$dboot"
             mount_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk" 
             install_base "$disk"
