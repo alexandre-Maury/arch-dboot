@@ -167,8 +167,6 @@ erase_disk() {
 manage_partitions() {
 
     local disk="$1"
-    local dboot="$2"
-    local partition_create=()
     local partition_prefix=$(get_disk_prefix "$disk")
     local partition_num=0
 
@@ -178,7 +176,95 @@ manage_partitions() {
         exit 1
     fi
 
-    if [[ "$dboot" == "True" ]]; then
+    while true; do
+        clear
+        echo
+        echo "====================================================="
+        echo "   Choisissez le mode de configuration des partitions"
+        echo "====================================================="
+        echo
+        echo "1. Mode Standard (valeurs par défaut)"
+        echo
+        echo "   - Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh."
+        echo "   - Le double boot n'est PAS activé dans ce mode."
+        echo
+        echo "2. Mode Avancé (configuration manuelle)"
+        echo
+        echo "   - Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme."
+        echo "   - Le double boot est possible dans ce mode."
+        echo
+        echo "====================================================="
+        echo
+        read -p "Veuillez saisir votre choix (1 ou 2) : " choice_mode
+
+        case "$choice_mode" in
+            1)
+                mode_partitions="mode_standard"
+                dboot=False
+                break
+                ;;
+            2)
+                mode_partitions="mode_avance"
+
+                log_prompt "INFO" && read -p "Souhaitez-vous procéder à un Dual Boot ? (y/N) : " dual_boot
+
+                if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
+
+                    echo "====================================================="
+                    echo "            Configuration pour un Dual Boot"
+                    echo "====================================================="
+                    echo
+                    echo "⚠️ Vous avez choisi de procéder à une installation en Dual Boot."
+                    echo
+                    echo "Avant de continuer, assurez-vous d'avoir préparé les partitions nécessaires."
+                    echo "Voici les étapes à suivre :"
+                    echo
+                    echo "1️⃣ Création de la partition '/EFI' :"
+                    echo "   - Cette partition doit être créée avant l'installation de Windows."
+                    echo "   - Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk'."
+                    echo "     ➡️ Commande recommandée : cfdisk /dev/sda"
+                    echo "   - Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
+                    echo "   - Taille minimale requise : 512 Mo."
+                    echo "   - Prenez note du chemin de cette partition (par exemple, /dev/sda1)."
+                    echo "   - Cette partition sera utilisée par le bootloader lors de l'installation d'Arch Linux."
+                    echo
+                    echo "2️⃣ Création de la partition '/root' :"
+                    echo "   - Réduisez la taille d'une partition existante pour libérer de l'espace."
+                    echo "   - La nouvelle partition 'root' sera utilisée pour le système Arch Linux."
+                    echo "   - Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions."
+                    echo
+                    echo "⚠️ Remarque importante :"
+                    echo "   Soyez extrêmement prudent lors du redimensionnement des partitions existantes."
+                    echo "   Une mauvaise manipulation peut entraîner une perte de données."
+                    echo "   Assurez-vous d'avoir effectué une sauvegarde complète de vos données avant de continuer."
+                    echo
+                    echo "====================================================="
+                    echo
+                    log_prompt "INFO" && read -p "Avez-vous bien préparé vos partitions ? (y/N) : " choice_boot
+
+                    if [[ "$choice_boot" =~ ^[Yy]$ ]]; then
+                        dboot=True
+                    else
+                        echo
+                        log_prompt "ERROR" && echo "Installation annulé par l'utilisateur."
+                        echo
+                        exit 1
+                    fi
+
+                else
+                    dboot=False
+                fi
+
+                break
+                ;;
+
+            *)
+                echo "Choix invalide, veuillez réessayer."
+                ;;
+        esac
+    done
+
+    if [[ "$dboot" == "True" && "$mode_partitions" == "mode_avance" ]];
 
         partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
 
@@ -224,104 +310,135 @@ manage_partitions() {
         exit 1
     fi
 
-    while true; do
-        # Réinitialiser le tableau des partitions
-        partition_create=()
-        disk_size="$total"
 
-        # Boucle pour demander les informations à l'utilisateur
+
+    if [[ "$mode_partitions" == "mode_avance" ]]; then
+
         while true; do
+
+            # Réinitialiser le tableau des partitions
+            PARTITIONS_CREATE=()
+            disk_size="$total"
+
+            # Boucle pour demander les informations à l'utilisateur
+            while true; do
+                clear
+                echo "Total Disponible : $total MiB"
+                echo "Total Restant :    $disk_size MiB"
+                echo
+                log_prompt "INFO" && echo "Partitions définies : ${#PARTITIONS_CREATE[@]}" 
+                echo
+                echo "----------------------------------------"
+                printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
+                echo "----------------------------------------"
+                echo
+                for partition in "${PARTITIONS_CREATE[@]}"; do
+                    IFS=':' read -r partition_name partition_size partition_type <<< "$partition"
+                    printf "%-15s %-10s %-10s\n" "$partition_name" "$partition_size" "$partition_type"
+                done
+                echo
+                echo "----------------------------------------"
+                echo
+                echo
+                log_prompt "INFO" && echo "Création d'une nouvelle partition :"
+                echo
+                read -p "Nom de la partition à créer (ex. swap, root, home, boot) : " partition_name
+                if [[ -z "$partition_name" ]]; then
+                    log_prompt "ERROR" && echo "Nom invalide. Veuillez réessayer."
+                    continue
+                fi
+
+                clear
+                echo
+                echo "Taille de la partition : $partition_name"
+                echo
+                echo "ex. "
+                echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
+                echo "Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
+                echo
+                read -p "Votre Choix (unité obligatoire ex. MiB|GiB ou % ) : " partition_size
+                partition_size="${partition_size}"
+
+                clear
+                echo
+                echo "Types disponibles pour la partition $partition_name:"
+                echo
+                local index=1
+                for type in "${PARTITIONS_TYPE[@]}"; do
+                    echo "$index. $type"
+                    ((index++))
+                done
+                echo
+                read -p "Choisissez un type de fichier : " partition_type
+                case "$partition_type" in
+                    "1"|"swap")
+                        partition_type="linux-swap"
+                        ;;
+                    "2"|"ext4"|"")
+                        partition_type="ext4"
+                        ;;
+                    "3"|"btrfs")
+                        partition_type="btrfs"
+                        ;;
+                    "4"|"fat32")
+                        partition_type="fat32"
+                        ;;
+                    *)
+                        echo "Type inconnu, veuillez réessayer."
+                        continue
+                        ;;
+                esac
+
+                # Ajouter la partition au tableau
+                PARTITIONS_CREATE+=("${partition_name}:${partition_size}:${partition_type}")
+
+                clear
+                echo
+
+                [[ "$partition_size" != "100%" ]] || break
+
+                # Demander si l'utilisateur souhaite ajouter une autre partition
+                read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
+                [[ "$continue_choice" =~ ^[Yy]$ ]] || break
+                
+                disk_size=$(($disk_size - $(convert_to_mib "$partition_size")))
+            done
+
+            # Vérification des partitions avant la création
             clear
-            echo "Total Disponible : $total MiB"
-            echo "Total Restant :    $disk_size MiB"
-            echo
-            log_prompt "INFO" && echo "Partitions définies : ${#partition_create[@]}" 
+            log_prompt "INFO" && echo "Partitions définies :"
             echo
             echo "----------------------------------------"
             printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
             echo "----------------------------------------"
             echo
-            for partition in "${partition_create[@]}"; do
+            for partition in "${PARTITIONS_CREATE[@]}"; do
                 IFS=':' read -r partition_name partition_size partition_type <<< "$partition"
                 printf "%-15s %-10s %-10s\n" "$partition_name" "$partition_size" "$partition_type"
             done
             echo
             echo "----------------------------------------"
             echo
-            echo
-            log_prompt "INFO" && echo "Création d'une nouvelle partition :"
-            echo
-            read -p "Nom de la partition à créer (ex. swap, root, home, boot) : " partition_name
-            if [[ -z "$partition_name" ]]; then
-                log_prompt "ERROR" && echo "Nom invalide. Veuillez réessayer."
-                continue
+            read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
+            if [[ "$confirm_choice" =~ ^[Yy]$ ]]; then
+                break # Sortir de la boucle principale si les partitions sont correctes
             fi
-
-            clear
             echo
-            echo "Taille de la partition : $partition_name"
-            echo
-            echo "ex. "
-            echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
-            echo "Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
-            echo
-            read -p "Votre Choix (unité obligatoire ex. MiB|GiB ou % ) : " partition_size
-            partition_size="${partition_size}"
-
-            clear
-            echo
-            echo "Types disponibles pour la partition $partition_name:"
-            echo
-            local index=1
-            for type in "${PARTITIONS_TYPE[@]}"; do
-                echo "$index. $type"
-                ((index++))
-            done
-            echo
-            read -p "Choisissez un type de fichier : " partition_type
-            case "$partition_type" in
-                "1"|"swap")
-                    partition_type="linux-swap"
-                    ;;
-                "2"|"ext4"|"")
-                    partition_type="ext4"
-                    ;;
-                "3"|"btrfs")
-                    partition_type="btrfs"
-                    ;;
-                "4"|"fat32")
-                    partition_type="fat32"
-                    ;;
-                *)
-                    echo "Type inconnu, veuillez réessayer."
-                    continue
-                    ;;
-            esac
-
-            # Ajouter la partition au tableau
-            partition_create+=("${partition_name}:${partition_size}:${partition_type}")
-
-            clear
-            echo
-
-            [[ "$partition_size" != "100%" ]] || break
-
-            # Demander si l'utilisateur souhaite ajouter une autre partition
-            read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
-            [[ "$continue_choice" =~ ^[Yy]$ ]] || break
-            
-            disk_size=$(($disk_size - $(convert_to_mib "$partition_size")))
+            # Si l'utilisateur veut recommencer
+            log_prompt "INFO" && echo "Recommençons la sélection des partitions."
         done
+
+    else
 
         # Vérification des partitions avant la création
         clear
-        log_prompt "INFO" && echo "Partitions définies :"
+        log_prompt "INFO" && echo "Partitions définies dans config.sh:"
         echo
         echo "----------------------------------------"
         printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
         echo "----------------------------------------"
         echo
-        for partition in "${partition_create[@]}"; do
+        for partition in "${PARTITIONS_CREATE[@]}"; do
             IFS=':' read -r partition_name partition_size partition_type <<< "$partition"
             printf "%-15s %-10s %-10s\n" "$partition_name" "$partition_size" "$partition_type"
         done
@@ -329,17 +446,19 @@ manage_partitions() {
         echo "----------------------------------------"
         echo
         read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
-        if [[ "$confirm_choice" =~ ^[Yy]$ ]]; then
-            break # Sortir de la boucle principale si les partitions sont correctes
+
+        if [[ ! "$confirm_choice" =~ ^[Yy]$ ]]; then
+            echo "Installation annulée par l'utilisateur."
+            exit 1
         fi
+
         echo
-        # Si l'utilisateur veut recommencer
-        log_prompt "INFO" && echo "Recommençons la sélection des partitions."
-    done
+
+    fi
 
     partition_num=$(($partition_num + 1))
 
-    for part in "${partition_create[@]}"; do
+    for part in "${PARTITIONS_CREATE[@]}"; do
 
         IFS=':' read -r name size type <<< "$part"
 
