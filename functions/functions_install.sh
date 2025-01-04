@@ -11,6 +11,7 @@ install_base() {
     local total_mem=$(cat /proc/meminfo | grep -i 'memtotal' | grep -o '[[:digit:]]*')  # Récupère la mémoire totale
                                       
     clear
+    echo
     log_prompt "INFO" && echo "Installation du système de base"
     reflector --country ${PAYS} --age 12 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
     pacstrap -K ${MOUNT_POINT} base base-devel linux linux-headers linux-firmware dkms

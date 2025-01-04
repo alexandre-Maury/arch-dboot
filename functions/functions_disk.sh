@@ -334,6 +334,7 @@ manage_partitions() {
                 # boucle pour la saisi du nom de la partition
                 while true; do
                     clear
+                    echo
                     echo "Total Disponible : $total MiB"
                     echo "Total Restant :    $disk_size MiB"
                     echo
@@ -486,6 +487,7 @@ manage_partitions() {
 
             # Vérification des partitions avant la création
             clear
+            echo
             log_prompt "INFO" && echo "Partitions définies :"
             echo
             echo "----------------------------------------"
