@@ -362,7 +362,7 @@ manage_partitions() {
 
         # Créer la partition
         log_prompt "INFO" && echo "Création de la partition $name - Start ==> $start et End ==> $end"
-        parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB" > /dev/null 2>&1
+        parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB"
 
         # formater la partition : pour plus de choix ajouter ici ex. ext4, xfs ...
         case "$type" in
