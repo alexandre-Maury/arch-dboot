@@ -204,7 +204,7 @@ manage_partitions() {
 
         # Extraire les limites de la plage sélectionnée
         local start=$(echo "$selected_space" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
-        local end_space=$(echo "$selected_space" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
+        local end_space=$(echo "$selected_space" | awk '/End=/ {match($0, /End=([0-9.]+)MiB/, a); print a[1] - 1}')
         local total=$(echo "$selected_space" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
     else
@@ -213,11 +213,8 @@ manage_partitions() {
 
         local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print " Start="$1", End="$2", Size="$3}')
 
-        # local start=$(echo "$available_spaces" | sed -n 's/.*Start=\([0-9.]*\)MiB.*/\1/p')
         local start=1
-        # local end_space=$(echo "$available_spaces" | sed -n 's/.*End=\([0-9.]*\)MiB.*/\1/p')
         local end_space=$(echo "$available_spaces" | awk '/End=/ {match($0, /End=([0-9.]+)MiB/, a); print a[1] - 1}')
-
         local total=$(echo "$available_spaces" | sed -n 's/.*Size=\([0-9.]*\)MiB.*/\1/p')
 
     fi
@@ -392,7 +389,6 @@ manage_partitions() {
         esac
 
         start="$end"
-        # end_space=$(($end_space - $size_mib))
         ((partition_num++))
 
     done
