@@ -91,7 +91,6 @@ while true; do
         echo "Device : /dev/$disk"
         echo "Taille : $(lsblk -n -o SIZE "/dev/$disk" | head -1)"
         echo "Type   : $(lsblk -n -o TRAN "/dev/$disk")"
-        echo "Dual Boot : Impossible"
         echo
 
         dboot=False
@@ -110,8 +109,8 @@ while true; do
 
     echo "Que souhaitez-vous faire : " && echo
 
-    echo "1) Nettoyage du disque          ==> Suppression des données sur /dev/$disk"
-    echo "2) Installation de Arch Linux   ==> Single boot ou Dual boot"
+    echo "1) Nettoyage du disque        "
+    echo "2) Installation de Arch Linux "
     echo
     echo "0) Annuler"
     echo

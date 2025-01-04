@@ -363,7 +363,7 @@ manage_partitions() {
                 echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
                 echo "Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
                 echo
-                read -p "Votre Choix (unité obligatoire ex. MiB|GiB ou % ) : " partition_size
+                read -p "Votre Choix (unité obligatoire ex. [ MiB | GiB ] ou [ % ] ) : " partition_size
                 partition_size="${partition_size}"
 
                 clear
