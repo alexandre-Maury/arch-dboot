@@ -321,34 +321,36 @@ manage_partitions() {
 
     if [[ "$mode_partitions" == "mode_avance" ]]; then
 
+        # boucle pour reset le tableau si l'utilisateur souhaite recommancer
         while true; do
 
             # Réinitialiser le tableau des partitions
             PARTITIONS_CREATE=()
             disk_size="$total"
 
-            # Boucle pour demander les informations à l'utilisateur
+            # Boucle pour demander l'ensembles des informations à l'utilisateur pour la création des partitions
             while true; do
                 clear
-                echo "Total Disponible : $total MiB"
-                echo "Total Restant :    $disk_size MiB"
-                echo
-                log_prompt "INFO" && echo "Partitions définies : ${#PARTITIONS_CREATE[@]}" 
-                echo
-                echo "----------------------------------------"
-                printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
-                echo "----------------------------------------"
-                echo
-                for partition in "${PARTITIONS_CREATE[@]}"; do
-                    IFS=':' read -r partition_name partition_size partition_type <<< "$partition"
-                    printf "%-15s %-10s %-10s\n" "$partition_name" "$partition_size" "$partition_type"
-                done
-                echo
-                echo "----------------------------------------"
-                echo
-                echo
-
+                # boucle pour la saisi du nom de la partition
                 while true; do
+                    clear
+                    echo "Total Disponible : $total MiB"
+                    echo "Total Restant :    $disk_size MiB"
+                    echo
+                    log_prompt "INFO" && echo "Partitions définies : ${#PARTITIONS_CREATE[@]}" 
+                    echo
+                    echo "----------------------------------------"
+                    printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
+                    echo "----------------------------------------"
+                    echo
+                    for partition in "${PARTITIONS_CREATE[@]}"; do
+                        IFS=':' read -r partition_name partition_size partition_type <<< "$partition"
+                        printf "%-15s %-10s %-10s\n" "$partition_name" "$partition_size" "$partition_type"
+                    done
+                    echo
+                    echo "----------------------------------------"
+                    echo
+                    echo
                     echo
                     log_prompt "INFO" && echo "Création d'une nouvelle partition :"
                     echo
@@ -480,7 +482,6 @@ manage_partitions() {
                 [[ "$continue_choice" =~ ^[Yy]$ ]] || break
                 
                 disk_size=$(($disk_size - $(convert_to_mib "$partition_size")))
-                clear
             done
 
             # Vérification des partitions avant la création
