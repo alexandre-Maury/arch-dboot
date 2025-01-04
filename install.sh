@@ -109,7 +109,7 @@ while true; do
 
     echo "Que souhaitez-vous faire : " && echo
 
-    echo "1) Nettoyage du disque (en cours)         ==> Suppression des données sur /dev/$disk"
+    echo "1) Nettoyage du disque          ==> Suppression des données sur /dev/$disk"
     echo "2) Installation de Arch Linux   ==> Single boot ou Dual boot"
     echo
     echo "0) Annuler"
