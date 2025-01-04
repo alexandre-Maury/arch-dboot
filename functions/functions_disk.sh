@@ -347,13 +347,73 @@ manage_partitions() {
                 echo "----------------------------------------"
                 echo
                 echo
-                log_prompt "INFO" && echo "Création d'une nouvelle partition :"
-                echo
-                read -p "Nom de la partition à créer (ex. swap, root, home, boot) : " partition_name
-                if [[ -z "$partition_name" ]]; then
-                    log_prompt "ERROR" && echo "Nom invalide. Veuillez réessayer."
-                    continue
-                fi
+
+                while true; do
+                    log_prompt "INFO" && echo "Création d'une nouvelle partition :"
+                    echo
+                    echo "Voici les partitions recommandées à créer pour une installation réussie :"
+                    echo
+                    echo "1. Partition Boot (EFI)"
+                    echo "   - Type : fat32"
+                    echo "   - Taille recommandée : 512MiB"
+                    echo "   - Nom recommandé : [boot] (obligatoire pour l'exécution correcte de l'installation)"
+                    echo
+                    echo "2. Partition Swap"
+                    echo "   - Type : linux-swap"
+                    echo "   - Taille recommandée : selon vos besoins (ex. 2 à 4GiB pour la plupart des cas)"
+                    echo "   - Nom recommandé : [swap]"
+                    echo
+                    echo "3. Partition Racine (OBLIGATOIRE)"
+                    echo "   - Deux options disponibles :"
+                    echo "     a. Type : btrfs"
+                    echo "        - Subvolumes (modifiable dans config.sh) : '@' '@root' '@home' '@srv' '@log' '@cache' '@tmp' '@snapshots'"
+                    echo "        - Taille recommandée : 100% (pour occuper tout l'espace restant)"
+                    echo "     b. Type : ext4"
+                    echo "        - Taille recommandée : selon vos besoins (ex. 20-50GiB pour la racine)"
+                    echo "   - Nom recommandé : [root] (obligatoire pour l'exécution correcte de l'installation)"
+                    echo
+                    echo "4. Partition Home (Facultative)"
+                    echo "   - Type : ext4"
+                    echo "   - Taille recommandée : selon vos besoins"
+                    echo "   - Nom recommandé : [home]"
+                    echo
+
+                    read -p "Nom de la partition à créer (ex. boot, swap, root, home) : " partition_name
+                    partition_name=$(echo "$partition_name" | tr '[:upper:]' '[:lower:]') # Conversion en minuscule
+
+                    case $partition_name in
+                        boot)
+                            echo "Création de la partition Boot..."
+                            echo "Type : fat32"
+                            echo "Taille recommandée : 512MiB"
+                            echo "Assurez-vous de sélectionner une partition EFI System Partition (ESP) dans l'outil de partitionnement."
+                            break # Sortir de la boucle si le nom est valide
+                            ;;
+                        swap)
+                            echo "Création de la partition Swap..."
+                            echo "Type : linux-swap"
+                            echo "Taille recommandée : selon vos besoins (ex. 2-4GiB)"
+                            break # Sortir de la boucle si le nom est valide
+                            ;;
+                        root)
+                            echo "Création de la partition Racine..."
+                            echo "Type recommandé : btrfs ou ext4"
+                            echo "Si vous choisissez btrfs, configurez les subvolumes selon config.sh."
+                            echo "Taille recommandée : 100% pour btrfs ou selon vos besoins pour ext4 (ex. 20-50GiB)"
+                            break # Sortir de la boucle si le nom est valide
+                            ;;
+                        home)
+                            echo "Création de la partition Home..."
+                            echo "Type : ext4"
+                            echo "Taille recommandée : selon vos besoins"
+                            break # Sortir de la boucle si le nom est valide
+                            ;;
+                        *)
+                            echo "Nom de partition : $partition_name non valide. Veuillez choisir parmi [boot, swap, root, home]."
+                            ;;
+                    esac
+                done
+
 
                 clear
                 echo
