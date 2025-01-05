@@ -56,10 +56,6 @@ Le double boot est possible dans ce mode.
 
 ## Partitions typiques pour le double boot :
 
-    EFI : 512MiB en fat32, partageable avec Windows pour le chargeur de démarrage.
-    SWAP : 8GiB en linux-swap (ou une taille définie par l'utilisateur).
-    ROOT : Utilise le reste de l'espace disque avec btrfs.
-
 <u> - Création de la partition '/EFI' : </u>
 
 Lors de la sélection des partitions à venir lors de l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). Lors d'un dual boot, celle de Windows sera utilisé.
