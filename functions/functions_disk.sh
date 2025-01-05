@@ -225,7 +225,7 @@ manage_partitions() {
                         echo "Avant de continuer, assurez-vous d'avoir préparé les partitions nécessaires."
                         echo "Voici les étapes à suivre :"
                         echo
-                        echo "1️⃣ Création de la partition '/EFI' :"
+                        echo "Création de la partition '/EFI' :"
                         echo "   - Cette partition doit être créée avant l'installation de Windows."
                         echo "   - Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows."
                         echo "   - Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
@@ -235,7 +235,7 @@ manage_partitions() {
                         echo "   - Lors de la sélection des partitions à venir lors de l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi)."
                         echo "   - Lors d'un dual boot, celle de Windows sera utilisé."
                         echo
-                        echo "2️⃣ Création de la partition '/root' :"
+                        echo "Création de la partition '/root' :"
                         echo "   - Réduisez la taille d'une partition existante pour libérer de l'espace."
                         echo "   - La nouvelle partition 'root' sera utilisée pour le système Arch Linux."
                         echo "   - Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions."
@@ -363,33 +363,32 @@ manage_partitions() {
                     echo "Voici les partitions recommandées à créer pour une installation réussie :"
                     echo
                     if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
-                        echo "1. Partition Boot (EFI)"
                         echo "   - Rappel : Lors d'un dual boot, celle de Windows sera utilisé."
                     else
-                        echo "1. Partition Boot (EFI)"
-                        echo "   - Type : fat32"
-                        echo "   - Taille recommandée : 512MiB"
-                        echo "   - Nom recommandé : [boot] (obligatoire pour l'exécution correcte de l'installation)"
+                        echo "- Partition Boot (EFI)"
+                        echo "   + Type : fat32"
+                        echo "   + Taille recommandée : 512MiB"
+                        echo "   + Nom recommandé : [boot] (obligatoire pour l'exécution correcte de l'installation)"
                     fi
                     echo
-                    echo "2. Partition Swap"
-                    echo "   - Type : linux-swap"
-                    echo "   - Taille recommandée : selon vos besoins (ex. 2 à 4GiB pour la plupart des cas)"
-                    echo "   - Nom recommandé : [swap]"
+                    echo "- Partition Swap"
+                    echo "   +  Type : linux-swap"
+                    echo "   +  Taille recommandée : selon vos besoins (ex. 2 à 4GiB pour la plupart des cas)"
+                    echo "   +  Nom recommandé : [swap]"
                     echo
-                    echo "3. Partition Racine (OBLIGATOIRE)"
-                    echo "   - Deux options disponibles :"
+                    echo "- Partition Racine (OBLIGATOIRE)"
+                    echo "   +  Deux options disponibles :"
                     echo "     a. Type : btrfs"
                     echo "        - Subvolumes (modifiable dans config.sh) : '@' '@root' '@home' '@srv' '@log' '@cache' '@tmp' '@snapshots'"
                     echo "        - Taille recommandée : 100% (pour occuper tout l'espace restant)"
                     echo "     b. Type : ext4"
                     echo "        - Taille recommandée : selon vos besoins (ex. 20-50GiB pour la racine)"
-                    echo "   - Nom recommandé : [root] (obligatoire pour l'exécution correcte de l'installation)"
+                    echo "   + Nom recommandé : [root] (obligatoire pour l'exécution correcte de l'installation)"
                     echo
-                    echo "4. Partition Home (Facultative)"
-                    echo "   - Type : ext4"
-                    echo "   - Taille recommandée : selon vos besoins"
-                    echo "   - Nom recommandé : [home]"
+                    echo "- Partition Home (Facultative)"
+                    echo "   +  Type : ext4"
+                    echo "   +  Taille recommandée : selon vos besoins"
+                    echo "   +  Nom recommandé : [home]"
                     echo
 
                     read -p "Nom de la partition à créer (ex. boot, swap, root, home) : " partition_name
