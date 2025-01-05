@@ -687,10 +687,10 @@ mount_partitions () {
         mount --mkdir "/dev/$boot_part" "${MOUNT_POINT}/boot"
     fi
 
-    # if [[ -n "$efi_part" ]]; then
-    #     mount --mkdir "/dev/$efi_part" "${MOUNT_POINT}/efi"
-    #     cp -r "${MOUNT_POINT}/efi/EFI/Microsoft" ${MOUNT_POINT}/boot/EFI
-    # fi
+    if [[ -n "$efi_part" ]]; then
+        mount --mkdir "/dev/$efi_part" "${MOUNT_POINT}/windows"
+        cp -r "${MOUNT_POINT}/windows/EFI/Microsoft" ${MOUNT_POINT}/boot/EFI
+    fi
 
     # Monter la partition home
     if [[ -n "$home_part" ]]; then
