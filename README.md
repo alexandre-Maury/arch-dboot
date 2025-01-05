@@ -53,6 +53,8 @@ Lors de la sélection des partitions à venir lors de l'éxécution de se script
     Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP).
     Taille minimale requise : 512 MiB.
 
+Exemple 
+
     Illustration a venir
 
 
@@ -62,7 +64,10 @@ Réduisez la taille d'une partition existante pour libérer de l'espace.
 La nouvelle partition 'root' sera utilisée pour le système Arch Linux.
 Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions.
 
+Exemple 
+
     Illustration a venir
+    
 
 ⚠️ Remarque importante :
 
