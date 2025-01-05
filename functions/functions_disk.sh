@@ -220,19 +220,20 @@ manage_partitions() {
                         echo "            Configuration pour un Dual Boot"
                         echo "====================================================="
                         echo
-                        echo "⚠️ Vous avez choisi de procéder à une installation en Dual Boot."
+                        echo "Vous avez choisi de procéder à une installation en Dual Boot."
                         echo
                         echo "Avant de continuer, assurez-vous d'avoir préparé les partitions nécessaires."
                         echo "Voici les étapes à suivre :"
                         echo
                         echo "1️⃣ Création de la partition '/EFI' :"
                         echo "   - Cette partition doit être créée avant l'installation de Windows."
-                        echo "   - Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk'."
-                        echo "     ➡️ Commande recommandée : cfdisk /dev/sda"
+                        echo "   - Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows."
                         echo "   - Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
-                        echo "   - Taille minimale requise : 512 Mo."
-                        echo "   - Prenez note du chemin de cette partition (par exemple, /dev/sda1)."
-                        echo "   - Cette partition sera utilisée par le bootloader lors de l'installation d'Arch Linux."
+                        echo "   - Taille minimale requise : 512 MiB."
+                        echo
+                        echo "⚠️ Remarque importante : "
+                        echo "   - Lors de la sélection des partitions à venir lors de l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi)."
+                        echo "   - Lors d'un dual boot, celle de Windows sera utilisé."
                         echo
                         echo "2️⃣ Création de la partition '/root' :"
                         echo "   - Réduisez la taille d'une partition existante pour libérer de l'espace."
@@ -258,9 +259,7 @@ manage_partitions() {
                     else
                         dboot=False
                     fi
-
                 fi
-
 
                 break
                 ;;
@@ -363,10 +362,15 @@ manage_partitions() {
                     echo
                     echo "Voici les partitions recommandées à créer pour une installation réussie :"
                     echo
-                    echo "1. Partition Boot (EFI)"
-                    echo "   - Type : fat32"
-                    echo "   - Taille recommandée : 512MiB"
-                    echo "   - Nom recommandé : [boot] (obligatoire pour l'exécution correcte de l'installation)"
+                    if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
+                        echo "1. Partition Boot (EFI)"
+                        echo "   - Rappel : Lors d'un dual boot, celle de Windows sera utilisé."
+                    else
+                        echo "1. Partition Boot (EFI)"
+                        echo "   - Type : fat32"
+                        echo "   - Taille recommandée : 512MiB"
+                        echo "   - Nom recommandé : [boot] (obligatoire pour l'exécution correcte de l'installation)"
+                    fi
                     echo
                     echo "2. Partition Swap"
                     echo "   - Type : linux-swap"
@@ -606,12 +610,7 @@ mount_partitions () {
         # Configurer et formater la partition
         case "$fs_type" in
             "vfat")  
-                if [[ "$label" == "boot" ]]; then
-                    local boot_part=$part 
-                else
-                    local efi_part=$part
-                fi
-
+                local boot_part=$part 
                 ;;
 
             "btrfs") 
@@ -685,11 +684,6 @@ mount_partitions () {
     # Monter la partition boot
     if [[ -n "$boot_part" ]]; then
         mount --mkdir "/dev/$boot_part" "${MOUNT_POINT}/boot"
-    fi
-
-    if [[ -n "$efi_part" ]]; then
-        mount --mkdir "/dev/$efi_part" "${MOUNT_POINT}/windows"
-        cp -r "${MOUNT_POINT}/windows/EFI/Microsoft" ${MOUNT_POINT}/boot/EFI
     fi
 
     # Monter la partition home
