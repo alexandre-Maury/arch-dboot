@@ -363,7 +363,7 @@ manage_partitions() {
                     echo "Voici les partitions recommandées à créer pour une installation réussie :"
                     echo
                     if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
-                        echo "   - Rappel : Lors d'un dual boot, celle de Windows sera utilisé."
+                        echo "- Rappel : Lors d'un dual boot, celle de Windows sera utilisé."
                     else
                         echo "- Partition Boot (EFI)"
                         echo "   + Type : fat32"
