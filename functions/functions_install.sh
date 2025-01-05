@@ -180,12 +180,6 @@ install_base_chroot() {
     sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
     sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
-    arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
-        echo "$line"
-    done
-
-    echo "mkinitcpio terminé avec succès."
-
     arch-chroot ${MOUNT_POINT} pacman -S btrfs-progs efibootmgr os-prober --noconfirm 
     root_uuid=$(blkid -s UUID -o value /dev/${root_part})
     root_options="root=UUID=${root_uuid} rootflags=subvol=@ rw"
@@ -212,6 +206,12 @@ install_base_chroot() {
         echo "console-mode max"
         echo "editor no"
     } > ${MOUNT_POINT}/boot/loader/loader.conf
+
+    arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
+        echo "$line"
+    done
+
+    echo "mkinitcpio terminé avec succès."
 
 }
 
