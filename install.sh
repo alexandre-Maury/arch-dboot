@@ -134,7 +134,6 @@ while true; do
             install_base_secu
             activate_service
             
-
             log_prompt "INFO" && echo "Installation terminée ==> redémarrer votre systeme"
             break
             ;;
