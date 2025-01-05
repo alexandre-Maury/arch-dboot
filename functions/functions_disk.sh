@@ -2,7 +2,10 @@
 
 # script functions_disk.sh
 
-# Convertit les tailles en MiB
+
+##############################################################################
+## convert_to_mib : Convertit les tailles en MiB                                                          
+##############################################################################
 convert_to_mib() {
     local size="$1"
     case "$size" in
@@ -21,12 +24,16 @@ convert_to_mib() {
     esac
 }
 
-# Détermine le type de disque
+##############################################################################
+## get_disk_prefix : Détermine le type de disque                                                         
+##############################################################################
 get_disk_prefix() {
     [[ "$1" == nvme* ]] && echo "p" || echo ""
 }
 
-# Fonction pour afficher les informations des partitions
+##############################################################################
+## show_disk_partitions : Fonction pour afficher les informations des partitions                                                        
+##############################################################################
 show_disk_partitions() {
     
     local status="$1"
@@ -88,8 +95,9 @@ show_disk_partitions() {
 
 }
 
-
-# Fonction pour effacer tout le disque
+##############################################################################
+## erase_disk : Fonction pour effacer tout le disque                                                        
+##############################################################################
 erase_disk() {
     local disk="$1"
     local disk_size
@@ -120,6 +128,9 @@ erase_disk() {
             log_prompt "WARNING" && echo "Opération annulée" && echo
             return 1
         fi
+
+    else
+        log_prompt "WARNING" && echo "Aucune partitions primaire montées :" && echo
     fi
     
     # Gérer les partitions swap séparément
@@ -141,6 +152,10 @@ erase_disk() {
             log_prompt "WARNING" && echo "Opération annulée" && echo
             return 1
         fi
+
+    else
+        log_prompt "WARNING" && echo "Aucune partitions swap montées :" && echo
+
     fi
     
     echo "ATTENTION: Vous êtes sur le point d'effacer TOUT le disque /dev/$disk"
@@ -163,7 +178,9 @@ erase_disk() {
     fi
 }
 
-
+##############################################################################
+## manage_partitions : Création des partitions mode standard et avanced + gestion dual boot                                                       
+##############################################################################
 manage_partitions() {
 
     local disk="$1"
@@ -601,6 +618,9 @@ manage_partitions() {
     done
 }
 
+##############################################################################
+## mount_partitions : Montage des partitions                                                       
+##############################################################################
 mount_partitions () {
 
     local disk="$1"

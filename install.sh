@@ -103,8 +103,6 @@ while true; do
         echo
 
         dboot=True
-
-
     fi
 
     echo "Que souhaitez-vous faire : " && echo
