@@ -271,8 +271,11 @@ install_order_uefi() {
     # Détection automatique des entrées UEFI
     echo "Recherche des entrées UEFI..."
 
-    # Identifiant de l'entrée Windows
-    WINDOWS_ID=$(efibootmgr | grep -i "Windows Boot Manager" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+    # Récupère toutes les entrées UEFI avec leurs identifiants
+    ALL_ENTRIES=$(sudo efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
+
+    # Identifiant de l'entrée Windows Boot Manager
+    WINDOWS_ID=$(echo "$ALL_ENTRIES" | grep -i "Windows Boot Manager" | awk '{print $1}' | sed 's/Boot//;s/\*//')
 
     # Vérification si l'entrée Windows est trouvée
     if [[ -z "$WINDOWS_ID" ]]; then
@@ -283,22 +286,22 @@ install_order_uefi() {
     echo "Identifiant de l'entrée Windows : $WINDOWS_ID"
 
     # Liste des autres entrées (hors Windows)
-    OTHER_IDS=$(efibootmgr | grep -v -i "Windows Boot Manager" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+    OTHER_IDS=$(echo "$ALL_ENTRIES" | grep -v -i "Windows Boot Manager" | awk '{print $1}' | sed 's/Boot//;s/\*//')
 
     # Construction de l'ordre de démarrage
     NEW_BOOT_ORDER=$(echo "$OTHER_IDS" | tr '\n' ',' | sed 's/,$//'),$WINDOWS_ID
 
-    # Configuration de l'ordre de démarrage
+    # Affichage pour vérification
     echo "Nouvel ordre de démarrage : $NEW_BOOT_ORDER"
 
-    read -p "vous confirmer le nouvelle ordre de démarrage : " choice 
+    read -p "confirmer : " choice
 
-    efibootmgr -o $NEW_BOOT_ORDER
+    # Application de l'ordre de démarrage
+    sudo efibootmgr -o $NEW_BOOT_ORDER
 
     # Vérification finale
     echo "Ordre de démarrage mis à jour :"
-    
-    efibootmgr
+    sudo efibootmgr
 
 }
 
