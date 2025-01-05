@@ -265,6 +265,42 @@ install_base_chroot() {
 
 }
 
+install_order_uefi() {
+
+
+    # Détection automatique des entrées UEFI
+    echo "Recherche des entrées UEFI..."
+
+    # Identifiant de l'entrée Windows
+    WINDOWS_ID=$(sudo efibootmgr | grep -i "Windows Boot Manager" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+
+    # Vérification si l'entrée Windows est trouvée
+    if [[ -z "$WINDOWS_ID" ]]; then
+        echo "Erreur : Impossible de trouver l'entrée Windows Boot Manager."
+        exit 1
+    fi
+
+    echo "Identifiant de l'entrée Windows : $WINDOWS_ID"
+
+    # Liste des autres entrées (hors Windows)
+    OTHER_IDS=$(sudo efibootmgr | grep -v -i "Windows Boot Manager" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+
+    # Construction de l'ordre de démarrage
+    NEW_BOOT_ORDER=$(echo "$OTHER_IDS" | tr '\n' ',' | sed 's/,$//'),$WINDOWS_ID
+
+    # Configuration de l'ordre de démarrage
+    echo "Nouvel ordre de démarrage : $NEW_BOOT_ORDER"
+
+    read -p "vous confirmer le nouvelle ordre de démarrage : " choice 
+
+    sudo efibootmgr -o $NEW_BOOT_ORDER
+
+    # Vérification finale
+    echo "Ordre de démarrage mis à jour :"
+    sudo efibootmgr
+
+}
+
 install_base_secu() {
 
     local passwdqc_conf="/etc/security/passwdqc.conf"
