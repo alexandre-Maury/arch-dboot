@@ -180,32 +180,82 @@ install_base_chroot() {
     sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
     sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
-    arch-chroot ${MOUNT_POINT} pacman -S btrfs-progs efibootmgr os-prober --noconfirm 
-    root_uuid=$(blkid -s UUID -o value /dev/${root_part})
-    root_options="root=UUID=${root_uuid} rootflags=subvol=@ rw"
+    if [[ "$BOOTLOADER" == "grub" ]]; then
 
-    arch-chroot ${MOUNT_POINT} bootctl --path=/boot install
-    # arch-chroot ${MOUNT_POINT} bootctl --esp-path=/boot --boot-path=/boot install
+        log_prompt "INFO" && echo "arch-chroot - Installation de GRUB" 
 
-    {
-        echo "title   Arch Linux"
-        echo "linux   /vmlinuz-linux"
-        echo "initrd  /${proc_ucode}"
-        echo "initrd  /initramfs-linux.img"
+        arch-chroot ${MOUNT_POINT} pacman -S grub efibootmgr os-prober dosfstools mtools --noconfirm
+
+        case "$root_fs" in
+            "btrfs")
+                arch-chroot ${MOUNT_POINT} pacman -S btrfs-progs --noconfirm 
+                ;;
+        esac
+
+        arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+
+        log_prompt "INFO" && echo "arch-chroot - configuration de grub"
+
+        arch-chroot ${MOUNT_POINT} grub-mkconfig -o /boot/grub/grub.cfg
 
         if [[ -n "${kernel_option}" ]]; then
-            echo "options ${root_options} $kernel_option"
-        else
-            echo "options ${root_options}"
+            sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=\"/&$kernel_option /" /etc/default/grub
         fi
-    } > ${MOUNT_POINT}/boot/loader/entries/arch.conf
 
-    {
-        echo "default arch.conf"
-        echo "timeout 10"
-        echo "console-mode max"
-        echo "editor no"
-    } > ${MOUNT_POINT}/boot/loader/loader.conf
+        if grep -q "^#GRUB_DISABLE_OS_PROBER=false" "/etc/default/grub"; then
+            sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
+            echo "La ligne 'GRUB_DISABLE_OS_PROBER=false' a été décommentée."
+        else
+            echo "La ligne 'GRUB_DISABLE_OS_PROBER=false' est déjà active ou absente."
+        fi
+            
+        if [[ -n "${proc_ucode}" ]]; then
+            echo "initrd /boot/$proc_ucode" >> ${MOUNT_POINT}/boot/grub/grub.cfg
+        fi
+
+        arch-chroot ${MOUNT_POINT} grub-mkconfig -o /boot/grub/grub.cfg
+
+    fi
+
+    if [[ "$BOOTLOADER" == "systemd-boot" ]]; then
+
+        log_prompt "INFO" && echo "arch-chroot - Installation de systemd-boot" 
+
+        arch-chroot ${MOUNT_POINT} pacman -S efibootmgr os-prober dosfstools mtools --noconfirm 
+
+        case "$root_fs" in
+            "btrfs")
+                arch-chroot ${MOUNT_POINT} pacman -S btrfs-progs --noconfirm 
+                ;;
+        esac
+
+        root_uuid=$(blkid -s UUID -o value /dev/${root_part})
+        root_options="root=UUID=${root_uuid} rootflags=subvol=@ rw"
+
+        arch-chroot ${MOUNT_POINT} bootctl --path=/boot install
+        # arch-chroot ${MOUNT_POINT} bootctl --esp-path=/boot --boot-path=/boot install
+
+        {
+            echo "title   Arch Linux"
+            echo "linux   /vmlinuz-linux"
+            echo "initrd  /${proc_ucode}"
+            echo "initrd  /initramfs-linux.img"
+
+            if [[ -n "${kernel_option}" ]]; then
+                echo "options ${root_options} $kernel_option"
+            else
+                echo "options ${root_options}"
+            fi
+        } > ${MOUNT_POINT}/boot/loader/entries/arch.conf
+
+        {
+            echo "default arch.conf"
+            echo "timeout 10"
+            echo "console-mode max"
+            echo "editor no"
+        } > ${MOUNT_POINT}/boot/loader/loader.conf
+
+    fi
 
     arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
         echo "$line"

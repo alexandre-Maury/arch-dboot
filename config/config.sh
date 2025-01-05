@@ -39,7 +39,7 @@ PARTITIONS_TYPE=(
 )
 
 
-BOOTLOADER="systemd-boot"  # Utilisation de systemd-boot pour UEFI
+BOOTLOADER="systemd-boot"  # systemd-boot ou grub
 
 # Liste des sous-volumes BTRFS à créer
 BTRFS_SUBVOLUMES=("@" "@root" "@home" "@srv" "@log" "@cache" "@tmp" "@snapshots")
