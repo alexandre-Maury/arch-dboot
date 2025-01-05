@@ -310,11 +310,13 @@ install_base_secu() {
     local min_phrase="4"     # Longueur minimale pour une phrase de passe, qui est généralement une suite de plusieurs mots ou une longue chaîne de caractères (ex. : "monmotdepassecompliqué").
     local ssh_config_file="/etc/ssh/sshd_config"
 
+    echo
     log_prompt "INFO" && echo "Configuration de passwdqc.conf" && echo ""
     if [ -f "${MOUNT_POINT}$passwdqc_conf" ]; then
         cp "${MOUNT_POINT}$passwdqc_conf" "${MOUNT_POINT}$passwdqc_conf.bak"
     fi
 
+    echo
     log_prompt "INFO" && echo "Création ou modification du fichier passwdqc.conf dans ${MOUNT_POINT}${passwdqc_conf}" && echo 
 
     {
@@ -333,12 +335,14 @@ install_base_secu() {
 
     ## arch-chroot Création d'un mot de passe root                                             
     while true; do
+        echo
         log_prompt "INFO" && read -p "Souhaitez-vous changer le mot de passe root (Y/n) : " pass_root 
             
         # Vérifie la validité de l'entrée
         if [[ "$pass_root" =~ ^[yYnN]$ ]]; then
             break
         else
+            echo
             log_prompt "WARNING" && echo "Veuillez répondre par Y (oui) ou N (non)." 
         fi
     done
@@ -348,16 +352,20 @@ install_base_secu() {
         # Demande de changer le mot de passe root
         while true; do
             clear
+            echo
             read -p "Veuillez entrer le nouveau mot de passe pour root : " -s new_pass 
             echo
             read -p "Confirmez le mot de passe pour root : " -s confirm_pass 
 
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then
+                clear
+                echo
                 log_prompt "INFO" && echo "arch-chroot - Configuration du compte root"
                 echo -e "$new_pass\n$new_pass" | arch-chroot ${MOUNT_POINT} passwd "root"
                 break
             else
+                echo
                 log_prompt "WARNING" && echo "Les mots de passe ne correspondent pas. Veuillez réessayer." 
             fi
         done
@@ -370,12 +378,14 @@ install_base_secu() {
     # Demande tant que la réponse n'est pas y/Y ou n/N
     while true; do
         clear
+        echo
         log_prompt "INFO" && read -p "Souhaitez-vous créer un utilisateur (Y/n) : " add_user 
             
         # Vérifie la validité de l'entrée
         if [[ "$add_user" =~ ^[yYnN]$ ]]; then
             break
         else
+            echo
             log_prompt "WARNING" && echo "Veuillez répondre par Y (oui) ou N (non)."
         fi
     done
@@ -383,12 +393,14 @@ install_base_secu() {
     # Si l'utilisateur répond Y ou y
     if [[ "$add_user" =~ ^[yY]$ ]]; then
         clear
+        echo
         log_prompt "INFO" && read -p "Saisir le nom d'utilisateur souhaité : " sudo_user
         arch-chroot ${MOUNT_POINT} useradd -m -G wheel,audio,video,optical,storage,power,input "$sudo_user"
 
         # Demande de changer le mot de passe $USER
         while true; do
             clear
+            echo
             read -p "Veuillez entrer le nouveau mot de passe pour $sudo_user : " -s new_pass  
             echo
             read -p "Confirmez le mot de passe : " -s confirm_pass  
@@ -396,16 +408,20 @@ install_base_secu() {
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then
                 clear
+                echo
                 log_prompt "INFO" && echo "arch-chroot - Configuration du compte $sudo_user"
                 echo -e "$new_pass\n$new_pass" | arch-chroot ${MOUNT_POINT} passwd $sudo_user
                 break
             else
+                echo
                 log_prompt "WARNING" && echo "Les mots de passe ne correspondent pas. Veuillez réessayer."
             fi
         done
     fi
 
+    clear
     log_prompt "INFO" && echo "arch-chroot - Configuration du SSH"
+    echo
     sed -i "s/#Port 22/Port $SSH_PORT/" "${MOUNT_POINT}$ssh_config_file"
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' "${MOUNT_POINT}$ssh_config_file"
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' "${MOUNT_POINT}$ssh_config_file"
@@ -416,7 +432,9 @@ install_base_secu() {
 
 activate_service() {
     clear
+    echo
     log_prompt "INFO" && echo "arch-chroot - Activation des services"
+    echo
     arch-chroot ${MOUNT_POINT} systemctl enable sshd
     arch-chroot ${MOUNT_POINT} systemctl enable systemd-homed
     arch-chroot ${MOUNT_POINT} systemctl enable systemd-networkd 
