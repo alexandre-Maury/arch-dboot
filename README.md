@@ -100,8 +100,8 @@ Inclut des options prédéfinies pour faciliter le démarrage de Windows depuis 
 
 Clonez le dépôt contenant le script :
 
-    git clone https://github.com/alexandre-Maury/arch-efi.git
-    cd arch-efi
+    git clone https://github.com/alexandre-Maury/arch-dboot.git
+    cd arch-dboot
 
 Modifiez le fichier config.sh selon vos besoins :
 
