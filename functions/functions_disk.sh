@@ -608,7 +608,6 @@ mount_partitions () {
             "vfat")  
                 if [[ "$label" == "boot" ]]; then
                     local boot_part=$part 
-                    local boot_label="boot"
                 else
                     local efi_part=$part
                 fi
@@ -685,16 +684,13 @@ mount_partitions () {
 
     # Monter la partition boot
     if [[ -n "$boot_part" ]]; then
-
-        if [[ "$boot_label" == "boot" ]]; then
-            mount --mkdir "/dev/$boot_part" "${MOUNT_POINT}/boot"
-        fi
-
-        # if [[ -n "$efi_part" ]]; then
-        #     mount --mkdir "/dev/$efi_part" "${MOUNT_POINT}/efi"
-        #     cp -r "${MOUNT_POINT}/efi/EFI/Microsoft" /boot/EFI
-        # fi
+        mount --mkdir "/dev/$boot_part" "${MOUNT_POINT}/boot"
     fi
+
+    # if [[ -n "$efi_part" ]]; then
+    #     mount --mkdir "/dev/$efi_part" "${MOUNT_POINT}/efi"
+    #     cp -r "${MOUNT_POINT}/efi/EFI/Microsoft" ${MOUNT_POINT}/boot/EFI
+    # fi
 
     # Monter la partition home
     if [[ -n "$home_part" ]]; then
