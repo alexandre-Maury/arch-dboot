@@ -99,6 +99,7 @@ show_disk_partitions() {
 ## erase_disk : Fonction pour effacer tout le disque                                                        
 ##############################################################################
 erase_disk() {
+    
     local disk="$1"
     local disk_size
     local mounted_parts
