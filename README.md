@@ -118,8 +118,9 @@ Support btrfs : Compression, snapshots et sous-volumes pour un système flexible
 Personnalisable : Les paramètres sont ajustables via un fichier de configuration simple.
 Chargeur de démarrage intégré : Systemd-boot simplifie la gestion des systèmes UEFI modernes.
 
-⚠️ Améliorations en cours : Le script évolue pour intégrer des fonctionnalités supplémentaires et renforcer sa stabilité.
-Auteurs et contribution
+⚠️ Améliorations en cours : 
+
+    Le script évolue pour intégrer des fonctionnalités supplémentaires et renforcer sa stabilité.
 
 
 ## Auteur : 
