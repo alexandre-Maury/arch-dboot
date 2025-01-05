@@ -9,6 +9,23 @@ Le script est optimisé pour un système de fichiers btrfs, tout en maintenant l
 ## Processus automatisé
 
 Assure la compatibilité avec UEFI et les environnements dual boot. Préserve les partitions Windows existantes et crée les partitions nécessaires pour Arch Linux à l'aide de deux modes de partitionnement.
+Système de fichiers conseillé pour la partition racine (root):
+
+    btrfs : 
+    
+    Exploite les fonctionnalités modernes telles que la compression, les sous-volumes et les snapshots.
+
+    Taille de la partition conseillé : 100%
+    Liste des sous-volumes par défaut : "@" "@root" "@home" "@srv" "@log" "@cache" "@tmp" "@snapshots"
+    Options de montage BTRFS par défaut : defaults,noatime,compress=zstd,commit=120
+
+Ses Options (liste des sous-volumes et options de montage) sont modifiable dans le fichier config.sh.
+
+    # Liste des sous-volumes BTRFS à créer
+    BTRFS_SUBVOLUMES=("@" "@root" "@home" "@srv" "@log" "@cache" "@tmp" "@snapshots")
+
+    # Options de montage BTRFS par défaut
+    BTRFS_MOUNT_OPTIONS="defaults,noatime,compress=zstd,commit=120"
     
 1- <u> Mode Standard : (valeurs par défaut) </u>
 
@@ -36,7 +53,6 @@ ex.
 Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme.
 Le double boot est possible dans ce mode.
 
-Système de fichiers btrfs : Exploite les fonctionnalités modernes telles que la compression, les sous-volumes et les snapshots.
 
 ## Partitions typiques pour le double boot :
 
