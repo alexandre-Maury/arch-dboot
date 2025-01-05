@@ -68,7 +68,7 @@ Lors de la sélection des partitions à venir lors de l'éxécution de se script
 <u> - Partition 'SWAP' : Selon vos préférences</u>
 
 
-<u> - Partition 'RACINE (root)' : </u>
+<u> - Partition 'RACINE' (root) : </u>
 
 Réduisez la taille d'une partition existante pour libérer de l'espace.
 La nouvelle partition 'root' sera utilisée pour le système Arch Linux.
