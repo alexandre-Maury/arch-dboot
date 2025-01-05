@@ -10,7 +10,7 @@ Le script est optimisé pour un système de fichiers btrfs, tout en maintenant l
 
 Assure la compatibilité avec UEFI et les environnements dual boot. Préserve les partitions Windows existantes et crée les partitions nécessaires pour Arch Linux à l'aide de deux modes de partitionnement.
     
-1- Mode Standard : (valeurs par défaut)
+1- <u> Mode Standard : (valeurs par défaut) </u>
 
 Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh.
 Le double boot n'est PAS activé dans ce mode.
@@ -31,7 +31,7 @@ ex.
         "root:${DEFAULT_FS_SIZE}:${DEFAULT_FS_TYPE}"
     )
 
-2- Mode Avancé : (configuration manuelle)
+2- <u> Mode Avancé : (configuration manuelle) </u>
 
 Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme.
 Le double boot est possible dans ce mode.
@@ -44,7 +44,7 @@ Système de fichiers btrfs : Exploite les fonctionnalités modernes telles que l
     SWAP : 8GiB en linux-swap (ou une taille définie par l'utilisateur).
     ROOT : Utilise le reste de l'espace disque avec btrfs.
 
-Création de la partition '/EFI' :"
+<u> Création de la partition '/EFI' : </u>
 
 Lors de la sélection des partitions à venir lors de l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). Lors d'un dual boot, celle de Windows sera utilisé.
 
@@ -56,7 +56,7 @@ Lors de la sélection des partitions à venir lors de l'éxécution de se script
 Illustration a venir
 
 
-Création de la partition '/root' :
+<u> Création de la partition '/root' : </u>
 
 Réduisez la taille d'une partition existante pour libérer de l'espace.
 La nouvelle partition 'root' sera utilisée pour le système Arch Linux.
