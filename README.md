@@ -59,21 +59,20 @@ Le double boot est possible dans ce mode.
 <u> - Partition 'EFI' : </u>
 
 Lors de la sélection des partitions à venir lors de l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). Lors d'un dual boot, celle de Windows sera utilisé.
+Cette partition doit être créée avant l'installation de Windows.
 
-    Cette partition doit être créée avant l'installation de Windows.
-    Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows.
-    Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP).
-    Taille minimale requise : 512 MiB.
 
 <u> - Partition 'SWAP' : Selon vos préférences</u>
 
 
-<u> - Partition 'RACINE' (root) : </u>
+<u> - Partition 'RACINE' : </u>
 
 Réduisez la taille d'une partition existante pour libérer de l'espace.
 La nouvelle partition 'root' sera utilisée pour le système Arch Linux.
 Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions.
 
+
+    Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows.
 
 
 Exemple 
