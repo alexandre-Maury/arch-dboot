@@ -107,7 +107,7 @@ while true; do
 
     echo "Que souhaitez-vous faire : " && echo
 
-    echo "1) Nettoyage du disque        "
+    echo "1) Nettoyage du disque (shred)       "
     echo "2) Installation de Arch Linux "
     echo
     echo "0) Annuler"
