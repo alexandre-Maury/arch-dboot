@@ -8,8 +8,34 @@ Le script est optimisé pour un système de fichiers btrfs, tout en maintenant l
 
 ## Processus automatisé
 
-Table de partition GPT : Assure la compatibilité avec UEFI et les environnements double boot.
-Partitionnement dynamique : Préserve les partitions Windows existantes et crée les partitions nécessaires pour Arch Linux, configurables via un fichier config.sh.
+Assure la compatibilité avec UEFI et les environnements dual boot. Préserve les partitions Windows existantes et crée les partitions nécessaires pour Arch Linux à l'aide de deux modes de partitionnement.
+    
+1- Mode Standard : (valeurs par défaut)
+
+Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh.
+Le double boot n'est PAS activé dans ce mode.
+
+ex.
+
+    DEFAULT_BOOT_TYPE="fat32"
+    DEFAULT_SWAP_TYPE="linux-swap"
+    DEFAULT_FS_TYPE="btrfs"
+
+    DEFAULT_BOOT_SIZE="512MiB"
+    DEFAULT_SWAP_SIZE="8GiB"
+    DEFAULT_FS_SIZE="100%"
+
+    PARTITIONS_CREATE=(
+        "boot:${DEFAULT_BOOT_SIZE}:${DEFAULT_BOOT_TYPE}"
+        "swap:${DEFAULT_SWAP_SIZE}:${DEFAULT_SWAP_TYPE}"
+        "root:${DEFAULT_FS_SIZE}:${DEFAULT_FS_TYPE}"
+    )
+
+2- Mode Avancé : (configuration manuelle)
+
+Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme.
+Le double boot est possible dans ce mode.
+
 Système de fichiers btrfs : Exploite les fonctionnalités modernes telles que la compression, les sous-volumes et les snapshots.
 
 ## Partitions typiques pour le double boot :
@@ -18,26 +44,36 @@ Système de fichiers btrfs : Exploite les fonctionnalités modernes telles que l
     SWAP : 8GiB en linux-swap (ou une taille définie par l'utilisateur).
     ROOT : Utilise le reste de l'espace disque avec btrfs.
 
-### Exemple de configuration des partitions dans config.sh :
+Création de la partition '/EFI' :"
 
-    PARTITIONS_CREATE=(
-        "efi:${DEFAULT_BOOT_SIZE}:${DEFAULT_BOOT_TYPE}"  
-        "swap:${DEFAULT_SWAP_SIZE}:${DEFAULT_SWAP_TYPE}"
-        "root:${DEFAULT_FS_SIZE}:${DEFAULT_FS_TYPE}"
-    )
+Lors de la sélection des partitions à venir lors de l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). Lors d'un dual boot, celle de Windows sera utilisé.
 
-### Montage des partitions :
+    Cette partition doit être créée avant l'installation de Windows.
+    Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows.
+    Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP).
+    Taille minimale requise : 512 MiB.
 
-    EFI (arch) : Montée dans /mnt/boot.
-    EFI (windows) : Montée dans /mnt/boot/EFI.
-    ROOT : Montée dans /mnt avec des sous-volumes btrfs personnalisés.
+Illustration a venir
 
-### Installation et configuration système :
+
+Création de la partition '/root' :
+
+Réduisez la taille d'une partition existante pour libérer de l'espace.
+La nouvelle partition 'root' sera utilisée pour le système Arch Linux.
+Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions.
+
+⚠️ Remarque importante :
+
+Soyez extrêmement prudent lors du redimensionnement des partitions existantes."
+Une mauvaise manipulation peut entraîner une perte de données."
+Assurez-vous d'avoir effectué une sauvegarde complète de vos données avant de continuer."
+
+## Installation et configuration système :
 
 Installation des paquets essentiels d'Arch Linux (base, linux, linux-firmware, etc.).
 Configuration de locales, fuseau horaire, clavier, réseau et nom d'hôte via config.sh.
 
-### Chargeur de démarrage :
+## Chargeur de démarrage :
 
 Systemd-boot : Configuré pour détecter et gérer les systèmes existants (Windows inclus).
 Inclut des options prédéfinies pour faciliter le démarrage de Windows depuis le menu systemd-boot.
