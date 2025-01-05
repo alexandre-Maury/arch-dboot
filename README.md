@@ -44,7 +44,7 @@ Système de fichiers btrfs : Exploite les fonctionnalités modernes telles que l
     SWAP : 8GiB en linux-swap (ou une taille définie par l'utilisateur).
     ROOT : Utilise le reste de l'espace disque avec btrfs.
 
-<u> Création de la partition '/EFI' : </u>
+<u> - Création de la partition '/EFI' : </u>
 
 Lors de la sélection des partitions à venir lors de l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). Lors d'un dual boot, celle de Windows sera utilisé.
 
@@ -53,14 +53,16 @@ Lors de la sélection des partitions à venir lors de l'éxécution de se script
     Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP).
     Taille minimale requise : 512 MiB.
 
-Illustration a venir
+    Illustration a venir
 
 
-<u> Création de la partition '/root' : </u>
+<u> - Création de la partition '/root' : </u>
 
 Réduisez la taille d'une partition existante pour libérer de l'espace.
 La nouvelle partition 'root' sera utilisée pour le système Arch Linux.
 Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions.
+
+    Illustration a venir
 
 ⚠️ Remarque importante :
 
