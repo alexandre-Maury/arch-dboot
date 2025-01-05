@@ -294,6 +294,8 @@ install_base_secu() {
         echo "retry=3"
     } > ${MOUNT_POINT}${passwdqc_conf}
 
+    clear
+
     ## arch-chroot Création d'un mot de passe root                                             
     while true; do
         log_prompt "INFO" && read -p "Souhaitez-vous changer le mot de passe root (Y/n) : " pass_root 
@@ -313,7 +315,7 @@ install_base_secu() {
             clear
             read -p "Veuillez entrer le nouveau mot de passe pour root : " -s new_pass 
             echo
-            read -p "Confirmez le mot de passe : " -s confirm_pass 
+            read -p "Confirmez le mot de passe pour root : " -s confirm_pass 
 
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then
@@ -332,6 +334,7 @@ install_base_secu() {
 
     # Demande tant que la réponse n'est pas y/Y ou n/N
     while true; do
+        clear
         log_prompt "INFO" && read -p "Souhaitez-vous créer un utilisateur (Y/n) : " add_user 
             
         # Vérifie la validité de l'entrée
@@ -344,6 +347,7 @@ install_base_secu() {
 
     # Si l'utilisateur répond Y ou y
     if [[ "$add_user" =~ ^[yY]$ ]]; then
+        clear
         log_prompt "INFO" && read -p "Saisir le nom d'utilisateur souhaité : " sudo_user
         arch-chroot ${MOUNT_POINT} useradd -m -G wheel,audio,video,optical,storage,power,input "$sudo_user"
 
@@ -356,6 +360,7 @@ install_base_secu() {
 
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then
+                clear
                 log_prompt "INFO" && echo "arch-chroot - Configuration du compte $sudo_user"
                 echo -e "$new_pass\n$new_pass" | arch-chroot ${MOUNT_POINT} passwd $sudo_user
                 break
