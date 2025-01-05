@@ -426,7 +426,12 @@ manage_partitions() {
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         *)
-                            part_error="Nom de partition : $partition_name non valide. Veuillez choisir parmi [boot, swap, root, home]."
+                            if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
+                                part_error="Nom de partition : $partition_name non valide. Veuillez choisir parmi [swap, root, home]."
+                            else
+                                part_error="Nom de partition : $partition_name non valide. Veuillez choisir parmi [boot, swap, root, home]."
+                            fi
+                            
                             ;;
                     esac
                 done
