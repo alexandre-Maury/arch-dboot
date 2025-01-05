@@ -255,6 +255,42 @@ install_base_chroot() {
             echo "editor no"
         } > ${MOUNT_POINT}/boot/loader/loader.conf
 
+        clear
+
+        # Détection automatique des entrées UEFI
+        log_prompt "INFO" && echo "Recherche des entrées UEFI..."
+
+        # Récupère toutes les entrées UEFI avec leurs identifiants
+        ALL_ENTRIES=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
+
+        # Identifiant de l'entrée Windows Boot Manager
+        WINDOWS_ID=$(echo "$ALL_ENTRIES" | grep -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+
+        # Vérification si l'entrée Windows est trouvée
+        if [[ -z "$WINDOWS_ID" ]]; then
+            log_prompt "ERROR" && echo "Erreur : Impossible de trouver l'entrée Windows Boot Manager."
+            exit 1
+        fi
+
+        log_prompt "INFO" && echo "Identifiant de l'entrée Windows : $WINDOWS_ID"
+
+        # Liste des autres entrées (hors Windows)
+        OTHER_IDS=$(echo "$ALL_ENTRIES" | grep -v -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+
+        # Construction de l'ordre de démarrage
+        NEW_BOOT_ORDER=$(echo "$OTHER_IDS" | tr '\n' ',' | sed 's/,$//'),$WINDOWS_ID
+
+        # Affichage pour vérification
+        log_prompt "INFO" && echo "Nouvel ordre de démarrage : $NEW_BOOT_ORDER"
+
+        # Application de l'ordre de démarrage
+        efibootmgr -o $NEW_BOOT_ORDER
+
+        # Vérification finale
+        log_prompt "INFO" && echo "Ordre de démarrage mis à jour :"
+        echo
+        efibootmgr
+
     fi
 
     arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
@@ -262,47 +298,6 @@ install_base_chroot() {
     done
 
     echo "mkinitcpio terminé avec succès."
-
-}
-
-install_order_uefi() {
-
-
-    # Détection automatique des entrées UEFI
-    echo "Recherche des entrées UEFI..."
-
-    # Récupère toutes les entrées UEFI avec leurs identifiants
-    ALL_ENTRIES=$(sudo efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
-
-    # Identifiant de l'entrée Windows Boot Manager
-    WINDOWS_ID=$(echo "$ALL_ENTRIES" | grep -i "Windows Boot Manager" | awk '{print $1}' | sed 's/Boot//;s/\*//')
-
-    # Vérification si l'entrée Windows est trouvée
-    if [[ -z "$WINDOWS_ID" ]]; then
-        echo "Erreur : Impossible de trouver l'entrée Windows Boot Manager."
-        exit 1
-    fi
-
-    echo "Identifiant de l'entrée Windows : $WINDOWS_ID"
-
-    # Liste des autres entrées (hors Windows)
-    OTHER_IDS=$(echo "$ALL_ENTRIES" | grep -v -i "Windows Boot Manager" | awk '{print $1}' | sed 's/Boot//;s/\*//')
-
-    # Construction de l'ordre de démarrage
-    NEW_BOOT_ORDER=$(echo "$OTHER_IDS" | tr '\n' ',' | sed 's/,$//'),$WINDOWS_ID
-
-    # Affichage pour vérification
-    echo "Nouvel ordre de démarrage : $NEW_BOOT_ORDER"
-
-    read -p "confirmer : " choice
-
-    # Application de l'ordre de démarrage
-    sudo efibootmgr -o $NEW_BOOT_ORDER
-
-    # Vérification finale
-    echo "Ordre de démarrage mis à jour :"
-    sudo efibootmgr
-
 }
 
 install_base_secu() {
