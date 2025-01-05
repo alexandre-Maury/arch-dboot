@@ -597,8 +597,6 @@ mount_partitions () {
 
     local disk="$1"
     local partitions=($(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p"))
-    local root_part="" boot_part="" home_part=""
-    local root_label="" boot_label="" home_label=""
 
     for part in "${partitions[@]}"; do
 
@@ -608,28 +606,28 @@ mount_partitions () {
         # Configurer et formater la partition
         case "$fs_type" in
             "vfat")  
-                boot_part=$part 
-                boot_label="boot"
+                if [[ "$label" == "boot" ]]; then
+                    local boot_part=$part 
+                fi
+
                 ;;
 
             "btrfs") 
                 if [[ "$label" == "root" ]]; then
-                    root_part=$part
-                    root_label="btrfs"
+                    local root_part=$part
+                    local root_fstype="btrfs"
                 fi
                 ;;
 
             "ext4")
                 if [[ "$label" == "root" ]]; then
-                    root_part=$part
-                    root_label="ext4"
+                    local root_part=$part
+                    local root_label="ext4"
                 else
-                    home_part=$part
-                    home_label="ext4"
+                    local home_part=$part
+                    local home_fstype="ext4"
                 fi
                 ;;
-
-            "swap") continue ;;
 
             *) echo "Partition ignorée: /dev/$part (Label: $label)" ;;
 
@@ -640,7 +638,7 @@ mount_partitions () {
     # Monter et configurer la partition root avec BTRFS ou EXT4
     if [[ -n "$root_part" ]]; then
 
-        if [[ "$root_label" == "btrfs" ]]; then
+        if [[ "$root_fstype" == "btrfs" ]]; then
 
             echo "Configuration de la partition root (/dev/$root_part)..."
         
@@ -677,7 +675,7 @@ mount_partitions () {
 
         fi
 
-        if [[ "$root_label" == "ext4" ]]; then
+        if [[ "$root_fstype" == "ext4" ]]; then
             mount --mkdir "/dev/$root_part" "${MOUNT_POINT}"
         fi
     fi
