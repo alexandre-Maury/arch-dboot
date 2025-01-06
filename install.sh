@@ -13,17 +13,12 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # Cette approche rend le script portable et lui permet de toujours localiser les fichiers nécessaires,
 # quel que soit le répertoire à partir duquel il est exécuté.
 
+source $SCRIPT_DIR/env/system.sh 
 source $SCRIPT_DIR/config/config.sh
-# Charge le fichier de configuration situé dans le sous-dossier config.
-
 source $SCRIPT_DIR/functions/functions.sh  
-# Charge un fichier contenant des fonctions utilitaires génériques.
-
 source $SCRIPT_DIR/functions/functions_disk.sh  
-# Charge un fichier contenant des fonctions spécifiques à la gestion des disques.
-
 source $SCRIPT_DIR/functions/functions_install.sh  
-# Charge un fichier contenant des fonctions dédiées à l'installation du système.
+
 
 ##############################################################################
 ## Vérifier les privilèges root
@@ -44,28 +39,26 @@ sleep 2
 ##############################################################################
 ## Récupération des disques disponibles                                                      
 ##############################################################################
-list="$(lsblk -d -n | grep -v -e "loop" -e "sr" | awk '{print $1, $4}' | nl -s") ")" 
-
-if [[ -z "${list}" ]]; then
+if [[ -z "${LIST_DISK}" ]]; then
     log_prompt "ERROR" && echo "Aucun disque disponible pour l'installation."
     exit 1  # Arrête le script ou effectue une autre action en cas d'erreur
 else
     clear
     echo
     log_prompt "INFO" && echo "Choisissez un disque pour l'installation (ex : 1) " && echo
-    echo "${list}" && echo
+    echo "${LIST_DISK}" && echo
 fi
 
 # Boucle pour que l'utilisateur puisse choisir un disque ou en entrer un manuellement
 option=""
-while [[ -z "$(echo "${list}" | grep "  ${option})")" ]]; do
+while [[ -z "$(echo "${LIST_DISK}" | grep "  ${option})")" ]]; do
     
     log_prompt "PROMPT" && read -p "Votre Choix : " option 
     
     # Vérification si l'utilisateur a entré un numéro (choix dans la liste)
-    if [[ -n "$(echo "${list}" | grep "  ${option})")" ]]; then
+    if [[ -n "$(echo "${LIST_DISK}" | grep "  ${option})")" ]]; then
         # Si l'utilisateur a choisi un numéro valide, récupérer le nom du disque correspondant
-        disk="$(echo "${list}" | grep "  ${option})" | awk '{print $2}')"
+        disk="$(echo "${LIST_DISK}" | grep "  ${option})" | awk '{print $2}')"
         break
     else
         # Si l'utilisateur a entré quelque chose qui n'est pas dans la liste, considérer que c'est un nom de disque
@@ -128,7 +121,9 @@ while true; do
             manage_partitions "$disk" "$dboot"
             mount_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk" 
-            install_base "$disk"
+            install_base 
+            config_system
+            install_packages
             install_base_chroot "$disk"
             install_base_secu
             activate_service

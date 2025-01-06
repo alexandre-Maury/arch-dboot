@@ -2,19 +2,22 @@
 
 # script functions_install.sh
 
-install_base() {
-
-    local disk="$1"
-    local interface="$(ip link show | awk -F': ' '/^[0-9]+: / && !/lo/ {print $2; exit}')"
-    local mac_address=$(ip link | awk '/ether/ {print $2; exit}')
-    local nc=$(grep -c ^processor /proc/cpuinfo)  # Compte le nombre de cœurs de processeur
-    local total_mem=$(cat /proc/meminfo | grep -i 'memtotal' | grep -o '[[:digit:]]*')  # Récupère la mémoire totale
-                                      
+install_base() {                              
     clear
     echo
     log_prompt "INFO" && echo "Installation du système de base"
     reflector --country ${PAYS} --age 12 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
     pacstrap -K ${MOUNT_POINT} base base-devel linux linux-headers linux-firmware dkms
+}
+
+config_system() {
+
+    local interface="$(ip link show | awk -F': ' '/^[0-9]+: / && !/lo/ {print $2; exit}')"
+    local mac_address=$(ip link | awk '/ether/ {print $2; exit}')
+    local nc=$(grep -c ^processor /proc/cpuinfo)  # Compte le nombre de cœurs de processeur
+    local total_mem=$(cat /proc/meminfo | grep -i 'memtotal' | grep -o '[[:digit:]]*')  # Récupère la mémoire totale
+
+    clear
 
     ## Generating the fstab                                                 
     log_prompt "INFO" && echo "Génération du fstab" 
@@ -89,8 +92,19 @@ install_base() {
         echo "FallbackDNS=8.8.8.8"
     } > "${MOUNT_POINT}/etc/systemd/resolved.conf"
 
-
 }
+
+install_packages() {
+
+    clear
+
+    # Chroot install packages                                                
+    log_prompt "INFO" && echo "Installation des paquages de bases"
+    arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
+    arch-chroot ${MOUNT_POINT} pacman -S man-db man-pages nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
+}
+
+
 
 install_base_chroot() {
     
@@ -104,10 +118,7 @@ install_base_chroot() {
     local modules
     local kernel_option
 
-    ## Chroot install packages                                                
-    log_prompt "INFO" && echo "Installation des paquages de bases"
-    arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
-    arch-chroot ${MOUNT_POINT} pacman -S man-db man-pages nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
+
 
     # Détection du type de processeur
     case "$cpu_vendor" in
@@ -175,10 +186,6 @@ install_base_chroot() {
         log_prompt "WARNING" && echo "arch-chroot - Aucun GPU reconnu, installation des pilottes générique : xf86-video-vesa mesa"
         arch-chroot "${MOUNT_POINT}" pacman -S xf86-video-vesa mesa --noconfirm
     fi
-
-    sed -i 's/^#\?COMPRESSION="xz"/COMPRESSION="xz"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
     if [[ "$BOOTLOADER" == "grub" ]]; then
 
@@ -287,6 +294,10 @@ install_base_chroot() {
         efibootmgr
 
     fi
+
+    sed -i 's/^#\?COMPRESSION="xz"/COMPRESSION="xz"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
     arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
         echo "$line"
