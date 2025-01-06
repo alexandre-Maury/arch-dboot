@@ -202,13 +202,8 @@ install_base_chroot() {
             sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=\"/&$kernel_option /" /etc/default/grub
         fi
 
-        if grep -q "^#GRUB_DISABLE_OS_PROBER=false" "/etc/default/grub"; then
-            sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
-            echo "La ligne 'GRUB_DISABLE_OS_PROBER=false' a été décommentée."
-        else
-            echo "La ligne 'GRUB_DISABLE_OS_PROBER=false' est déjà active ou absente."
-        fi
-            
+        sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
+
         if [[ -n "${proc_ucode}" ]]; then
             echo "initrd /boot/$proc_ucode" >> ${MOUNT_POINT}/boot/grub/grub.cfg
         fi
