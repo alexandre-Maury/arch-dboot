@@ -124,15 +124,21 @@ Chargeur de démarrage intégré : Systemd-boot simplifie la gestion des systèm
 
 ## Trouble shooting
 
-Disparition de l'entrée de démarrage pour Windows du chargeur de démarrage GRUB.
-Malgré l'installation de os-prober et l'activation de la ligne : GRUB_DISABLE_OS_PROBER=false dans /etc/default/grub,
-il peux arrivé que Windows n'apparaisse pas dans les option de démarrage.
+### Disparition de l'entrée de démarrage pour Windows dans le chargeur GRUB
 
-Pas de panique : 
+Même si os-prober est installé et que la ligne suivante est correctement configurée dans /etc/default/grub :
 
-Au prochaine redémarrage du systeme sasir la commande :
+    GRUB_DISABLE_OS_PROBER=false
 
-    grub-mkconfig -o /boot/grub/grub.cfg
+il peut arriver que Windows n'apparaisse pas parmi les options de démarrage.
+
+Pas de panique !
+
+Au prochain redémarrage du système, exécutez la commande suivante pour régénérer le fichier de configuration de GRUB :
+
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+Cela devrait détecter Windows et ajouter son entrée au chargeur de démarrage GRUB.
 
 
 ## Auteur : 
