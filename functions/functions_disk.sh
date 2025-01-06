@@ -101,14 +101,14 @@ show_disk_partitions() {
 erase_disk() {
 
     local disk="$1"
-
+    echo
     log_prompt "INFO" && echo "Disque sélectionné : $disk"
-
+    echo
     echo "ATTENTION: Vous êtes sur le point d'effacer TOUT le disque /dev/$disk"
     echo "Cette opération est IRRÉVERSIBLE !"
     echo "Toutes les données seront DÉFINITIVEMENT PERDUES !"
     echo 
-    log_prompt "PROMPT" && read -p "Êtes-vous vraiment sûr ? (y/n) : " choice_shred && echo
+    log_prompt "PROMPT" && read -p "Êtes-vous vraiment sûr ? (Y/n) : " choice_shred && echo
     
     # Récupérer les partitions montées (non-swap)
     local mounted_parts=$(lsblk "/dev/$disk" -o NAME,MOUNTPOINT -n -l | grep -v "\[SWAP\]" | awk '$2 != "" {print $1}')
