@@ -84,7 +84,6 @@ while true; do
 
     # Vérifie si des partitions existent
     if [ -z "$partitions" ]; then
-
         echo
         echo "Status : Le disque est vierge"
         echo "Device : /dev/$disk"
@@ -95,8 +94,6 @@ while true; do
         dboot=False
 
     else
-
-        clear
         echo
         echo "$(show_disk_partitions "Partitions présente sur le disque" "$disk")"
         echo
