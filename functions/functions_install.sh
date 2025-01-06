@@ -175,13 +175,13 @@ install_bootloader() {
 
         sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
 
-        if [[ -n "${PROC_UCODE}" ]]; then
-            echo "initrd /boot/$PROC_UCODE" >> "${MOUNT_POINT}/boot/grub/grub.cfg"
-        fi
-
         log_prompt "INFO" && echo "arch-chroot - génération de grub.cfg"
 
         arch-chroot ${MOUNT_POINT} grub-mkconfig -o ${MOUNT_POINT}/boot/grub/grub.cfg
+
+        if [[ -n "${PROC_UCODE}" ]]; then
+            echo "initrd /boot/$PROC_UCODE" >> "${MOUNT_POINT}/boot/grub/grub.cfg"
+        fi
 
     fi
 
