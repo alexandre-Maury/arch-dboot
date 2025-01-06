@@ -179,6 +179,8 @@ install_bootloader() {
             echo "initrd /boot/$PROC_UCODE" >> "${MOUNT_POINT}/boot/grub/grub.cfg"
         fi
 
+        log_prompt "INFO" && echo "arch-chroot - génération de grub.cfg"
+
         arch-chroot ${MOUNT_POINT} grub-mkconfig -o ${MOUNT_POINT}/boot/grub/grub.cfg
 
     fi
