@@ -2,8 +2,10 @@
 
 # script functions_install.sh
 
-install_base() {                              
+install_base() {          
+
     clear
+
     echo
     log_prompt "INFO" && echo "Installation du système de base"
     reflector --country ${PAYS} --age 12 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
@@ -12,11 +14,6 @@ install_base() {
 
 config_system() {
 
-    local interface="$(ip link show | awk -F': ' '/^[0-9]+: / && !/lo/ {print $2; exit}')"
-    local mac_address=$(ip link | awk '/ether/ {print $2; exit}')
-    local nc=$(grep -c ^processor /proc/cpuinfo)  # Compte le nombre de cœurs de processeur
-    local total_mem=$(cat /proc/meminfo | grep -i 'memtotal' | grep -o '[[:digit:]]*')  # Récupère la mémoire totale
-
     clear
 
     ## Generating the fstab                                                 
@@ -24,13 +21,13 @@ config_system() {
     genfstab -U -p ${MOUNT_POINT} >> ${MOUNT_POINT}/etc/fstab
 
     ## Configuration du system                                                    
-    log_prompt "INFO" && echo "Changement des makeflags pour " $nc " coeurs."
+    log_prompt "INFO" && echo "Changement des makeflags pour " $CPU_COEUR " coeurs."
 
-    if [[  $total_mem -gt 8000000 ]]; then  # Vérifie si la mémoire totale est supérieure à 8 Go
-        log_prompt "INFO" && echo "Changement des paramètres de compression pour " $nc " coeurs."
+    if [[  $RAM -gt 8000000 ]]; then  # Vérifie si la mémoire totale est supérieure à 8 Go
+        log_prompt "INFO" && echo "Changement des paramètres de compression pour " $CPU_COEUR " coeurs."
 
-        sed -i "s/^#\?MAKEFLAGS=\".*\"/MAKEFLAGS=\"-j$nc\"/" "${MOUNT_POINT}/etc/makepkg.conf" # Modifie les makeflags dans makepkg.conf
-        sed -i "s/^#\?COMPRESSXZ=(.*)/COMPRESSXZ=(xz -c -T $nc -z -)/" "${MOUNT_POINT}/etc/makepkg.conf" # Modifie les paramètres de compression
+        sed -i "s/^#\?MAKEFLAGS=\".*\"/MAKEFLAGS=\"-j$CPU_COEUR\"/" "${MOUNT_POINT}/etc/makepkg.conf" # Modifie les makeflags dans makepkg.conf
+        sed -i "s/^#\?COMPRESSXZ=(.*)/COMPRESSXZ=(xz -c -T $CPU_COEUR -z -)/" "${MOUNT_POINT}/etc/makepkg.conf" # Modifie les paramètres de compression
 
     fi
 
@@ -69,8 +66,8 @@ config_system() {
 
     {
         echo "[Match]"
-        echo "Name=${interface}"
-        echo "MACAddress=${mac_address}"
+        echo "Name=${INTERFACE}"
+        echo "MACAddress=${MAC_ADDRESS}"
         echo
         echo "[Network]" 
         echo "DHCP=yes" 
@@ -97,55 +94,23 @@ config_system() {
 install_packages() {
 
     clear
-
-    # Chroot install packages                                                
+                                               
     log_prompt "INFO" && echo "Installation des paquages de bases"
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
-    arch-chroot ${MOUNT_POINT} pacman -S man-db man-pages nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
-}
+    arch-chroot ${MOUNT_POINT} pacman -S man-db man-pages nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget efibootmgr os-prober dosfstools mtools --noconfirm
 
+    # CPU Microcode
+    if [[ "$PROC_UCODE" == "intel-ucode.img" ]]; then
+        arch-chroot "${MOUNT_POINT}" pacman -S intel-ucode --noconfirm
+    elif [[ "$PROC_UCODE" == "amd-ucode.img" ]]; then
+        arch-chroot "${MOUNT_POINT}" pacman -S amd-ucode --noconfirm
+    else
+        log_prompt "INFO" && echo "Installation du microcode impossible"
+    fi
 
-
-install_base_chroot() {
-    
-    local disk="$1"
-    local gpu_vendor=$(lspci | grep -i "VGA\|3D" | awk '{print tolower($0)}')
-    local root_part=$(lsblk -n -o NAME,LABEL | grep "root" | awk '{print $1}' | sed "s/.*\(${disk}[0-9]*\)/\1/")
-    local root_fs=$(blkid -s TYPE -o value /dev/${root_part})
-    local cpu_vendor=$(grep -m1 "vendor_id" /proc/cpuinfo | awk '{print $3}')
-
-    local proc_ucode
-    local modules
-    local kernel_option
-
-
-
-    # Détection du type de processeur
-    case "$cpu_vendor" in
-        "GenuineIntel")
-            proc_ucode="intel-ucode.img"
-            arch-chroot ${MOUNT_POINT} pacman -S intel-ucode --noconfirm
-            ;;
-        "AuthenticAMD")
-            proc_ucode="amd-ucode.img"
-            arch-chroot ${MOUNT_POINT} pacman -S amd-ucode --noconfirm
-            ;;
-        *)
-            log_prompt "ERROR" && echo "Vendor CPU non reconnu: $cpu_vendor"
-            proc_ucode=""
-            ;;
-    esac
-
-
-    ## Installation des pilotes GPU                                          
-    if [[ "$gpu_vendor" == *"nvidia"* ]]; then
-        log_prompt "INFO" && echo "arch-chroot - Configuration pour GPU NVIDIA"
-        modules="nvidia nvidia_modeset nvidia_uvm nvidia_drm"
-        kernel_option="nvidia_drm.modeset=1"
+    # GPU Driver
+    if [[ "$GPU_DRIVERS" == "nvidia" ]]; then
         arch-chroot "${MOUNT_POINT}" pacman -S nvidia mesa --noconfirm
-        modprobe $modules
-
-        sed -i "s/^#\?MODULES=.*/MODULES=($modules)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
         [ ! -d "${MOUNT_POINT}/etc/pacman.d/hooks" ] && mkdir -p ${MOUNT_POINT}/etc/pacman.d/hooks
 
@@ -163,35 +128,34 @@ install_base_chroot() {
             echo "Exec=/usr/bin/mkinitcpio -P" 
         } > "${MOUNT_POINT}/etc/pacman.d/hooks/nvidia.hook"
 
-
-    elif [[ "$gpu_vendor" == *"amd"* || "$gpu_vendor" == *"radeon"* ]]; then
-        log_prompt "INFO" && echo "arch-chroot - Configuration pour GPU AMD/Radeon"
-        modules="amdgpu"
-        kernel_option="amdgpu.dc=1"
+    elif [[ "$GPU_DRIVERS" == "amd_radeon" ]]; then
         arch-chroot "${MOUNT_POINT}" pacman -S xf86-video-amdgpu xf86-video-ati mesa --noconfirm 
-        modprobe $modules
 
-        sed -i "s/^#\?MODULES=.*/MODULES=($modules)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
-
-    elif [[ "$gpu_vendor" == *"intel"* ]]; then
-        log_prompt "INFO" && echo "arch-chroot - Configuration pour GPU Intel"
-        modules="i915"
-        kernel_option="i915.enable_psr=1"
+    elif [[ "$GPU_DRIVERS" == "intel" ]]; then
         arch-chroot "${MOUNT_POINT}" pacman -S xf86-video-intel mesa --noconfirm 
-        modprobe $modules
-
-        sed -i "s/^#\?MODULES=.*/MODULES=($modules)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
     else
-        log_prompt "WARNING" && echo "arch-chroot - Aucun GPU reconnu, installation des pilottes générique : xf86-video-vesa mesa"
+        log_prompt "WARNING" && echo "GPU non-reconnu, installation des pilottes générique : xf86-video-vesa mesa"
         arch-chroot "${MOUNT_POINT}" pacman -S xf86-video-vesa mesa --noconfirm
+
     fi
+
+}
+
+install_bootloader() {
+
+    clear
+    
+    local disk="$1"
+    local root_part=$(lsblk -n -o NAME,LABEL | grep "root" | awk '{print $1}' | sed "s/.*\(${disk}[0-9]*\)/\1/")
+    local root_fs=$(blkid -s TYPE -o value /dev/${root_part})
+
 
     if [[ "$BOOTLOADER" == "grub" ]]; then
 
         log_prompt "INFO" && echo "arch-chroot - Installation de GRUB" 
 
-        arch-chroot ${MOUNT_POINT} pacman -S grub efibootmgr os-prober dosfstools mtools --noconfirm
+        arch-chroot ${MOUNT_POINT} pacman -S grub --noconfirm
 
         case "$root_fs" in
             "btrfs")
@@ -205,14 +169,14 @@ install_base_chroot() {
 
         arch-chroot ${MOUNT_POINT} grub-mkconfig -o "${MOUNT_POINT}/boot/grub/grub.cfg"
 
-        if [[ -n "${kernel_option}" ]]; then
-            sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=\"/&$kernel_option /" "${MOUNT_POINT}/etc/default/grub"
+        if [[ -n "${GPU_OPTION}" ]]; then
+            sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=\"/&$GPU_OPTION /" "${MOUNT_POINT}/etc/default/grub"
         fi
 
         sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
 
-        if [[ -n "${proc_ucode}" ]]; then
-            echo "initrd /boot/$proc_ucode" >> "${MOUNT_POINT}/boot/grub/grub.cfg"
+        if [[ -n "${PROC_UCODE}" ]]; then
+            echo "initrd /boot/$PROC_UCODE" >> "${MOUNT_POINT}/boot/grub/grub.cfg"
         fi
 
         arch-chroot ${MOUNT_POINT} grub-mkconfig -o "${MOUNT_POINT}/boot/grub/grub.cfg"
@@ -222,8 +186,6 @@ install_base_chroot() {
     if [[ "$BOOTLOADER" == "systemd-boot" ]]; then
 
         log_prompt "INFO" && echo "arch-chroot - Installation de systemd-boot" 
-
-        arch-chroot ${MOUNT_POINT} pacman -S efibootmgr os-prober dosfstools mtools --noconfirm 
 
         case "$root_fs" in
             "btrfs")
@@ -240,11 +202,11 @@ install_base_chroot() {
         {
             echo "title   Arch Linux"
             echo "linux   /vmlinuz-linux"
-            echo "initrd  /${proc_ucode}"
+            echo "initrd  /${PROC_UCODE}"
             echo "initrd  /initramfs-linux.img"
 
-            if [[ -n "${kernel_option}" ]]; then
-                echo "options ${root_options} $kernel_option"
+            if [[ -n "${GPU_OPTION}" ]]; then
+                echo "options ${root_options} $GPU_OPTION"
             else
                 echo "options ${root_options}"
             fi
@@ -263,30 +225,30 @@ install_base_chroot() {
         log_prompt "INFO" && echo "Recherche des entrées UEFI..."
 
         # Récupère toutes les entrées UEFI avec leurs identifiants
-        ALL_ENTRIES=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
+        all_boot=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
 
         # Identifiant de l'entrée Windows Boot Manager
-        WINDOWS_ID=$(echo "$ALL_ENTRIES" | grep -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+        windows_id=$(echo "$all_boot" | grep -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
 
         # Vérification si l'entrée Windows est trouvée
-        if [[ -z "$WINDOWS_ID" ]]; then
+        if [[ -z "$windows_id" ]]; then
             log_prompt "ERROR" && echo "Erreur : Impossible de trouver l'entrée Windows Boot Manager."
             exit 1
         fi
 
-        log_prompt "INFO" && echo "Identifiant de l'entrée Windows : $WINDOWS_ID"
+        log_prompt "INFO" && echo "Identifiant de l'entrée Windows : $windows_id"
 
         # Liste des autres entrées (hors Windows)
-        OTHER_IDS=$(echo "$ALL_ENTRIES" | grep -v -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+        other_ids=$(echo "$all_boot" | grep -v -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
 
         # Construction de l'ordre de démarrage
-        NEW_BOOT_ORDER=$(echo "$OTHER_IDS" | tr '\n' ',' | sed 's/,$//'),$WINDOWS_ID
+        new_boot_order=$(echo "$other_ids" | tr '\n' ',' | sed 's/,$//'),$windows_id
 
         # Affichage pour vérification
-        log_prompt "INFO" && echo "Nouvel ordre de démarrage : $NEW_BOOT_ORDER"
+        log_prompt "INFO" && echo "Nouvel ordre de démarrage : $new_boot_order"
 
         # Application de l'ordre de démarrage
-        efibootmgr -o $NEW_BOOT_ORDER
+        efibootmgr -o $new_boot_order
 
         # Vérification finale
         log_prompt "INFO" && echo "Ordre de démarrage mis à jour :"
@@ -294,19 +256,28 @@ install_base_chroot() {
         efibootmgr
 
     fi
+}
+
+install_mkinitcpio() {
 
     sed -i 's/^#\?COMPRESSION="xz"/COMPRESSION="xz"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
     sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
     sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
     arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
         echo "$line"
     done
 
-    echo "mkinitcpio terminé avec succès."
+    log_prompt "SUCCESS" && echo "mkinitcpio terminé avec succès."
+
 }
 
-install_base_secu() {
+config_passwdqc() {
+
+    clear
 
     local passwdqc_conf="/etc/security/passwdqc.conf"
     local min_simple="4"     # Valeurs : disabled : Longueur minimale pour un mot de passe simple, c'est-à-dire uniquement des lettres minuscules (ex. : "abcdef").
@@ -314,7 +285,6 @@ install_base_secu() {
     local min_3classes="4"   # Longueur minimale pour un mot de passe avec trois classes de caractères, comme minuscules + majuscules + chiffres (ex. : "Abc123").
     local min_4classes="4"   # Longueur minimale pour un mot de passe avec quatre classes de caractères, incluant minuscules + majuscules + chiffres + caractères spéciaux (ex. : "Abc123!").
     local min_phrase="4"     # Longueur minimale pour une phrase de passe, qui est généralement une suite de plusieurs mots ou une longue chaîne de caractères (ex. : "monmotdepassecompliqué").
-    local ssh_config_file="/etc/ssh/sshd_config"
 
     echo
     log_prompt "INFO" && echo "Configuration de passwdqc.conf" && echo ""
@@ -335,14 +305,16 @@ install_base_secu() {
         echo "similar=permit"
         echo "enforce=everyone"
         echo "retry=3"
-    } > ${MOUNT_POINT}${passwdqc_conf}
+    } > "${MOUNT_POINT}${passwdqc_conf}"
 
-    clear
+}
+
+config_root() {
 
     ## arch-chroot Création d'un mot de passe root                                             
     while true; do
         echo
-        log_prompt "PROMPT" && read -p "Souhaitez-vous changer le mot de passe root (Y/n) : " pass_root 
+        log_prompt "PROMPT" && read -p "Souhaitez-vous changer le mot de passe du compte administrateur (Y/n) : " pass_root 
             
         # Vérifie la validité de l'entrée
         if [[ "$pass_root" =~ ^[yYnN]$ ]]; then
@@ -377,7 +349,13 @@ install_base_secu() {
         done
     fi
 
-        ## arch-chroot Création d'un utilisateur + mot de passe                                            
+}
+
+config_user() {
+
+    clear 
+
+    ## arch-chroot Création d'un utilisateur + mot de passe                                            
     arch-chroot ${MOUNT_POINT} sed -i 's/# %wheel/%wheel/g' /etc/sudoers
     arch-chroot ${MOUNT_POINT} sed -i 's/%wheel ALL=(ALL) NOPASSWD: ALL/# %wheel ALL=(ALL) NOPASSWD: ALL/g' /etc/sudoers
 
@@ -424,8 +402,15 @@ install_base_secu() {
             fi
         done
     fi
+}
+
+config_ssh() {
 
     clear
+
+    local ssh_config_file="/etc/ssh/sshd_config"
+
+    echo
     log_prompt "INFO" && echo "arch-chroot - Configuration du SSH"
     echo
     sed -i "s/#Port 22/Port $SSH_PORT/" "${MOUNT_POINT}$ssh_config_file"

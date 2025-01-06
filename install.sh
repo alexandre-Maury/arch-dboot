@@ -5,13 +5,8 @@
 # en regroupant les fichiers de configuration et fonctions nécessaires.
 
 set -e  
-# Active le mode "exit on error". Si une commande retourne une erreur, le script s'arrête immédiatement.
-# Cela garantit que les étapes critiques ne sont pas ignorées.
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-# Détermine le chemin absolu du répertoire contenant ce script.
-# Cette approche rend le script portable et lui permet de toujours localiser les fichiers nécessaires,
-# quel que soit le répertoire à partir duquel il est exécuté.
 
 source $SCRIPT_DIR/env/system.sh 
 source $SCRIPT_DIR/config/config.sh
@@ -31,10 +26,10 @@ fi
 ##############################################################################
 ## Valide la connexion internet                                                          
 ##############################################################################
-echo
-log_prompt "INFO" && echo "Vérification de la connexion Internet"
-$(ping -c 3 archlinux.org &>/dev/null) || (log_prompt "ERROR" && echo "Pas de connexion Internet" && echo)
-sleep 2
+# echo
+# log_prompt "INFO" && echo "Vérification de la connexion Internet"
+# $(ping -c 3 archlinux.org &>/dev/null) || (log_prompt "ERROR" && echo "Pas de connexion Internet" && echo)
+# sleep 2
 
 ##############################################################################
 ## Récupération des disques disponibles                                                      
@@ -124,11 +119,18 @@ while true; do
             install_base 
             config_system
             install_packages
-            install_base_chroot "$disk"
-            install_base_secu
+            install_bootloader "$disk"
+            install_mkinitcpio
+            config_passwdqc
+            config_root
+            config_user
+            config_ssh
             activate_service
-            
+
+            clear
+            echo
             log_prompt "INFO" && echo "Installation terminée ==> redémarrer votre systeme"
+            break
             ;;
 
         3)
