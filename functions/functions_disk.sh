@@ -102,84 +102,103 @@ erase_disk() {
 
     local disk="$1"
 
-    echo "Disque sélectionné : $disk"
+    log_prompt "INFO" && echo "Disque sélectionné : $disk"
+
+    echo "ATTENTION: Vous êtes sur le point d'effacer TOUT le disque /dev/$disk"
+    echo "Cette opération est IRRÉVERSIBLE !"
+    echo "Toutes les données seront DÉFINITIVEMENT PERDUES !"
+    echo 
+    log_prompt "PROMPT" && read -p "Êtes-vous vraiment sûr ? (y/n) : " choice_shred && echo
     
     # Récupérer les partitions montées (non-swap)
-    local mounted_parts=$(lsblk "/dev/$disk" -o NAME,MOUNTPOINT -n -l | grep -v "\[SWAP\]" | grep -v "^$disk " | grep -v " $")
-    
+    local mounted_parts=$(lsblk "/dev/$disk" -o NAME,MOUNTPOINT -n -l | grep -v "\[SWAP\]" | awk '$2 != "" {print $1}')
+
     # Liste des partitions swap
-    local swap_parts=$(lsblk "/dev/$disk" -o NAME,MOUNTPOINT -n -l | grep "\[SWAP\]")
-
-    echo "partitions : $mounted_parts"
-    echo "partitions : $swap_parts"
+    local swap_parts=$(lsblk "/dev/$disk" -o NAME,TYPE -n -l | awk '$2 == "swap" {print $1}')
     
-    # # Gérer les partitions montées (non-swap)
-    # if [ -n "$mounted_parts" ]; then
-    #     log_prompt "INFO" && echo "ATTENTION: Certaines partitions sont montées :" && echo
-    #     echo "$mounted_parts"
-    #     echo ""
-    #     log_prompt "PROMPT" && read -p "Voulez-vous les démonter ? (y/n) : " response && echo
+    # Gérer les partitions montées (non-swap)
+    if [ -n "$mounted_parts" ]; then
+        echo
+        log_prompt "INFO" && echo "ATTENTION: Certaines partitions sont montées :" && echo
+        echo "$mounted_parts"
+        echo
+        log_prompt "PROMPT" && read -p "Voulez-vous les démonter ? (y/n) : " response
 
-    #     if [[ "$response" =~ ^[yY]$ ]]; then
-    #         while read -r part mountpoint; do
-    #             log_prompt "INFO" && echo "Démontage de /dev/$part" && echo ""
-    #             umount "/dev/$part" 
-    #             if [ $? -ne 0 ]; then
-    #                 log_prompt "ERROR" && echo "Démontage de /dev/$part impossible" && echo
-    #             fi
-    #         done <<< "$mounted_parts"
-    #     else
-    #         log_prompt "WARNING" && echo "Opération annulée" && echo
-    #         return 1
-    #     fi
+        if [[ "$response" =~ ^[yY]$ ]]; then
+            while read -r part mountpoint; do
+                echo
+                log_prompt "INFO" && echo "Démontage de /dev/$part"
+                echo
+                umount "/dev/$part" 
+                if [ $? -ne 0 ]; then
+                    echo
+                    log_prompt "ERROR" && echo "Démontage de /dev/$part impossible" 
+                fi
+            done <<< "$mounted_parts"
+        else
+            echo
+            log_prompt "WARNING" && echo "Opération annulée" && echo
+            return 1
+        fi
 
-    # else
-    #     log_prompt "WARNING" && echo "Aucune partitions primaire montées :" && echo
-    # fi
+    else
+        log_prompt "WARNING" && echo "Aucune partitions primaire montées :"
+    fi
     
-    # # Gérer les partitions swap séparément
-    # if [ -n "$swap_parts" ]; then
-    #     log_prompt "INFO" && echo "ATTENTION: Certaines partitions swap sont activées :" && echo
-    #     echo "$swap_parts"
-    #     echo
-    #     log_prompt "PROMPT" && read -p "Voulez-vous les démonter ? (y/n) : " response && echo
+    # Gérer les partitions swap séparément
+    if [ -n "$swap_parts" ]; then
+        echo
+        log_prompt "INFO" && echo "ATTENTION: Certaines partitions swap sont activées :"
+        echo "$swap_parts"
+        echo
+        log_prompt "PROMPT" && read -p "Voulez-vous les démonter ? (y/n) : " response 
+        echo
 
-    #     if [[ "$response" =~ ^[yY]$ ]]; then
-    #         while read -r part _; do
-    #             log_prompt "INFO" && echo "Démontage de /dev/$part" && echo
-    #             swapoff "/dev/$part"
-    #             if [ $? -ne 0 ]; then
-    #                 log_prompt "ERROR" && echo "Démontage de /dev/$part impossible" && echo
-    #             fi
-    #         done <<< "$swap_parts"
-    #     else
-    #         log_prompt "WARNING" && echo "Opération annulée" && echo
-    #         return 1
-    #     fi
+        if [[ "$response" =~ ^[yY]$ ]]; then
+            while read -r part _; do
+                echo
+                log_prompt "INFO" && echo "Démontage de /dev/$part"
+                echo
+                swapoff "/dev/$part"
+                if [ $? -ne 0 ]; then
+                    echo
+                    log_prompt "ERROR" && echo "Démontage de /dev/$part impossible"
+                    echo
+                fi
+            done <<< "$swap_parts"
+        else
+            echo
+            log_prompt "WARNING" && echo "Opération annulée"
+            echo
+            return 1
+        fi
 
-    # else
-    #     log_prompt "WARNING" && echo "Aucune partitions swap montées :" && echo
+    else
+        echo
+        log_prompt "WARNING" && echo "Aucune partitions swap montées :" 
+        echo
 
-    # fi
-    
-    # echo "ATTENTION: Vous êtes sur le point d'effacer TOUT le disque /dev/$disk"
-    # echo "Cette opération est IRRÉVERSIBLE !"
-    # echo "Toutes les données seront DÉFINITIVEMENT PERDUES !"
-    # echo 
-    # log_prompt "PROMPT" && read -p "Êtes-vous vraiment sûr ? (y/n) : " response && echo
+    fi
 
-    # if [[ "$response" =~ ^[yY]$ ]]; then
-    #     log_prompt "INFO" && echo "Effacement du disque /dev/$disk en cours ..." && echo
 
-    #     # Obtenir la taille exacte du disque en blocs
-    #     disk_size=$(blockdev --getsz "/dev/$disk")
-    #     # Utilisation de dd avec la taille exacte du disque
-    #     dd if=/dev/zero of="/dev/$disk" bs=512 count=$disk_size status=progress
-    #     sync
-    # else
-    #     log_prompt "WARNING" && echo "Opération annulée" && echo
-    #     return 1
-    # fi
+    if [[ "$choice_shred" =~ ^[yY]$ ]]; then
+        echo
+        log_prompt "INFO" && echo "Effacement du disque /dev/$disk en cours ..."
+        echo
+
+        # Obtenir la taille exacte du disque en blocs
+        disk_size=$(blockdev --getsz "/dev/$disk")
+
+        # Utilisation de dd avec la taille exacte du disque
+        dd if=/dev/zero of="/dev/$disk" bs=512 count=$disk_size status=progress
+        sync
+
+    else
+        echo
+        log_prompt "WARNING" && echo "Opération annulée"
+        echo
+        return 1
+    fi
 }
 
 ##############################################################################

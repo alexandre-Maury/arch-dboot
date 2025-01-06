@@ -120,6 +120,7 @@ while true; do
         1)
             clear
             erase_disk "$disk"
+            log_prompt "INFO" && echo "Suppression des données terminé"
             break
             ;;
         2)
