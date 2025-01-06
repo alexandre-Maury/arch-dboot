@@ -121,7 +121,6 @@ while true; do
             clear
             erase_disk "$disk"
             log_prompt "INFO" && echo "Suppression des données terminé"
-            break
             ;;
         2)
             clear
@@ -135,19 +134,17 @@ while true; do
             activate_service
             
             log_prompt "INFO" && echo "Installation terminée ==> redémarrer votre systeme"
-            break
             ;;
 
         3)
             clear
             echo "PAS ENCORE DISPONIBLE"
-            break
             ;;
 
         0)
             log_prompt "WARNING" && echo "Opération annulée"
             echo
-            exit 0
+            break
             ;;
         *)
             echo "Choix invalide"
