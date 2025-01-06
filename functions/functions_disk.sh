@@ -207,16 +207,16 @@ manage_partitions() {
         echo "   Choisissez le mode de configuration des partitions"
         echo "====================================================="
         echo
-        echo "1. Mode Standard (valeurs par défaut)"
+        log_prompt "INFO" && echo "1. Mode Standard (valeurs par défaut)"
         echo
-        echo "   - Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh."
-        echo "   - Le double boot n'est PAS activé dans ce mode."
+        echo "Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh."
+        echo "Le double boot n'est PAS activé dans ce mode."
         echo
-        echo "2. Mode Avancé (configuration manuelle)"
+        log_prompt "INFO" && echo "2. Mode Avancé (configuration manuelle)"
         echo
-        echo "   - Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme."
+        echo "Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme."
         if [[ "$dboot" == "True" ]]; then
-            echo "   - Le double boot est possible dans ce mode."
+            echo "Le double boot est possible dans ce mode."
         fi
         echo
         echo "====================================================="
@@ -246,27 +246,24 @@ manage_partitions() {
                         echo "Vous avez choisi de procéder à une installation en Dual Boot."
                         echo
                         echo "Avant de continuer, assurez-vous d'avoir préparé les partitions nécessaires."
+                        echo
                         echo "Voici les étapes à suivre :"
                         echo
-                        echo "Création de la partition '/EFI' :"
-                        echo "   - Cette partition doit être créée avant l'installation de Windows."
-                        echo "   - Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows."
-                        echo "   - Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
-                        echo "   - Taille minimale requise : 512 MiB."
+                        log_prompt "INFO" && echo "Création de la partition '[EFI]' :"
                         echo
-                        echo "⚠️ Remarque importante : "
-                        echo "   - Lors de la sélection des partitions à venir lors de l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi)."
-                        echo "   - Lors d'un dual boot, celle de Windows sera utilisé."
+                        echo "ATTENTION : En cas de dual boot, lors de la sélection des partitions pendant l'exécution de ce script, il est crucial de ne pas recréer une partition de boot (EFI)."
+                        echo "La partition EFI existante utilisée par Windows sera réutilisée."
                         echo
-                        echo "Création de la partition '/root' :"
-                        echo "   - Réduisez la taille d'une partition existante pour libérer de l'espace."
-                        echo "   - La nouvelle partition 'root' sera utilisée pour le système Arch Linux."
-                        echo "   - Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions."
+                        echo "OBLIGATOIRE : Cette partition doit être créée avant l'installation de Windows."
+                        echo "Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows."
+                        echo "Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
+                        echo "Taille minimale requise : 512 MiB."
                         echo
-                        echo "⚠️ Remarque importante :"
-                        echo "   Soyez extrêmement prudent lors du redimensionnement des partitions existantes."
-                        echo "   Une mauvaise manipulation peut entraîner une perte de données."
-                        echo "   Assurez-vous d'avoir effectué une sauvegarde complète de vos données avant de continuer."
+                        log_prompt "INFO" && echo "Création de la partition '[root]' :"
+                        echo
+                        echo "Réduisez la taille d'une partition existante pour libérer de l'espace."
+                        echo "La nouvelle partition 'root' sera utilisée pour le système Arch Linux."
+                        echo "Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions."
                         echo
                         echo "====================================================="
                         echo
