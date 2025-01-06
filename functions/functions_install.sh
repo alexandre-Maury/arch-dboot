@@ -167,8 +167,6 @@ install_bootloader() {
 
         log_prompt "INFO" && echo "arch-chroot - configuration de grub"
 
-        # arch-chroot ${MOUNT_POINT} grub-mkconfig -o ${MOUNT_POINT}/boot/grub/grub.cfg
-
         if [[ -n "${GPU_OPTION}" ]]; then
             sed -i "s/^#\?GRUB_CMDLINE_LINUX_DEFAULT=\"/&$GPU_OPTION /" "${MOUNT_POINT}/etc/default/grub"
         fi
