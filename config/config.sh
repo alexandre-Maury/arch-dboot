@@ -38,7 +38,7 @@ PARTITIONS_TYPE=(
     "fat32"
 )
 
-BOOTLOADER="systemd-boot"  # systemd-boot ou grub
+BOOTLOADER="grub"  # systemd-boot ou grub
 
 # Liste des sous-volumes BTRFS à créer
 BTRFS_SUBVOLUMES=("@" "@root" "@home" "@srv" "@log" "@cache" "@tmp" "@snapshots")
