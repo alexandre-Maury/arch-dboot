@@ -128,12 +128,12 @@ while true; do
             # config_system
             # install_packages
             install_bootloader "$disk"
-            install_mkinitcpio
-            config_passwdqc
-            config_root
-            config_user
-            config_ssh
-            activate_service
+            # install_mkinitcpio
+            # config_passwdqc
+            # config_root
+            # config_user
+            # config_ssh
+            # activate_service
 
             clear
             echo
