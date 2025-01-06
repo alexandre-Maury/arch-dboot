@@ -71,12 +71,12 @@ while true; do
     echo
     echo "----------------------------------------"
     echo
-    echo "INTERFACE : $INTERFACE"
-    echo "ADRESSE MAC : $MAC_ADDRESS"
-    echo "Total de RAM : $RAM"
-    echo "CPU : $CPU_VENDOR"
-    echo "Nombres de coeur : $CPU_COEUR"
-    echo "GPU : $GPU_VENDOR"
+    echo " - INTERFACE : $INTERFACE"
+    echo " - ADRESSE MAC : $MAC_ADDRESS"
+    echo " - Total de RAM : $RAM"
+    echo " - CPU : $CPU_VENDOR"
+    echo " - Nombres de coeur : $CPU_COEUR"
+    echo " - GPU : $GPU_VENDOR"
     echo
     echo "----------------------------------------"
 

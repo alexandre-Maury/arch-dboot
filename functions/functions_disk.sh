@@ -209,14 +209,14 @@ manage_partitions() {
         echo
         log_prompt "INFO" && echo "1. Mode Standard (valeurs par défaut)"
         echo
-        echo "Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh."
-        echo "Le double boot n'est PAS activé dans ce mode."
+        echo " Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh."
+        echo " Le double boot n'est PAS activé dans ce mode."
         echo
         log_prompt "INFO" && echo "2. Mode Avancé (configuration manuelle)"
         echo
-        echo "Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme."
+        echo " Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme."
         if [[ "$dboot" == "True" ]]; then
-            echo "Le double boot est possible dans ce mode."
+            echo " Le double boot est possible dans ce mode."
         fi
         echo
         echo "====================================================="
@@ -243,27 +243,27 @@ manage_partitions() {
                         echo "            Configuration pour un Dual Boot"
                         echo "====================================================="
                         echo
-                        echo "Vous avez choisi de procéder à une installation en Dual Boot."
+                        echo " Vous avez choisi de procéder à une installation en Dual Boot."
                         echo
-                        echo "Avant de continuer, assurez-vous d'avoir préparé les partitions nécessaires."
+                        echo " Avant de continuer, assurez-vous d'avoir préparé les partitions nécessaires."
                         echo
-                        echo "Voici les étapes à suivre :"
+                        echo " Voici les étapes à suivre :"
                         echo
-                        log_prompt "INFO" && echo "Création de la partition '[EFI]' :"
+                        log_prompt "INFO" && echo " Création de la partition '[EFI]' :"
                         echo
-                        echo "ATTENTION : En cas de dual boot, lors de la sélection des partitions pendant l'exécution de ce script, il est crucial de ne pas recréer une partition de boot (EFI)."
-                        echo "La partition EFI existante utilisée par Windows sera réutilisée."
+                        echo " ATTENTION : En cas de dual boot, lors de la sélection des partitions pendant l'exécution de ce script, il est crucial de ne pas recréer une partition de boot (EFI)."
+                        echo " La partition EFI existante utilisée par Windows sera réutilisée."
                         echo
-                        echo "OBLIGATOIRE : Cette partition doit être créée avant l'installation de Windows."
-                        echo "Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows."
-                        echo "Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
-                        echo "Taille minimale requise : 512 MiB."
+                        echo " OBLIGATOIRE : Cette partition doit être créée avant l'installation de Windows."
+                        echo " Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows."
+                        echo " Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
+                        echo " Taille minimale requise : 512 MiB."
                         echo
-                        log_prompt "INFO" && echo "Création de la partition '[root]' :"
+                        log_prompt "INFO" && echo " Création de la partition '[root]' :"
                         echo
-                        echo "Réduisez la taille d'une partition existante pour libérer de l'espace."
-                        echo "La nouvelle partition 'root' sera utilisée pour le système Arch Linux."
-                        echo "Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions."
+                        echo " Réduisez la taille d'une partition existante pour libérer de l'espace."
+                        echo " La nouvelle partition 'root' sera utilisée pour le système Arch Linux."
+                        echo " Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions."
                         echo
                         echo "====================================================="
                         echo
@@ -389,13 +389,13 @@ manage_partitions() {
                         echo "- Partition Boot (EFI)"
                         echo "   - Type : fat32"
                         echo "   - Taille recommandée : 512MiB"
-                        echo "   - Nom recommandé : [boot] (obligatoire pour l'exécution correcte de l'installation)"
+                        echo "   - Appellation recommandée : [boot] (obligatoire pour l'exécution correcte de l'installation)"
                     fi
                     echo
                     echo "- Partition Swap"
                     echo "   -  Type : linux-swap"
                     echo "   -  Taille recommandée : selon vos besoins (ex. 2 à 4GiB pour la plupart des cas)"
-                    echo "   -  Nom recommandé : [swap]"
+                    echo "   -  Appellation recommandée : [swap]"
                     echo
                     echo "- Partition Racine (OBLIGATOIRE)"
                     echo "   -  Deux options disponibles :"
@@ -403,12 +403,12 @@ manage_partitions() {
                     echo "        - Taille recommandée : 100% (pour occuper tout l'espace restant)"
                     echo "     b. Type : ext4"
                     echo "        - Taille recommandée : selon vos besoins (ex. 20-50GiB pour la racine)"
-                    echo "   - Nom recommandé : [root] (obligatoire pour l'exécution correcte de l'installation)"
+                    echo "   - Appellation recommandée : [root] (obligatoire pour l'exécution correcte de l'installation)"
                     echo
                     echo "- Partition Home (Facultative)"
                     echo "   -  Type : ext4"
                     echo "   -  Taille recommandée : selon vos besoins"
-                    echo "   -  Nom recommandé : [home]"
+                    echo "   -  Appellation recommandée : [home]"
                     echo
 
                     log_prompt "PROMPT" && read -p "Nom de la partition à créer : " partition_name
@@ -462,6 +462,7 @@ manage_partitions() {
                 echo "Taille de la partition : $partition_name"
                 echo
                 echo "ex. "
+                echo
                 echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
                 echo "Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
                 echo
