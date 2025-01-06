@@ -70,6 +70,7 @@ clear
 while true; do
     echo
     echo "----------------------------------------"
+    echo
     echo "INTERFACE : $INTERFACE"
     echo "ADRESSE MAC : $MAC_ADDRESS"
     echo "Total de RAM : $RAM"
