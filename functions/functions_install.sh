@@ -26,32 +26,32 @@ install_base() {
     if [[  $total_mem -gt 8000000 ]]; then  # Vérifie si la mémoire totale est supérieure à 8 Go
         log_prompt "INFO" && echo "Changement des paramètres de compression pour " $nc " coeurs."
 
-        sed -i "s/^#\?MAKEFLAGS=\".*\"/MAKEFLAGS=\"-j$nc\"/" ${MOUNT_POINT}/etc/makepkg.conf # Modifie les makeflags dans makepkg.conf
-        sed -i "s/^#\?COMPRESSXZ=(.*)/COMPRESSXZ=(xz -c -T $nc -z -)/" ${MOUNT_POINT}/etc/makepkg.conf # Modifie les paramètres de compression
+        sed -i "s/^#\?MAKEFLAGS=\".*\"/MAKEFLAGS=\"-j$nc\"/" "${MOUNT_POINT}/etc/makepkg.conf" # Modifie les makeflags dans makepkg.conf
+        sed -i "s/^#\?COMPRESSXZ=(.*)/COMPRESSXZ=(xz -c -T $nc -z -)/" "${MOUNT_POINT}/etc/makepkg.conf" # Modifie les paramètres de compression
 
     fi
 
     ## Définir le fuseau horaire + local                                                  
     log_prompt "INFO" && echo "Configuration des locales"
-    echo "KEYMAP=${KEYMAP}" > ${MOUNT_POINT}/etc/vconsole.conf
-    sed -i "/^#$LOCALE/s/^#//g" ${MOUNT_POINT}/etc/locale.gen
+    echo "KEYMAP=${KEYMAP}" > "${MOUNT_POINT}/etc/vconsole.conf"
+    sed -i "/^#$LOCALE/s/^#//g" "${MOUNT_POINT}/etc/locale.gen"
     arch-chroot ${MOUNT_POINT} locale-gen
     
     echo "Configuration de la timezone..."
-    ln -sf /usr/share/zoneinfo/${ZONE}/${CITY} ${MOUNT_POINT}/etc/localtime
+    ln -sf /usr/share/zoneinfo/${ZONE}/${CITY} "${MOUNT_POINT}/etc/localtime"
     hwclock --systohc
 
-    echo "LANG=${LANG}" > ${MOUNT_POINT}/etc/locale.conf # AJOUT
+    echo "LANG=${LANG}" > "${MOUNT_POINT}/etc/locale.conf"
 
     ## Modification pacman.conf                                                  
     log_prompt "INFO" && echo "Modification du fichier pacman.conf"
-    sed -i 's/^#Para/Para/' ${MOUNT_POINT}/etc/pacman.conf
-    sed -i "/\[multilib\]/,/Include/"'s/^#//' ${MOUNT_POINT}/etc/pacman.conf
+    sed -i 's/^#Para/Para/' "${MOUNT_POINT}/etc/pacman.conf"
+    sed -i "/\[multilib\]/,/Include/"'s/^#//' "${MOUNT_POINT}/etc/pacman.conf"
     arch-chroot ${MOUNT_POINT} pacman -Sy --noconfirm
 
     ## Configuration du réseau                                             
     log_prompt "INFO" && echo "Génération du hostname" 
-    echo "${HOSTNAME}" > ${MOUNT_POINT}/etc/hostname
+    echo "${HOSTNAME}" > "${MOUNT_POINT}/etc/hostname"
 
     log_prompt "INFO" && echo "Génération du Host" 
 
@@ -59,7 +59,7 @@ install_base() {
         echo "127.0.0.1 localhost"
         echo "::1 localhost"
         echo "127.0.1.1 $HOSTNAME.localdomain $HOSTNAME"
-    } > ${MOUNT_POINT}/etc/hosts
+    } > "${MOUNT_POINT}/etc/hosts"
 
 
     log_prompt "INFO" && echo "Configuration du fichier 20-wired.network dans ${MOUNT_POINT}/etc/systemd/network" && echo
@@ -75,7 +75,7 @@ install_base() {
         echo "[DHCPv4]" 
         echo "RouteMetric=10" 
         echo "UseDNS=false" 
-    } > ${MOUNT_POINT}/etc/systemd/network/20-wired.network
+    } > "${MOUNT_POINT}/etc/systemd/network/20-wired.network"
 
     
     log_prompt "INFO" && echo "Configuration de /etc/resolv.conf pour utiliser systemd-resolved" && echo 
@@ -87,7 +87,7 @@ install_base() {
         echo "[Resolve]" 
         echo "DNS=1.1.1.1 9.9.9.9" 
         echo "FallbackDNS=8.8.8.8"
-    } > ${MOUNT_POINT}/etc/systemd/resolved.conf
+    } > "${MOUNT_POINT}/etc/systemd/resolved.conf"
 
 
 }
@@ -134,7 +134,7 @@ install_base_chroot() {
         arch-chroot "${MOUNT_POINT}" pacman -S nvidia mesa --noconfirm
         modprobe $modules
 
-        sed -i "s/^#\?MODULES=.*/MODULES=($modules)/" ${MOUNT_POINT}/etc/mkinitcpio.conf
+        sed -i "s/^#\?MODULES=.*/MODULES=($modules)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
         [ ! -d "${MOUNT_POINT}/etc/pacman.d/hooks" ] && mkdir -p ${MOUNT_POINT}/etc/pacman.d/hooks
 
@@ -150,7 +150,7 @@ install_base_chroot() {
             echo "Depends=mkinitcpio" 
             echo "When=PostTransaction"
             echo "Exec=/usr/bin/mkinitcpio -P" 
-        } > ${MOUNT_POINT}/etc/pacman.d/hooks/nvidia.hook
+        } > "${MOUNT_POINT}/etc/pacman.d/hooks/nvidia.hook"
 
 
     elif [[ "$gpu_vendor" == *"amd"* || "$gpu_vendor" == *"radeon"* ]]; then
@@ -160,7 +160,7 @@ install_base_chroot() {
         arch-chroot "${MOUNT_POINT}" pacman -S xf86-video-amdgpu xf86-video-ati mesa --noconfirm 
         modprobe $modules
 
-        sed -i "s/^#\?MODULES=.*/MODULES=($modules)/" ${MOUNT_POINT}/etc/mkinitcpio.conf
+        sed -i "s/^#\?MODULES=.*/MODULES=($modules)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
     elif [[ "$gpu_vendor" == *"intel"* ]]; then
         log_prompt "INFO" && echo "arch-chroot - Configuration pour GPU Intel"
@@ -169,7 +169,7 @@ install_base_chroot() {
         arch-chroot "${MOUNT_POINT}" pacman -S xf86-video-intel mesa --noconfirm 
         modprobe $modules
 
-        sed -i "s/^#\?MODULES=.*/MODULES=($modules)/" ${MOUNT_POINT}/etc/mkinitcpio.conf
+        sed -i "s/^#\?MODULES=.*/MODULES=($modules)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
     else
         log_prompt "WARNING" && echo "arch-chroot - Aucun GPU reconnu, installation des pilottes générique : xf86-video-vesa mesa"
@@ -241,14 +241,14 @@ install_base_chroot() {
             else
                 echo "options ${root_options}"
             fi
-        } > ${MOUNT_POINT}/boot/loader/entries/arch.conf
+        } > "${MOUNT_POINT}/boot/loader/entries/arch.conf"
 
         {
             echo "default arch.conf"
             echo "timeout 10"
             echo "console-mode max"
             echo "editor no"
-        } > ${MOUNT_POINT}/boot/loader/loader.conf
+        } > "${MOUNT_POINT}/boot/loader/loader.conf"
 
         clear
 
