@@ -168,7 +168,7 @@ install_bootloader() {
         log_prompt "INFO" && echo "arch-chroot - configuration de grub"
 
         if [[ -n "${GPU_OPTION}" ]]; then
-            sed -i "s/^#\?GRUB_CMDLINE_LINUX_DEFAULT=\"/&$GPU_OPTION /" "${MOUNT_POINT}/etc/default/grub"
+            sed -i -E "/^#?GRUB_CMDLINE_LINUX_DEFAULT=/ {s/^#//; /$GPU_OPTION/! s/(\".*\")/\1 $GPU_OPTION/}" "${MOUNT_POINT}/etc/default/grub"
         fi
 
         sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
@@ -176,10 +176,6 @@ install_bootloader() {
         log_prompt "INFO" && echo "arch-chroot - génération de grub.cfg"
 
         arch-chroot ${MOUNT_POINT} grub-mkconfig -o ${MOUNT_POINT}/boot/grub/grub.cfg
-
-        if [[ -n "${PROC_UCODE}" ]]; then
-            echo "initrd /boot/$PROC_UCODE" >> "${MOUNT_POINT}/boot/grub/grub.cfg"
-        fi
 
     fi
 
