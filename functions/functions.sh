@@ -34,7 +34,7 @@ log_prompt() {
             log_color="${LIGHT_CYAN}"
             log_status='INFO'
             ;;
-        "PURPLE")
+        "PROMPT")
             log_color="${PURPLE}"
             log_status='PROMPT'
             ;;
