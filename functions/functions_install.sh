@@ -195,7 +195,6 @@ install_bootloader() {
         root_options="root=UUID=${root_uuid} rootflags=subvol=@ rw"
 
         arch-chroot ${MOUNT_POINT} bootctl --path=/boot install
-        # arch-chroot ${MOUNT_POINT} bootctl --esp-path=/boot --boot-path=/boot install
 
         {
             echo "title   Arch Linux"
