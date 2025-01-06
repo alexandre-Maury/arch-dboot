@@ -170,10 +170,10 @@ install_bootloader() {
         arch-chroot ${MOUNT_POINT} grub-mkconfig -o ${MOUNT_POINT}/boot/grub/grub.cfg
 
         if [[ -n "${GPU_OPTION}" ]]; then
-            sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=\"/&$GPU_OPTION /" "${MOUNT_POINT}/etc/default/grub"
+            sed -i "s/^#\?GRUB_CMDLINE_LINUX_DEFAULT=\"/&$GPU_OPTION /" "${MOUNT_POINT}/etc/default/grub"
         fi
 
-        sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
+        sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
 
         if [[ -n "${PROC_UCODE}" ]]; then
             echo "initrd /boot/$PROC_UCODE" >> "${MOUNT_POINT}/boot/grub/grub.cfg"
