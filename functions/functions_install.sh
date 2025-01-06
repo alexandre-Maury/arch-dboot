@@ -353,9 +353,9 @@ install_base_secu() {
         while true; do
             clear
             echo
-            read -p "Veuillez entrer le nouveau mot de passe pour root : " -s new_pass 
+            log_prompt "INFO" && read -p "Veuillez entrer le nouveau mot de passe pour root : " -s new_pass 
             echo
-            read -p "Confirmez le mot de passe pour root : " -s confirm_pass 
+            log_prompt "INFO" && read -p "Confirmez le mot de passe pour root : " -s confirm_pass 
 
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then
@@ -401,9 +401,9 @@ install_base_secu() {
         while true; do
             clear
             echo
-            read -p "Veuillez entrer le nouveau mot de passe pour $sudo_user : " -s new_pass  
+            log_prompt "INFO" && read -p "Veuillez entrer le nouveau mot de passe pour $sudo_user : " -s new_pass  
             echo
-            read -p "Confirmez le mot de passe : " -s confirm_pass  
+            log_prompt "INFO" && read -p "Confirmez le mot de passe : " -s confirm_pass  
 
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then

@@ -216,7 +216,7 @@ manage_partitions() {
         echo
         echo "====================================================="
         echo
-        read -p "Veuillez saisir votre choix (1 ou 2) : " choice_mode
+        log_prompt "INFO" && read -p "Veuillez saisir votre choix (1 ou 2) : " choice_mode
 
         case "$choice_mode" in
             1)
@@ -304,7 +304,7 @@ manage_partitions() {
         echo
         echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
         echo
-        read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
+        log_prompt "INFO" && read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
 
         local selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
         if [[ -z "$selected_space" ]]; then
@@ -409,7 +409,7 @@ manage_partitions() {
                     echo "   -  Nom recommandé : [home]"
                     echo
 
-                    read -p "Nom de la partition à créer (ex. boot, swap, root, home) : " partition_name
+                    log_prompt "INFO" && read -p "Nom de la partition à créer (ex. boot, swap, root, home) : " partition_name
                     partition_name=$(echo "$partition_name" | tr '[:upper:]' '[:lower:]') # Conversion en minuscule
 
                     case $partition_name in
@@ -463,7 +463,7 @@ manage_partitions() {
                 echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
                 echo "Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
                 echo
-                read -p "Votre Choix (unité obligatoire ex. [ MiB | GiB ] ou [ % ] ) : " partition_size
+                log_prompt "INFO" && read -p "Votre Choix (unité obligatoire ex. [ MiB | GiB ] ou [ % ] ) : " partition_size
                 partition_size="${partition_size}"
 
                 clear
@@ -476,7 +476,7 @@ manage_partitions() {
                     ((index++))
                 done
                 echo
-                read -p "Choisissez un type de fichier : " partition_type
+                log_prompt "INFO" && read -p "Choisissez un type de fichier : " partition_type
                 case "$partition_type" in
                     "1"|"swap")
                         partition_type="linux-swap"
@@ -505,7 +505,7 @@ manage_partitions() {
                 [[ "$partition_size" != "100%" ]] || break
 
                 # Demander si l'utilisateur souhaite ajouter une autre partition
-                read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
+                log_prompt "INFO" && read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
                 [[ "$continue_choice" =~ ^[Yy]$ ]] || break
                 
                 disk_size=$(($disk_size - $(convert_to_mib "$partition_size")))
@@ -527,7 +527,7 @@ manage_partitions() {
             echo
             echo "----------------------------------------"
             echo
-            read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
+            log_prompt "INFO" && read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
             if [[ "$confirm_choice" =~ ^[Yy]$ ]]; then
                 break # Sortir de la boucle principale si les partitions sont correctes
             fi
@@ -553,7 +553,7 @@ manage_partitions() {
         echo
         echo "----------------------------------------"
         echo
-        read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
+        log_prompt "INFO" && read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
 
         if [[ ! "$confirm_choice" =~ ^[Yy]$ ]]; then
             echo "Installation annulée par l'utilisateur."
