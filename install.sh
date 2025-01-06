@@ -68,6 +68,16 @@ clear
 ## MENU                                                     
 ##############################################################################
 while true; do
+    echo
+    echo "----------------------------------------"
+    echo "INTERFACE : $INTERFACE"
+    echo "ADRESSE MAC : $MAC_ADDRESS"
+    echo "Total de RAM : $RAM"
+    echo "CPU : $CPU_VENDOR"
+    echo "Nombres de coeur : $CPU_COEUR"
+    echo "GPU : $GPU_VENDOR"
+    echo
+    echo "----------------------------------------"
 
     partitions=$(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p")
 
