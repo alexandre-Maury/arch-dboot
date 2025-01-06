@@ -102,10 +102,12 @@ erase_disk() {
 
     echo "test ok"
     
-    # local disk="$1"
-    # local disk_size
-    # local mounted_parts
-    # local swap_parts
+    local disk="$1"
+    local disk_size
+    local mounted_parts
+    local swap_parts
+
+    echo "Disque sélectionné : $disk"
     
     # # Récupérer les partitions montées (non-swap)
     # mounted_parts=$(lsblk "/dev/$disk" -o NAME,MOUNTPOINT -n -l | grep -v "\[SWAP\]" | grep -v "^$disk " | grep -v " $")
