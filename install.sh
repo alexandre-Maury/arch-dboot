@@ -110,6 +110,7 @@ while true; do
     echo "1) Nettoyage du disque (shred)   "
     echo "2) Installation de Arch Linux    "
     echo "3) Réinstallation de Arch Linux  "
+    echo "4) test  "
     echo
     echo "0) Annuler"
     echo
@@ -140,6 +141,14 @@ while true; do
         3)
             clear
             echo "PAS ENCORE DISPONIBLE"
+            break
+            ;;
+        4)
+            clear
+            log_prompt "PURPLE" && echo "Ceci est un test : PURPLE"
+            log_prompt "BOLD_PURPLE" && echo "Ceci est un test : BOLD_PURPLE"
+            log_prompt "DIM_PURPLE" && echo "Ceci est un test : DIM_PURPLE"
+            log_prompt "BG_PURPLE" && echo "Ceci est un test : BG_PURPLE"
             break
             ;;
 

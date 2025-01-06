@@ -300,6 +300,7 @@ manage_partitions() {
         fi
 
         # Demander à l'utilisateur de sélectionner une plage d'espace libre
+        echo
         log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
         echo
         echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
@@ -397,7 +398,6 @@ manage_partitions() {
                     echo "- Partition Racine (OBLIGATOIRE)"
                     echo "   -  Deux options disponibles :"
                     echo "     a. Type : btrfs"
-                    echo "        - Subvolumes (modifiable dans config.sh) : '@' '@root' '@home' '@srv' '@log' '@cache' '@tmp' '@snapshots'"
                     echo "        - Taille recommandée : 100% (pour occuper tout l'espace restant)"
                     echo "     b. Type : ext4"
                     echo "        - Taille recommandée : selon vos besoins (ex. 20-50GiB pour la racine)"
@@ -409,7 +409,7 @@ manage_partitions() {
                     echo "   -  Nom recommandé : [home]"
                     echo
 
-                    log_prompt "INFO" && read -p "Nom de la partition à créer (ex. boot, swap, root, home) : " partition_name
+                    log_prompt "INFO" && read -p "Nom de la partition à créer : " partition_name
                     partition_name=$(echo "$partition_name" | tr '[:upper:]' '[:lower:]') # Conversion en minuscule
 
                     case $partition_name in

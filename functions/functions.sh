@@ -12,6 +12,12 @@ log_prompt() {
     local GREEN='\033[0;32m'
     local YELLOW='\033[0;33m'
     local LIGHT_CYAN='\033[0;96m'
+
+    local PURPLE='\033[0;35m'        # Violet standard
+    local BOLD_PURPLE='\033[1;35m'   # Violet vif
+    local DIM_PURPLE='\033[2;35m'    # Violet atténué
+    local BG_PURPLE='\033[45m'       # Fond violet
+
     local RESET='\033[0m'
 
     case "${log_level}" in
@@ -32,6 +38,23 @@ log_prompt() {
             log_color="${LIGHT_CYAN}"
             log_status='INFO'
             ;;
+        "PURPLE")
+            log_color="${PURPLE}"
+            log_status='PURPLE'
+            ;;
+        "BOLD_PURPLE")
+            log_color="${BOLD_PURPLE}"
+            log_status='BOLD_PURPLE'
+            ;;
+        "DIM_PURPLE")
+            log_color="${DIM_PURPLE}"
+            log_status='DIM_PURPLE'
+            ;;
+        "BG_PURPLE")
+            log_color="${BG_PURPLE}"
+            log_status='BG_PURPLE'
+            ;;
+
         *)
             log_color="${RESET}" # Au cas où un niveau inconnu est utilisé
             log_status='UNKNOWN'
