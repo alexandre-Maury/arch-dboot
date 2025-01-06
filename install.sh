@@ -120,13 +120,13 @@ while true; do
             ;;
         2)
             clear
-            echo
-            manage_partitions "$disk" "$dboot"
-            mount_partitions "$disk"
-            show_disk_partitions "Montage des partitions terminée" "$disk" 
-            install_base 
-            config_system
-            install_packages
+            # echo
+            # manage_partitions "$disk" "$dboot"
+            # mount_partitions "$disk"
+            # show_disk_partitions "Montage des partitions terminée" "$disk" 
+            # install_base 
+            # config_system
+            # install_packages
             install_bootloader "$disk"
             install_mkinitcpio
             config_passwdqc
