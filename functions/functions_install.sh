@@ -97,7 +97,7 @@ install_packages() {
                                                
     log_prompt "INFO" && echo "Installation des paquages de bases"
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
-    arch-chroot ${MOUNT_POINT} pacman -S man-db man-pages nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget efibootmgr os-prober dosfstools mtools --noconfirm
+    arch-chroot ${MOUNT_POINT} pacman -S man-db man-pages nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
 
     # CPU Microcode
     if [[ "$PROC_UCODE" == "intel-ucode.img" ]]; then
@@ -155,7 +155,7 @@ install_bootloader() {
 
         log_prompt "INFO" && echo "arch-chroot - Installation de GRUB" 
 
-        arch-chroot ${MOUNT_POINT} pacman -S grub --noconfirm
+        arch-chroot ${MOUNT_POINT} pacman -S grub efibootmgr os-prober dosfstools mtools --noconfirm
 
         case "$root_fs" in
             "btrfs")
@@ -171,7 +171,7 @@ install_bootloader() {
             sed -i -E "/^#?GRUB_CMDLINE_LINUX_DEFAULT=/ {s/^#//; /$GPU_OPTION/! s/(\".*\")/\1 $GPU_OPTION/}" "${MOUNT_POINT}/etc/default/grub"
         fi
 
-        sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
+        # sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
 
         log_prompt "INFO" && echo "arch-chroot - génération de grub.cfg"
 
@@ -182,6 +182,8 @@ install_bootloader() {
     if [[ "$BOOTLOADER" == "systemd-boot" ]]; then
 
         log_prompt "INFO" && echo "arch-chroot - Installation de systemd-boot" 
+
+        arch-chroot ${MOUNT_POINT} pacman -S efibootmgr os-prober dosfstools mtools --noconfirm
 
         case "$root_fs" in
             "btrfs")
