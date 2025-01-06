@@ -42,18 +42,6 @@ log_prompt() {
             log_color="${PURPLE}"
             log_status='PURPLE'
             ;;
-        "BOLD_PURPLE")
-            log_color="${BOLD_PURPLE}"
-            log_status='BOLD_PURPLE'
-            ;;
-        "DIM_PURPLE")
-            log_color="${DIM_PURPLE}"
-            log_status='DIM_PURPLE'
-            ;;
-        "BG_PURPLE")
-            log_color="${BG_PURPLE}"
-            log_status='BG_PURPLE'
-            ;;
 
         *)
             log_color="${RESET}" # Au cas où un niveau inconnu est utilisé
