@@ -163,19 +163,21 @@ install_bootloader() {
                 ;;
         esac
 
-        arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+        # arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 
         log_prompt "INFO" && echo "arch-chroot - configuration de grub"
 
-        # if [[ -n "${GPU_OPTION}" ]]; then
-        #     sed -i -E "/^#?GRUB_CMDLINE_LINUX_DEFAULT=/ {s/^#//; /$GPU_OPTION/! s/(\".*\")/\1 $GPU_OPTION/}" "${MOUNT_POINT}/etc/default/grub"
-        # fi
+        if [[ -n "${GPU_OPTION}" ]]; then
+            sed -i -E "/^#?GRUB_CMDLINE_LINUX_DEFAULT=/ {s/^#//; /$GPU_OPTION/! s/(\".*\")/\1 $GPU_OPTION/}" "${MOUNT_POINT}/etc/default/grub"
+        fi
 
-        # sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
+        sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
 
         log_prompt "INFO" && echo "arch-chroot - génération de grub.cfg"
 
         arch-chroot ${MOUNT_POINT} grub-mkconfig -o ${MOUNT_POINT}/boot/grub/grub.cfg
+
+        arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
 
     fi
 
