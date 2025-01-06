@@ -122,6 +122,18 @@ Chargeur de démarrage intégré : Systemd-boot simplifie la gestion des systèm
 
     Le script évolue pour intégrer des fonctionnalités supplémentaires et renforcer sa stabilité.
 
+## Trouble shooting
+
+Disparition de l'entrée de démarrage pour Windows du chargeur de démarrage GRUB.
+Malgré l'installation de os-prober et l'activation de la ligne : GRUB_DISABLE_OS_PROBER=false dans /etc/default/grub,
+il peux arrivé que Windows n'apparaisse pas dans les option de démarrage.
+
+Pas de panique : 
+
+Au prochaine redémarrage du systeme sasir la commande :
+
+    grub-mkconfig -o /boot/grub/grub.cfg
+
 
 ## Auteur : 
 
