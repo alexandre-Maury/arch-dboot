@@ -100,19 +100,18 @@ show_disk_partitions() {
 ##############################################################################
 erase_disk() {
 
-    echo "test ok"
-    
     local disk="$1"
-    local disk_size
-    local mounted_parts
-    local swap_parts
 
     echo "Disque sélectionné : $disk"
     
-    # # Récupérer les partitions montées (non-swap)
-    # mounted_parts=$(lsblk "/dev/$disk" -o NAME,MOUNTPOINT -n -l | grep -v "\[SWAP\]" | grep -v "^$disk " | grep -v " $")
-    # # Liste des partitions swap
-    # swap_parts=$(lsblk "/dev/$disk" -o NAME,MOUNTPOINT -n -l | grep "\[SWAP\]")
+    # Récupérer les partitions montées (non-swap)
+    local mounted_parts=$(lsblk "/dev/$disk" -o NAME,MOUNTPOINT -n -l | grep -v "\[SWAP\]" | grep -v "^$disk " | grep -v " $")
+    
+    # Liste des partitions swap
+    local swap_parts=$(lsblk "/dev/$disk" -o NAME,MOUNTPOINT -n -l | grep "\[SWAP\]")
+
+    echo "partitions : $mounted_parts"
+    echo "partitions : $swap_parts"
     
     # # Gérer les partitions montées (non-swap)
     # if [ -n "$mounted_parts" ]; then
