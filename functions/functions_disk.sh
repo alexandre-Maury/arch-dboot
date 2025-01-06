@@ -307,7 +307,7 @@ manage_partitions() {
         echo
         echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
         echo
-        log_prompt "PROMPT" && read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
+        log_prompt "PROMPT" && read -p "Saisir le numéro de la plage d'espace libre à utiliser : " space_choice
 
         local selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
         if [[ -z "$selected_space" ]]; then
