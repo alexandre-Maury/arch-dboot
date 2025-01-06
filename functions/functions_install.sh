@@ -97,7 +97,7 @@ install_packages() {
                                                
     log_prompt "INFO" && echo "Installation des paquages de bases"
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
-    arch-chroot ${MOUNT_POINT} pacman -S man-db man-pages nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
+    arch-chroot ${MOUNT_POINT} pacman -S nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
 
     # CPU Microcode
     if [[ "$PROC_UCODE" == "intel-ucode.img" ]]; then
