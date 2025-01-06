@@ -62,7 +62,7 @@ config_system() {
     } > "${MOUNT_POINT}/etc/hosts"
 
 
-    log_prompt "INFO" && echo "Configuration du fichier 20-wired.network dans ${MOUNT_POINT}/etc/systemd/network" && echo
+    log_prompt "INFO" && echo "Configuration du fichier 20-wired.network" && echo
 
     {
         echo "[Match]"
@@ -163,6 +163,8 @@ install_bootloader() {
                 ;;
         esac
 
+        arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
+
         log_prompt "INFO" && echo "arch-chroot - configuration de grub"
 
         if [[ -n "${GPU_OPTION}" ]]; then
@@ -171,11 +173,9 @@ install_bootloader() {
 
         sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
 
-        arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB
-
         log_prompt "INFO" && echo "arch-chroot - génération de grub.cfg"
 
-        arch-chroot ${MOUNT_POINT} grub-mkconfig -o ${MOUNT_POINT}/boot/grub/grub.cfg
+        arch-chroot ${MOUNT_POINT} grub-mkconfig -o /boot/grub/grub.cfg
 
     fi
 
