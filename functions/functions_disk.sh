@@ -138,7 +138,6 @@ erase_disk() {
         else
             echo
             log_prompt "WARNING" && echo "Opération annulée" && echo
-            return 1
         fi
 
     else
@@ -170,7 +169,6 @@ erase_disk() {
             echo
             log_prompt "WARNING" && echo "Opération annulée"
             echo
-            return 1
         fi
 
     else
@@ -197,7 +195,6 @@ erase_disk() {
         echo
         log_prompt "WARNING" && echo "Opération annulée"
         echo
-        return 1
     fi
 }
 
