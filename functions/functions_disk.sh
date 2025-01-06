@@ -115,7 +115,7 @@ erase_disk() {
         log_prompt "INFO" && echo "ATTENTION: Certaines partitions sont montées :" && echo
         echo "$mounted_parts"
         echo ""
-        log_prompt "INFO" && read -p "Voulez-vous les démonter ? (y/n) : " response && echo
+        log_prompt "PROMPT" && read -p "Voulez-vous les démonter ? (y/n) : " response && echo
 
         if [[ "$response" =~ ^[yY]$ ]]; then
             while read -r part mountpoint; do
@@ -139,7 +139,7 @@ erase_disk() {
         log_prompt "INFO" && echo "ATTENTION: Certaines partitions swap sont activées :" && echo
         echo "$swap_parts"
         echo
-        log_prompt "INFO" && read -p "Voulez-vous les démonter ? (y/n) : " response && echo
+        log_prompt "PROMPT" && read -p "Voulez-vous les démonter ? (y/n) : " response && echo
 
         if [[ "$response" =~ ^[yY]$ ]]; then
             while read -r part _; do
@@ -163,7 +163,7 @@ erase_disk() {
     echo "Cette opération est IRRÉVERSIBLE !"
     echo "Toutes les données seront DÉFINITIVEMENT PERDUES !"
     echo 
-    log_prompt "INFO" && read -p "Êtes-vous vraiment sûr ? (y/n) : " response && echo
+    log_prompt "PROMPT" && read -p "Êtes-vous vraiment sûr ? (y/n) : " response && echo
 
     if [[ "$response" =~ ^[yY]$ ]]; then
         log_prompt "INFO" && echo "Effacement du disque /dev/$disk en cours ..." && echo
@@ -216,7 +216,7 @@ manage_partitions() {
         echo
         echo "====================================================="
         echo
-        log_prompt "INFO" && read -p "Veuillez saisir votre choix (1 ou 2) : " choice_mode
+        log_prompt "PROMPT" && read -p "Veuillez saisir votre choix (1 ou 2) : " choice_mode
 
         case "$choice_mode" in
             1)
@@ -230,7 +230,7 @@ manage_partitions() {
 
                 if [[ "$dboot" == "True" ]]; then
 
-                    log_prompt "INFO" && read -p "Souhaitez-vous procéder à un Dual Boot ? (y/N) : " dual_boot
+                    log_prompt "PROMPT" && read -p "Souhaitez-vous procéder à un Dual Boot ? (y/N) : " dual_boot
                     echo
                     if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
 
@@ -265,7 +265,7 @@ manage_partitions() {
                         echo
                         echo "====================================================="
                         echo
-                        log_prompt "INFO" && read -p "Avez-vous bien préparé vos partitions ? (y/N) : " choice_boot
+                        log_prompt "PROMPT" && read -p "Avez-vous bien préparé vos partitions ? (y/N) : " choice_boot
 
                         if [[ ! "$choice_boot" =~ ^[Yy]$ ]]; then
                             echo
@@ -305,7 +305,7 @@ manage_partitions() {
         echo
         echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
         echo
-        log_prompt "INFO" && read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
+        log_prompt "PROMPT" && read -p "Veuillez entrer le numéro de la plage d'espace libre à utiliser : " space_choice
 
         local selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
         if [[ -z "$selected_space" ]]; then
@@ -409,7 +409,7 @@ manage_partitions() {
                     echo "   -  Nom recommandé : [home]"
                     echo
 
-                    log_prompt "INFO" && read -p "Nom de la partition à créer : " partition_name
+                    log_prompt "PROMPT" && read -p "Nom de la partition à créer : " partition_name
                     partition_name=$(echo "$partition_name" | tr '[:upper:]' '[:lower:]') # Conversion en minuscule
 
                     case $partition_name in
@@ -463,7 +463,7 @@ manage_partitions() {
                 echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
                 echo "Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
                 echo
-                log_prompt "INFO" && read -p "Votre Choix (unité obligatoire ex. [ MiB | GiB ] ou [ % ] ) : " partition_size
+                log_prompt "PROMPT" && read -p "Votre Choix (unité obligatoire ex. [ MiB | GiB ] ou [ % ] ) : " partition_size
                 partition_size="${partition_size}"
 
                 clear
@@ -476,7 +476,7 @@ manage_partitions() {
                     ((index++))
                 done
                 echo
-                log_prompt "INFO" && read -p "Choisissez un type de fichier : " partition_type
+                log_prompt "PROMPT" && read -p "Choisissez un type de fichier : " partition_type
                 case "$partition_type" in
                     "1"|"swap")
                         partition_type="linux-swap"
@@ -505,7 +505,7 @@ manage_partitions() {
                 [[ "$partition_size" != "100%" ]] || break
 
                 # Demander si l'utilisateur souhaite ajouter une autre partition
-                log_prompt "INFO" && read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
+                log_prompt "PROMPT" && read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
                 [[ "$continue_choice" =~ ^[Yy]$ ]] || break
                 
                 disk_size=$(($disk_size - $(convert_to_mib "$partition_size")))
@@ -527,7 +527,7 @@ manage_partitions() {
             echo
             echo "----------------------------------------"
             echo
-            log_prompt "INFO" && read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
+            log_prompt "PROMPT" && read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
             if [[ "$confirm_choice" =~ ^[Yy]$ ]]; then
                 break # Sortir de la boucle principale si les partitions sont correctes
             fi
@@ -553,7 +553,7 @@ manage_partitions() {
         echo
         echo "----------------------------------------"
         echo
-        log_prompt "INFO" && read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
+        log_prompt "PROMPT" && read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
 
         if [[ ! "$confirm_choice" =~ ^[Yy]$ ]]; then
             echo "Installation annulée par l'utilisateur."

@@ -331,7 +331,7 @@ install_base_secu() {
     ## arch-chroot Création d'un mot de passe root                                             
     while true; do
         echo
-        log_prompt "INFO" && read -p "Souhaitez-vous changer le mot de passe root (Y/n) : " pass_root 
+        log_prompt "PROMPT" && read -p "Souhaitez-vous changer le mot de passe root (Y/n) : " pass_root 
             
         # Vérifie la validité de l'entrée
         if [[ "$pass_root" =~ ^[yYnN]$ ]]; then
@@ -348,9 +348,9 @@ install_base_secu() {
         while true; do
             clear
             echo
-            log_prompt "INFO" && read -p "Veuillez entrer le nouveau mot de passe pour root : " -s new_pass 
+            log_prompt "PROMPT" && read -p "Veuillez entrer le nouveau mot de passe pour root : " -s new_pass 
             echo
-            log_prompt "INFO" && read -p "Confirmez le mot de passe pour root : " -s confirm_pass 
+            log_prompt "PROMPT" && read -p "Confirmez le mot de passe pour root : " -s confirm_pass 
 
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then
@@ -374,7 +374,7 @@ install_base_secu() {
     while true; do
         clear
         echo
-        log_prompt "INFO" && read -p "Souhaitez-vous créer un utilisateur (Y/n) : " add_user 
+        log_prompt "PROMPT" && read -p "Souhaitez-vous créer un utilisateur (Y/n) : " add_user 
             
         # Vérifie la validité de l'entrée
         if [[ "$add_user" =~ ^[yYnN]$ ]]; then
@@ -389,16 +389,16 @@ install_base_secu() {
     if [[ "$add_user" =~ ^[yY]$ ]]; then
         clear
         echo
-        log_prompt "INFO" && read -p "Saisir le nom d'utilisateur souhaité : " sudo_user
+        log_prompt "PROMPT" && read -p "Saisir le nom d'utilisateur souhaité : " sudo_user
         arch-chroot ${MOUNT_POINT} useradd -m -G wheel,audio,video,optical,storage,power,input "$sudo_user"
 
         # Demande de changer le mot de passe $USER
         while true; do
             clear
             echo
-            log_prompt "INFO" && read -p "Veuillez entrer le nouveau mot de passe pour $sudo_user : " -s new_pass  
+            log_prompt "PROMPT" && read -p "Veuillez entrer le nouveau mot de passe pour $sudo_user : " -s new_pass  
             echo
-            log_prompt "INFO" && read -p "Confirmez le mot de passe : " -s confirm_pass  
+            log_prompt "PROMPT" && read -p "Confirmez le mot de passe : " -s confirm_pass  
 
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then

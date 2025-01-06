@@ -12,11 +12,7 @@ log_prompt() {
     local GREEN='\033[0;32m'
     local YELLOW='\033[0;33m'
     local LIGHT_CYAN='\033[0;96m'
-
-    local PURPLE='\033[0;35m'        # Violet standard
-    local BOLD_PURPLE='\033[1;35m'   # Violet vif
-    local DIM_PURPLE='\033[2;35m'    # Violet atténué
-    local BG_PURPLE='\033[45m'       # Fond violet
+    local PURPLE='\033[0;35m'      
 
     local RESET='\033[0m'
 
@@ -40,7 +36,7 @@ log_prompt() {
             ;;
         "PURPLE")
             log_color="${PURPLE}"
-            log_status='PURPLE'
+            log_status='PROMPT'
             ;;
 
         *)
