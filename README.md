@@ -54,9 +54,9 @@ Vous pouvez configurer les partitions selon vos besoins, dans la limite des cont
 Le double boot est possible dans ce mode.
 
 
-## Partitions typiques pour le double boot :
+## Partitions typiques :
 
-Liste des partitions :
+### Liste des partitions pour un dual boot:
 
     Ex. disque principal : sda
 
@@ -76,13 +76,17 @@ Celle de Windows sera utilisé. Cette partition doit donc être créée avant l'
 
 Zone réservée pour Windows, afin d'y stocker des données système spécifiques.
 
+- Partition 'WINDOWS' : (Taille facultatif - Selon vos préférences)
+
+La partition Windows sera utilisée pour l'installation du système de Windows. 
+
 - Partition 'SWAP' : (Taille facultatif - Selon vos préférences)
 
 Espace de stockage utilisé comme mémoire virtuelle lorsque la mémoire vive (RAM) est insuffisante pour répondre aux besoins du système.
 
 - Partition 'RACINE' : 
 
-La partition Racine 'root' sera utilisée pour le système Arch Linux. 
+La partition Racine 'root' sera utilisée pour l'installation du système de Linux.
 
 - Partition 'HOME' : (facultatif) 
 
