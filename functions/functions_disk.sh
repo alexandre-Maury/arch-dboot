@@ -649,10 +649,9 @@ mount_partitions () {
                     local root_part=$part
                     local root_fstype="ext4"
 
-                elif [[ "$label" == "home" ]]; then
+                else
                     local home_part=$part
-                    # local home_fstype="ext4"
-
+                    
                 fi
                 ;;
 
