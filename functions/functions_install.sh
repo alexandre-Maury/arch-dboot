@@ -97,20 +97,20 @@ install_packages() {
                                                
     log_prompt "INFO" && echo " Installation des paquages de bases"
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
-    arch-chroot ${MOUNT_POINT} pacman -S nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
+    arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
 
     # CPU Microcode
     if [[ "$PROC_UCODE" == "intel-ucode.img" ]]; then
-        arch-chroot "${MOUNT_POINT}" pacman -S intel-ucode --noconfirm
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed intel-ucode --noconfirm
     elif [[ "$PROC_UCODE" == "amd-ucode.img" ]]; then
-        arch-chroot "${MOUNT_POINT}" pacman -S amd-ucode --noconfirm
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed amd-ucode --noconfirm
     else
         log_prompt "INFO" && echo " Installation du microcode impossible"
     fi
 
     # GPU Driver
     if [[ "$GPU_DRIVERS" == "nvidia" ]]; then
-        arch-chroot "${MOUNT_POINT}" pacman -S nvidia mesa --noconfirm
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia mesa --noconfirm
 
         [ ! -d "${MOUNT_POINT}/etc/pacman.d/hooks" ] && mkdir -p ${MOUNT_POINT}/etc/pacman.d/hooks
 
@@ -129,14 +129,14 @@ install_packages() {
         } > "${MOUNT_POINT}/etc/pacman.d/hooks/nvidia.hook"
 
     elif [[ "$GPU_DRIVERS" == "amd_radeon" ]]; then
-        arch-chroot "${MOUNT_POINT}" pacman -S xf86-video-amdgpu xf86-video-ati mesa --noconfirm 
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-amdgpu xf86-video-ati mesa --noconfirm 
 
     elif [[ "$GPU_DRIVERS" == "intel" ]]; then
-        arch-chroot "${MOUNT_POINT}" pacman -S xf86-video-intel mesa --noconfirm 
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-intel mesa --noconfirm 
 
     else
         log_prompt "WARNING" && echo "GPU non-reconnu, installation des pilottes générique : xf86-video-vesa mesa"
-        arch-chroot "${MOUNT_POINT}" pacman -S xf86-video-vesa mesa --noconfirm
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-vesa mesa --noconfirm
 
     fi
 
@@ -155,11 +155,11 @@ install_bootloader() {
 
         log_prompt "INFO" && echo " arch-chroot - Installation de GRUB" 
 
-        arch-chroot ${MOUNT_POINT} pacman -S grub efibootmgr os-prober dosfstools mtools --noconfirm
+        arch-chroot ${MOUNT_POINT} pacman -S --needed grub efibootmgr os-prober dosfstools mtools --noconfirm
 
         case "$root_fs" in
             "btrfs")
-                arch-chroot ${MOUNT_POINT} pacman -S btrfs-progs --noconfirm 
+                arch-chroot ${MOUNT_POINT} pacman -S --needed btrfs-progs --noconfirm 
                 ;;
         esac
 
@@ -183,11 +183,11 @@ install_bootloader() {
 
         log_prompt "INFO" && echo " arch-chroot - Installation de systemd-boot" 
 
-        arch-chroot ${MOUNT_POINT} pacman -S efibootmgr os-prober dosfstools mtools --noconfirm
+        arch-chroot ${MOUNT_POINT} pacman -S --needed efibootmgr os-prober dosfstools mtools --noconfirm
 
         case "$root_fs" in
             "btrfs")
-                arch-chroot ${MOUNT_POINT} pacman -S btrfs-progs --noconfirm 
+                arch-chroot ${MOUNT_POINT} pacman -S --needed btrfs-progs --noconfirm 
                 ;;
         esac
 
