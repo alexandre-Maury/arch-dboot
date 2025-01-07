@@ -56,10 +56,16 @@ Le double boot est possible dans ce mode.
 
 ## Partitions typiques pour le double boot :
 
+sda
+├─sda1 <-- EFI Partition
+├─sda2 <-- MSR
+├─sda3 <-- Windows
+└─sda4 <-- Empty Partition for Linux
+
 <u> - Partition 'EFI' : </u>
 
-Lors de la sélection des partitions à venir lors de l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). Lors d'un dual boot, celle de Windows sera utilisé.
-Cette partition doit être créée avant l'installation de Windows.
+Lors de la sélection des partitions durant l'éxécution de se script, LORS D'UN DUAL BOOT, il est important de ne pas créer de nouveau une partition boot (efi). 
+Celle de Windows sera utilisé. Cette partition doit donc être créée avant l'installation de Windows d'une taille minimun de 512 MiB.
 
 
 <u> - Partition 'SWAP' : Selon vos préférences</u>
@@ -75,9 +81,12 @@ Vous pouvez utiliser des outils de partitionnement pour redimensionner les parti
     Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows.
 
 
-Exemple 
+Exemple : (diskpart)
 
     Illustration a venir
+
+    <!-- ![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/config.png) -->
+
     
 
 ⚠️ Remarque importante :
