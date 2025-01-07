@@ -48,10 +48,10 @@ show_disk_partitions() {
 
 
     log_prompt "INFO" && echo "$status" && echo ""
-    echo "Device : /dev/$disk"
-    echo "Taille : $(lsblk -n -o SIZE "/dev/$disk" | head -1)"
-    echo "Type : $(lsblk -n -o TRAN "/dev/$disk")"
-    echo -e "\nInformations des partitions :"
+    echo " Device : /dev/$disk"
+    echo " Taille : $(lsblk -n -o SIZE "/dev/$disk" | head -1)"
+    echo " Type : $(lsblk -n -o TRAN "/dev/$disk")"
+    echo -e "\n Informations des partitions :"
     echo "----------------------------------------"
     # En-tête
     printf "%-10s %-10s %-10s %-15s %-15s %s\n" \
@@ -89,9 +89,9 @@ show_disk_partitions() {
     done
 
     # Résumé
-    echo -e "\nRésumé :"
-    echo "Nombre de partitions : $(echo "${partitions[@]}" | wc -w)"  
-    echo "Espace total : $(lsblk -n -o SIZE "/dev/$disk" | head -1)"
+    echo -e "\n Résumé :"
+    echo " Nombre de partitions : $(echo "${partitions[@]}" | wc -w)"  
+    echo " Espace total : $(lsblk -n -o SIZE "/dev/$disk" | head -1)"
 
 }
 
@@ -102,13 +102,13 @@ erase_disk() {
 
     local disk="$1"
     echo
-    log_prompt "INFO" && echo "Disque sélectionné : $disk"
+    log_prompt "INFO" && echo " Disque sélectionné : $disk"
     echo
-    echo "ATTENTION: Vous êtes sur le point d'effacer TOUT le disque /dev/$disk"
-    echo "Cette opération est IRRÉVERSIBLE !"
-    echo "Toutes les données seront DÉFINITIVEMENT PERDUES !"
+    echo " ATTENTION: Vous êtes sur le point d'effacer TOUT le disque /dev/$disk"
+    echo " Cette opération est IRRÉVERSIBLE !"
+    echo " Toutes les données seront DÉFINITIVEMENT PERDUES !"
     echo 
-    log_prompt "PROMPT" && read -p "Êtes-vous vraiment sûr ? (Y/n) : " choice_shred && echo
+    log_prompt "PROMPT" && read -p " Êtes-vous vraiment sûr ? (Y/n) : " choice_shred && echo
     
     if [[ "$choice_shred" =~ ^[yY]$ ]]; then
 
@@ -121,53 +121,53 @@ erase_disk() {
         # Gérer les partitions montées (non-swap)
         if [ -n "$mounted_parts" ]; then
             echo
-            log_prompt "INFO" && echo "ATTENTION: Certaines partitions sont montées :" && echo
+            log_prompt "INFO" && echo " ATTENTION: Certaines partitions sont montées :" && echo
             echo "$mounted_parts"
             echo
 
             while read -r part mountpoint; do
                 echo
-                log_prompt "INFO" && echo "Démontage de /dev/$part"
+                log_prompt "INFO" && echo " Démontage de /dev/$part"
                 echo
                 umount "/dev/$part" 
                 if [ $? -ne 0 ]; then
                     echo
-                    log_prompt "ERROR" && echo "Démontage de /dev/$part impossible" 
+                    log_prompt "ERROR" && echo " Démontage de /dev/$part impossible" 
                 fi
             done <<< "$mounted_parts"
 
         else
-            log_prompt "WARNING" && echo "Aucune partitions primaire montées :"
+            log_prompt "WARNING" && echo " Aucune partitions primaire montées :"
         fi
         
         # Gérer les partitions swap séparément
         if [ -n "$swap_parts" ]; then
             echo
-            log_prompt "INFO" && echo "ATTENTION: Certaines partitions swap sont activées :"
+            log_prompt "INFO" && echo " ATTENTION: Certaines partitions swap sont activées :"
             echo "$swap_parts"
             echo
 
             while read -r part _; do
                 echo
-                log_prompt "INFO" && echo "Démontage de /dev/$part"
+                log_prompt "INFO" && echo " Démontage de /dev/$part"
                 echo
                 swapoff "/dev/$part"
                 if [ $? -ne 0 ]; then
                     echo
-                    log_prompt "ERROR" && echo "Démontage de /dev/$part impossible"
+                    log_prompt "ERROR" && echo " Démontage de /dev/$part impossible"
                     echo
                 fi
             done <<< "$swap_parts"
 
         else
             echo
-            log_prompt "WARNING" && echo "Aucune partitions swap montées :" 
+            log_prompt "WARNING" && echo " Aucune partitions swap montées :" 
             echo
 
         fi
 
         echo
-        log_prompt "INFO" && echo "Effacement du disque /dev/$disk en cours ..."
+        log_prompt "INFO" && echo " Effacement du disque /dev/$disk en cours ..."
         echo
 
         # Obtenir la taille exacte du disque en blocs
@@ -179,7 +179,7 @@ erase_disk() {
 
     else
         echo
-        log_prompt "WARNING" && echo "Opération annulée"
+        log_prompt "WARNING" && echo " Opération annulée"
         echo
     fi
 }
@@ -196,7 +196,7 @@ manage_partitions() {
 
     # Vérifier si le disque existe
     if [[ ! -b "/dev/$disk" ]]; then
-        log_prompt "ERROR" && echo "Le disque /dev/$disk n'existe pas."
+        log_prompt "ERROR" && echo " Le disque /dev/$disk n'existe pas."
         exit 1
     fi
 
@@ -207,12 +207,12 @@ manage_partitions() {
         echo "   Choisissez le mode de configuration des partitions"
         echo "====================================================="
         echo
-        log_prompt "INFO" && echo "1. Mode Standard (valeurs par défaut)"
+        log_prompt "INFO" && echo " 1. Mode Standard (valeurs par défaut)"
         echo
         echo " Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh."
         echo " Le double boot n'est PAS activé dans ce mode."
         echo
-        log_prompt "INFO" && echo "2. Mode Avancé (configuration manuelle)"
+        log_prompt "INFO" && echo " 2. Mode Avancé (configuration manuelle)"
         echo
         echo " Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme."
         if [[ "$dboot" == "True" ]]; then
@@ -221,7 +221,7 @@ manage_partitions() {
         echo
         echo "====================================================="
         echo
-        log_prompt "PROMPT" && read -p "Veuillez saisir votre choix (1 ou 2) : " choice_mode
+        log_prompt "PROMPT" && read -p " Veuillez saisir votre choix (1 ou 2) : " choice_mode
 
         case "$choice_mode" in
             1)
@@ -235,7 +235,7 @@ manage_partitions() {
 
                 if [[ "$dboot" == "True" ]]; then
 
-                    log_prompt "PROMPT" && read -p "Souhaitez-vous procéder à un Dual Boot ? (y/N) : " dual_boot
+                    log_prompt "PROMPT" && read -p " Souhaitez-vous procéder à un Dual Boot ? (y/N) : " dual_boot
                     echo
                     if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
 
@@ -267,11 +267,11 @@ manage_partitions() {
                         echo
                         echo "====================================================="
                         echo
-                        log_prompt "PROMPT" && read -p "Avez-vous bien préparé vos partitions ? (y/N) : " choice_boot
+                        log_prompt "PROMPT" && read -p " Avez-vous bien préparé vos partitions ? (y/N) : " choice_boot
 
                         if [[ ! "$choice_boot" =~ ^[Yy]$ ]]; then
                             echo
-                            log_prompt "ERROR" && echo "Installation annulé par l'utilisateur."
+                            log_prompt "ERROR" && echo " Installation annulé par l'utilisateur."
                             echo
                             exit 1
                         fi
@@ -285,7 +285,7 @@ manage_partitions() {
                 ;;
 
             *)
-                echo "Choix invalide, veuillez réessayer."
+                echo " Choix invalide, veuillez réessayer."
                 ;;
         esac
     done
@@ -297,21 +297,21 @@ manage_partitions() {
         # Lister les espaces libres disponibles
         local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
         if [[ -z "$available_spaces" ]]; then
-            log_prompt "ERROR" && echo "Aucun espace libre détecté sur /dev/$disk."
+            log_prompt "ERROR" && echo " Aucun espace libre détecté sur /dev/$disk."
             exit 1
         fi
 
         # Demander à l'utilisateur de sélectionner une plage d'espace libre
         echo
-        log_prompt "INFO" && echo "Liste des espaces libres disponibles :"
+        log_prompt "INFO" && echo " Liste des espaces libres disponibles :"
         echo
         echo "$available_spaces" | awk -F'[:,]' '{print $1 " - Espace disponible : " $NF}'
         echo
-        log_prompt "PROMPT" && read -p "Saisir le numéro de la plage d'espace libre à utiliser : " space_choice
+        log_prompt "PROMPT" && read -p " Saisir le numéro de la plage d'espace libre à utiliser : " space_choice
 
         local selected_space=$(echo "$available_spaces" | grep "^${space_choice}:")
         if [[ -z "$selected_space" ]]; then
-            log_prompt "ERROR" && echo "Choix invalide. Veuillez réessayer."
+            log_prompt "ERROR" && echo " Choix invalide. Veuillez réessayer."
             exit 1
         fi
 
@@ -333,7 +333,7 @@ manage_partitions() {
     fi
 
     if [[ $total -le 0 ]]; then
-        log_prompt "ERROR" && echo "L'espace sélectionné est insuffisant pour créer des partitions."
+        log_prompt "ERROR" && echo " L'espace sélectionné est insuffisant pour créer des partitions."
         exit 1
     fi
 
@@ -355,10 +355,10 @@ manage_partitions() {
                 while true; do
                     clear
                     echo
-                    echo "Total Disponible : $total MiB"
-                    echo "Total Restant :    $disk_size MiB"
+                    echo " Total Disponible : $total MiB"
+                    echo " Total Restant :    $disk_size MiB"
                     echo
-                    log_prompt "INFO" && echo "Partitions définies : ${#PARTITIONS_CREATE[@]}" 
+                    log_prompt "INFO" && echo " Partitions définies : ${#PARTITIONS_CREATE[@]}" 
                     echo
                     echo "----------------------------------------"
                     printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
@@ -373,7 +373,7 @@ manage_partitions() {
                     echo
                     echo
                     echo
-                    log_prompt "INFO" && echo "Création d'une nouvelle partition :"
+                    log_prompt "INFO" && echo " Création d'une nouvelle partition :"
                     echo
                     # Message d'erreur
                     if [[ -n "$part_error" ]]; then
@@ -381,75 +381,73 @@ manage_partitions() {
                     fi
 
                     echo
-                    echo "Voici les partitions recommandées à créer pour une installation réussie :"
+                    echo " Voici les partitions recommandées à créer pour une installation réussie :"
                     echo
                     if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
-                        echo "- Rappel : Partition boot, lors d'un dual boot, celle de Windows sera utilisé."
+                        echo " Rappel : Partition boot, lors d'un dual boot, celle de Windows sera utilisé."
                     else
-                        echo "- Partition Boot (EFI)"
+                        echo " Partition Boot (EFI)"
                         echo "   - Type : fat32"
                         echo "   - Taille recommandée : 512MiB"
                         echo "   - Appellation recommandée : [boot] (obligatoire pour l'exécution correcte de l'installation)"
                     fi
                     echo
-                    echo "- Partition Swap"
-                    echo "   -  Type : linux-swap"
-                    echo "   -  Taille recommandée : selon vos besoins (ex. 2 à 4GiB pour la plupart des cas)"
+                    echo " Partition Swap"
+                    echo
+                    echo "   -  Type : linux-swap => Taille recommandée : Selon vos besoins (ex. 2 à 4GiB pour la plupart des cas)"
                     echo "   -  Appellation recommandée : [swap]"
                     echo
-                    echo "- Partition Racine (OBLIGATOIRE)"
-                    echo "   -  Deux options disponibles :"
-                    echo "     a. Type : btrfs"
-                    echo "        - Taille recommandée : 100% (pour occuper tout l'espace restant)"
-                    echo "     b. Type : ext4"
-                    echo "        - Taille recommandée : selon vos besoins (ex. 20-50GiB pour la racine)"
+                    echo " Partition Racine (OBLIGATOIRE)"
+                    echo
+                    echo "   - a. Type : btrfs => Taille recommandée : 100% (pour occuper tout l'espace restant)"
+                    echo "   - b. Type : ext4  => Taille recommandée : Selon vos besoins (ex. 20-50GiB pour la racine)"
                     echo "   - Appellation recommandée : [root] (obligatoire pour l'exécution correcte de l'installation)"
                     echo
-                    echo "- Partition Home (Facultative)"
-                    echo "   -  Type : ext4"
-                    echo "   -  Taille recommandée : selon vos besoins"
+                    echo " Partition Home (Facultative)"
+                    echo
+                    echo "   -  Type : ext4 => Taille recommandée : Selon vos besoins"
                     echo "   -  Appellation recommandée : [home]"
                     echo
 
-                    log_prompt "PROMPT" && read -p "Nom de la partition à créer : " partition_name
+                    log_prompt "PROMPT" && read -p " Nom de la partition à créer : " partition_name
                     partition_name=$(echo "$partition_name" | tr '[:upper:]' '[:lower:]') # Conversion en minuscule
 
                     case $partition_name in
                         boot)
-                            echo "Création de la partition Boot..."
-                            echo "Type : fat32"
-                            echo "Taille recommandée : 512MiB"
-                            echo "Assurez-vous de sélectionner une partition EFI System Partition (ESP) dans l'outil de partitionnement."
+                            echo " Création de la partition Boot..."
+                            echo " Type : fat32"
+                            echo " Taille recommandée : 512MiB"
+                            echo " Assurez-vous de sélectionner une partition EFI System Partition (ESP) dans l'outil de partitionnement."
                             part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         swap)
-                            echo "Création de la partition Swap..."
-                            echo "Type : linux-swap"
-                            echo "Taille recommandée : selon vos besoins (ex. 2-4GiB)"
+                            echo " Création de la partition Swap..."
+                            echo " Type : linux-swap"
+                            echo " Taille recommandée : selon vos besoins (ex. 2-4GiB)"
                             part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         root)
-                            echo "Création de la partition Racine..."
-                            echo "Type recommandé : btrfs ou ext4"
-                            echo "Si vous choisissez btrfs, configurez les subvolumes selon config.sh."
-                            echo "Taille recommandée : 100% pour btrfs ou selon vos besoins pour ext4 (ex. 20-50GiB)"
+                            echo " Création de la partition Racine..."
+                            echo " Type recommandé : btrfs ou ext4"
+                            echo " Si vous choisissez btrfs, configurez les subvolumes selon config.sh."
+                            echo " Taille recommandée : 100% pour btrfs ou selon vos besoins pour ext4 (ex. 20-50GiB)"
                             part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         home)
-                            echo "Création de la partition Home..."
-                            echo "Type : ext4"
-                            echo "Taille recommandée : selon vos besoins"
+                            echo " Création de la partition Home..."
+                            echo " Type : ext4"
+                            echo " Taille recommandée : selon vos besoins"
                             part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         *)
                             if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
-                                part_error="Nom de partition : $partition_name non valide. Veuillez choisir parmi [swap, root, home]."
+                                part_error=" Nom de partition : $partition_name non valide. Veuillez choisir parmi [swap, root, home]."
                             else
-                                part_error="Nom de partition : $partition_name non valide. Veuillez choisir parmi [boot, swap, root, home]."
+                                part_error=" Nom de partition : $partition_name non valide. Veuillez choisir parmi [boot, swap, root, home]."
                             fi
                             
                             ;;
@@ -459,19 +457,17 @@ manage_partitions() {
 
                 clear
                 echo
-                echo "Taille de la partition : $partition_name"
+                echo " Taille de la partition : $partition_name"
                 echo
-                echo "ex. "
+                echo " Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
+                echo " Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
                 echo
-                echo "Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
-                echo "Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
-                echo
-                log_prompt "PROMPT" && read -p "Votre Choix (unité obligatoire ex. [ MiB | GiB ] ou [ % ] ) : " partition_size
+                log_prompt "PROMPT" && read -p " Votre Choix (unité obligatoire ex. [ MiB | GiB ] ou [ % ] ) : " partition_size
                 partition_size="${partition_size}"
 
                 clear
                 echo
-                echo "Types disponibles pour la partition $partition_name:"
+                echo " Types disponibles pour la partition $partition_name:"
                 echo
                 local index=1
                 for type in "${PARTITIONS_TYPE[@]}"; do
@@ -479,7 +475,7 @@ manage_partitions() {
                     ((index++))
                 done
                 echo
-                log_prompt "PROMPT" && read -p "Choisissez un type de fichier : " partition_type
+                log_prompt "PROMPT" && read -p " Choisissez un type de fichier : " partition_type
                 case "$partition_type" in
                     "1"|"swap")
                         partition_type="linux-swap"
@@ -494,7 +490,7 @@ manage_partitions() {
                         partition_type="fat32"
                         ;;
                     *)
-                        echo "Type inconnu, veuillez réessayer."
+                        echo " Type inconnu, veuillez réessayer."
                         continue
                         ;;
                 esac
@@ -508,7 +504,7 @@ manage_partitions() {
                 [[ "$partition_size" != "100%" ]] || break
 
                 # Demander si l'utilisateur souhaite ajouter une autre partition
-                log_prompt "PROMPT" && read -p "Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
+                log_prompt "PROMPT" && read -p " Voulez-vous ajouter une autre partition ? (y/N) : " continue_choice
                 [[ "$continue_choice" =~ ^[Yy]$ ]] || break
                 
                 disk_size=$(($disk_size - $(convert_to_mib "$partition_size")))
@@ -517,7 +513,7 @@ manage_partitions() {
             # Vérification des partitions avant la création
             clear
             echo
-            log_prompt "INFO" && echo "Partitions définies :"
+            log_prompt "INFO" && echo " Partitions définies :"
             echo
             echo "----------------------------------------"
             printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
@@ -530,20 +526,20 @@ manage_partitions() {
             echo
             echo "----------------------------------------"
             echo
-            log_prompt "PROMPT" && read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
+            log_prompt "PROMPT" && read -p " Les partitions sont-elles correctes ? (y/N) : " confirm_choice
             if [[ "$confirm_choice" =~ ^[Yy]$ ]]; then
                 break # Sortir de la boucle principale si les partitions sont correctes
             fi
             echo
             # Si l'utilisateur veut recommencer
-            log_prompt "INFO" && echo "Recommençons la sélection des partitions."
+            log_prompt "INFO" && echo " Recommençons la sélection des partitions."
         done
 
     else
 
         # Vérification des partitions avant la création
         clear
-        log_prompt "INFO" && echo "Partitions définies dans config.sh:"
+        log_prompt "INFO" && echo " Partitions définies dans config.sh:"
         echo
         echo "----------------------------------------"
         printf "%-15s %-10s %-10s\n" "PARTITION" "TAILLE" "TYPE FS"
@@ -556,10 +552,10 @@ manage_partitions() {
         echo
         echo "----------------------------------------"
         echo
-        log_prompt "PROMPT" && read -p "Les partitions sont-elles correctes ? (y/N) : " confirm_choice
+        log_prompt "PROMPT" && read -p " Les partitions sont-elles correctes ? (y/N) : " confirm_choice
 
         if [[ ! "$confirm_choice" =~ ^[Yy]$ ]]; then
-            echo "Installation annulée par l'utilisateur."
+            echo " Installation annulée par l'utilisateur."
             exit 1
         fi
 
@@ -585,12 +581,12 @@ manage_partitions() {
         fi
 
         if (( $(bc <<< "$end > $end_space") )); then
-            log_prompt "ERROR" && echo "Pas assez d'espace pour créer la partition '$name'."
+            log_prompt "ERROR" && echo " Pas assez d'espace pour créer la partition '$name'."
             exit 1
         fi
 
         # Créer la partition
-        log_prompt "INFO" && echo "Création de la partition $name - Start ==> $start et End ==> $end"
+        log_prompt "INFO" && echo " Création de la partition $name - Start ==> $start et End ==> $end"
         parted --script -a optimal /dev/$disk mkpart primary "$type" "${start}MiB" "${end}MiB"
 
         # formater la partition : pour plus de choix ajouter ici ex. ext4, xfs ...
@@ -611,8 +607,8 @@ manage_partitions() {
                 ;;
 
             *)
-                echo "Type de partition inconnu ou non pris en charge : $type"
-                echo "Aucune action n'a été effectuée pour la partition : $device."
+                echo " Type de partition inconnu ou non pris en charge : $type"
+                echo " Aucune action n'a été effectuée pour la partition : $device."
                 ;;
         esac
 
@@ -669,7 +665,7 @@ mount_partitions () {
 
         if [[ "$root_fstype" == "btrfs" ]]; then
 
-            echo "Configuration de la partition root (/dev/$root_part)..."
+            echo " Configuration de la partition root (/dev/$root_part)..."
         
             # Montage initial pour création des sous-volumes
             mount --mkdir "/dev/$root_part" "${MOUNT_POINT}"
