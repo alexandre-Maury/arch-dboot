@@ -7,7 +7,7 @@ install_base() {
     clear
 
     echo
-    log_prompt "INFO" && echo "Installation du système de base"
+    log_prompt "INFO" && echo " Installation du système de base"
     reflector --country ${PAYS} --age 12 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
     pacstrap -K ${MOUNT_POINT} base base-devel linux linux-headers linux-firmware dkms
 }
@@ -17,14 +17,14 @@ config_system() {
     clear
 
     ## Generating the fstab                                                 
-    log_prompt "INFO" && echo "Génération du fstab" 
+    log_prompt "INFO" && echo " Génération du fstab" 
     genfstab -U -p ${MOUNT_POINT} >> ${MOUNT_POINT}/etc/fstab
 
     ## Configuration du system                                                    
-    log_prompt "INFO" && echo "Changement des makeflags pour " $CPU_COEUR " coeurs."
+    log_prompt "INFO" && echo " Changement des makeflags pour " $CPU_COEUR " coeurs."
 
     if [[  $RAM -gt 8000000 ]]; then  # Vérifie si la mémoire totale est supérieure à 8 Go
-        log_prompt "INFO" && echo "Changement des paramètres de compression pour " $CPU_COEUR " coeurs."
+        log_prompt "INFO" && echo " Changement des paramètres de compression pour " $CPU_COEUR " coeurs."
 
         sed -i "s/^#\?MAKEFLAGS=\".*\"/MAKEFLAGS=\"-j$CPU_COEUR\"/" "${MOUNT_POINT}/etc/makepkg.conf" # Modifie les makeflags dans makepkg.conf
         sed -i "s/^#\?COMPRESSXZ=(.*)/COMPRESSXZ=(xz -c -T $CPU_COEUR -z -)/" "${MOUNT_POINT}/etc/makepkg.conf" # Modifie les paramètres de compression
@@ -32,28 +32,28 @@ config_system() {
     fi
 
     ## Définir le fuseau horaire + local                                                  
-    log_prompt "INFO" && echo "Configuration des locales"
+    log_prompt "INFO" && echo " Configuration des locales"
     echo "KEYMAP=${KEYMAP}" > "${MOUNT_POINT}/etc/vconsole.conf"
     sed -i "/^#$LOCALE/s/^#//g" "${MOUNT_POINT}/etc/locale.gen"
     arch-chroot ${MOUNT_POINT} locale-gen
     
-    echo "Configuration de la timezone..."
+    echo " Configuration de la timezone..."
     ln -sf /usr/share/zoneinfo/${ZONE}/${CITY} "${MOUNT_POINT}/etc/localtime"
     hwclock --systohc
 
     echo "LANG=${LANG}" > "${MOUNT_POINT}/etc/locale.conf"
 
     ## Modification pacman.conf                                                  
-    log_prompt "INFO" && echo "Modification du fichier pacman.conf"
+    log_prompt "INFO" && echo " Modification du fichier pacman.conf"
     sed -i 's/^#Para/Para/' "${MOUNT_POINT}/etc/pacman.conf"
     sed -i "/\[multilib\]/,/Include/"'s/^#//' "${MOUNT_POINT}/etc/pacman.conf"
     arch-chroot ${MOUNT_POINT} pacman -Sy --noconfirm
 
     ## Configuration du réseau                                             
-    log_prompt "INFO" && echo "Génération du hostname" 
+    log_prompt "INFO" && echo " Génération du hostname" 
     echo "${HOSTNAME}" > "${MOUNT_POINT}/etc/hostname"
 
-    log_prompt "INFO" && echo "Génération du Host" 
+    log_prompt "INFO" && echo " Génération du Host" 
 
     {
         echo "127.0.0.1 localhost"
@@ -62,7 +62,7 @@ config_system() {
     } > "${MOUNT_POINT}/etc/hosts"
 
 
-    log_prompt "INFO" && echo "Configuration du fichier 20-wired.network" && echo
+    log_prompt "INFO" && echo " Configuration du fichier 20-wired.network" && echo
 
     {
         echo "[Match]"
@@ -78,10 +78,10 @@ config_system() {
     } > "${MOUNT_POINT}/etc/systemd/network/20-wired.network"
 
     
-    log_prompt "INFO" && echo "Configuration de /etc/resolv.conf pour utiliser systemd-resolved" && echo 
+    log_prompt "INFO" && echo " Configuration de /etc/resolv.conf pour utiliser systemd-resolved" && echo 
     ln -sf /run/systemd/resolve/stub-resolv.conf "${MOUNT_POINT}/etc/resolv.conf"
 
-    log_prompt "INFO" && echo "Écrire la configuration DNS dans /etc/systemd/resolved.conf" && echo 
+    log_prompt "INFO" && echo " Écrire la configuration DNS dans /etc/systemd/resolved.conf" && echo 
 
     {
         echo "[Resolve]" 
@@ -95,7 +95,7 @@ install_packages() {
 
     clear
                                                
-    log_prompt "INFO" && echo "Installation des paquages de bases"
+    log_prompt "INFO" && echo " Installation des paquages de bases"
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
     arch-chroot ${MOUNT_POINT} pacman -S nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
 
@@ -105,7 +105,7 @@ install_packages() {
     elif [[ "$PROC_UCODE" == "amd-ucode.img" ]]; then
         arch-chroot "${MOUNT_POINT}" pacman -S amd-ucode --noconfirm
     else
-        log_prompt "INFO" && echo "Installation du microcode impossible"
+        log_prompt "INFO" && echo " Installation du microcode impossible"
     fi
 
     # GPU Driver
@@ -153,7 +153,7 @@ install_bootloader() {
 
     if [[ "$BOOTLOADER" == "grub" ]]; then
 
-        log_prompt "INFO" && echo "arch-chroot - Installation de GRUB" 
+        log_prompt "INFO" && echo " arch-chroot - Installation de GRUB" 
 
         arch-chroot ${MOUNT_POINT} pacman -S grub efibootmgr os-prober dosfstools mtools --noconfirm
 
@@ -173,7 +173,7 @@ install_bootloader() {
 
         sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
 
-        log_prompt "INFO" && echo "arch-chroot - génération de grub.cfg"
+        log_prompt "INFO" && echo " arch-chroot - génération de grub.cfg"
 
         arch-chroot ${MOUNT_POINT} grub-mkconfig -o /boot/grub/grub.cfg
 
@@ -181,7 +181,7 @@ install_bootloader() {
 
     if [[ "$BOOTLOADER" == "systemd-boot" ]]; then
 
-        log_prompt "INFO" && echo "arch-chroot - Installation de systemd-boot" 
+        log_prompt "INFO" && echo " arch-chroot - Installation de systemd-boot" 
 
         arch-chroot ${MOUNT_POINT} pacman -S efibootmgr os-prober dosfstools mtools --noconfirm
 
@@ -219,7 +219,7 @@ install_bootloader() {
         clear
 
         # Détection automatique des entrées UEFI
-        log_prompt "INFO" && echo "Recherche des entrées UEFI..."
+        log_prompt "INFO" && echo " Recherche des entrées UEFI..."
 
         # Récupère toutes les entrées UEFI avec leurs identifiants
         all_boot=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
@@ -229,11 +229,11 @@ install_bootloader() {
 
         # Vérification si l'entrée Windows est trouvée
         if [[ -z "$windows_id" ]]; then
-            log_prompt "ERROR" && echo "Erreur : Impossible de trouver l'entrée Windows Boot Manager."
+            log_prompt "ERROR" && echo " Erreur : Impossible de trouver l'entrée Windows Boot Manager."
             exit 1
         fi
 
-        log_prompt "INFO" && echo "Identifiant de l'entrée Windows : $windows_id"
+        log_prompt "INFO" && echo " Identifiant de l'entrée Windows : $windows_id"
 
         # Liste des autres entrées (hors Windows)
         other_ids=$(echo "$all_boot" | grep -v -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
@@ -242,13 +242,13 @@ install_bootloader() {
         new_boot_order=$(echo "$other_ids" | tr '\n' ',' | sed 's/,$//'),$windows_id
 
         # Affichage pour vérification
-        log_prompt "INFO" && echo "Nouvel ordre de démarrage : $new_boot_order"
+        log_prompt "INFO" && echo " Nouvel ordre de démarrage : $new_boot_order"
 
         # Application de l'ordre de démarrage
         efibootmgr -o $new_boot_order
 
         # Vérification finale
-        log_prompt "INFO" && echo "Ordre de démarrage mis à jour :"
+        log_prompt "INFO" && echo " Ordre de démarrage mis à jour :"
         echo
         efibootmgr
 
@@ -257,7 +257,7 @@ install_bootloader() {
 
 install_mkinitcpio() {
 
-    log_prompt "INFO" && echo "Modification du fichier mkinitcpio"
+    log_prompt "INFO" && echo " Modification du fichier mkinitcpio"
 
     sed -i 's/^#\?COMPRESSION="xz"/COMPRESSION="xz"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
     sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
@@ -270,7 +270,7 @@ install_mkinitcpio() {
         echo "$line"
     done
 
-    log_prompt "SUCCESS" && echo "mkinitcpio terminé avec succès."
+    log_prompt "SUCCESS" && echo " mkinitcpio terminé avec succès."
 
 }
 
@@ -286,13 +286,13 @@ config_passwdqc() {
     local min_phrase="4"     # Longueur minimale pour une phrase de passe, qui est généralement une suite de plusieurs mots ou une longue chaîne de caractères (ex. : "monmotdepassecompliqué").
 
     echo
-    log_prompt "INFO" && echo "Configuration de passwdqc.conf" && echo ""
+    log_prompt "INFO" && echo " Configuration de passwdqc.conf" && echo ""
     if [ -f "${MOUNT_POINT}$passwdqc_conf" ]; then
         cp "${MOUNT_POINT}$passwdqc_conf" "${MOUNT_POINT}$passwdqc_conf.bak"
     fi
 
     echo
-    log_prompt "INFO" && echo "Création ou modification du fichier passwdqc.conf dans ${MOUNT_POINT}${passwdqc_conf}" && echo 
+    log_prompt "INFO" && echo " Création ou modification du fichier passwdqc.conf dans ${MOUNT_POINT}${passwdqc_conf}" && echo 
 
     {
         echo "min=$min_simple,$min_2classes,$min_3classes,$min_4classes,$min_phrase"
@@ -313,14 +313,14 @@ config_root() {
     ## arch-chroot Création d'un mot de passe root                                             
     while true; do
         echo
-        log_prompt "PROMPT" && read -p "Souhaitez-vous changer le mot de passe du compte administrateur (Y/n) : " pass_root 
+        log_prompt "PROMPT" && read -p " Souhaitez-vous changer le mot de passe du compte administrateur (Y/n) : " pass_root 
             
         # Vérifie la validité de l'entrée
         if [[ "$pass_root" =~ ^[yYnN]$ ]]; then
             break
         else
             echo
-            log_prompt "WARNING" && echo "Veuillez répondre par Y (oui) ou N (non)." 
+            log_prompt "WARNING" && echo " Veuillez répondre par Y (oui) ou N (non)." 
         fi
     done
 
@@ -330,9 +330,9 @@ config_root() {
         while true; do
             clear
             echo
-            log_prompt "PROMPT" && read -p "Entrer le mot de passe pour le compte root : " -s new_pass 
+            log_prompt "PROMPT" && read -p " Entrer le mot de passe pour le compte root : " -s new_pass 
             echo
-            log_prompt "PROMPT" && read -p "Confirmez le mot de passe : " -s confirm_pass 
+            log_prompt "PROMPT" && read -p " Confirmez le mot de passe : " -s confirm_pass 
 
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then
@@ -343,7 +343,7 @@ config_root() {
                 break
             else
                 echo
-                log_prompt "WARNING" && echo "Les mots de passe ne correspondent pas. Veuillez réessayer." 
+                log_prompt "WARNING" && echo " Les mots de passe ne correspondent pas. Veuillez réessayer." 
             fi
         done
     fi
@@ -362,14 +362,14 @@ config_user() {
     while true; do
         clear
         echo
-        log_prompt "PROMPT" && read -p "Souhaitez-vous créer un utilisateur (Y/n) : " add_user 
+        log_prompt "PROMPT" && read -p " Souhaitez-vous créer un utilisateur (Y/n) : " add_user 
             
         # Vérifie la validité de l'entrée
         if [[ "$add_user" =~ ^[yYnN]$ ]]; then
             break
         else
             echo
-            log_prompt "WARNING" && echo "Veuillez répondre par Y (oui) ou N (non)."
+            log_prompt "WARNING" && echo " Veuillez répondre par Y (oui) ou N (non)."
         fi
     done
 
@@ -377,27 +377,27 @@ config_user() {
     if [[ "$add_user" =~ ^[yY]$ ]]; then
         clear
         echo
-        log_prompt "PROMPT" && read -p "Saisir le nom d'utilisateur souhaité : " sudo_user
+        log_prompt "PROMPT" && read -p " Saisir le nom d'utilisateur souhaité : " sudo_user
         arch-chroot ${MOUNT_POINT} useradd -m -G wheel,audio,video,optical,storage,power,input "$sudo_user"
 
         # Demande de changer le mot de passe $USER
         while true; do
             clear
             echo
-            log_prompt "PROMPT" && read -p "Entrer le mot de passe pour le compte $sudo_user : " -s new_pass  
+            log_prompt "PROMPT" && read -p " Entrer le mot de passe pour le compte $sudo_user : " -s new_pass  
             echo
-            log_prompt "PROMPT" && read -p "Confirmez le mot de passe : " -s confirm_pass  
+            log_prompt "PROMPT" && read -p " Confirmez le mot de passe : " -s confirm_pass  
 
             # Vérifie si les mots de passe correspondent
             if [[ "$new_pass" == "$confirm_pass" ]]; then
                 clear
                 echo
-                log_prompt "INFO" && echo "arch-chroot - Configuration du compte $sudo_user"
+                log_prompt "INFO" && echo " arch-chroot - Configuration du compte $sudo_user"
                 echo -e "$new_pass\n$new_pass" | arch-chroot ${MOUNT_POINT} passwd $sudo_user
                 break
             else
                 echo
-                log_prompt "WARNING" && echo "Les mots de passe ne correspondent pas. Veuillez réessayer."
+                log_prompt "WARNING" && echo " Les mots de passe ne correspondent pas. Veuillez réessayer."
             fi
         done
     fi
@@ -410,7 +410,7 @@ config_ssh() {
     local ssh_config_file="/etc/ssh/sshd_config"
 
     echo
-    log_prompt "INFO" && echo "arch-chroot - Configuration du SSH"
+    log_prompt "INFO" && echo " arch-chroot - Configuration du SSH"
     echo
     sed -i "s/#Port 22/Port $SSH_PORT/" "${MOUNT_POINT}$ssh_config_file"
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' "${MOUNT_POINT}$ssh_config_file"
@@ -423,7 +423,7 @@ config_ssh() {
 activate_service() {
     clear
     echo
-    log_prompt "INFO" && echo "arch-chroot - Activation des services"
+    log_prompt "INFO" && echo " arch-chroot - Activation des services"
     echo
     arch-chroot ${MOUNT_POINT} systemctl enable sshd
     arch-chroot ${MOUNT_POINT} systemctl enable systemd-homed
