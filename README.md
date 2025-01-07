@@ -26,8 +26,12 @@ Ses Options (liste des sous-volumes et options de montage) sont modifiable dans 
 
     # Options de montage BTRFS par défaut
     BTRFS_MOUNT_OPTIONS="defaults,noatime,compress=zstd,commit=120"
+
+## Mode de partitionnement
+
+Pour créer vos partitions, vous avez le choix entre deux modes de partitionnement.
     
-1- Mode Standard : (valeurs par défaut) 
+### Mode Standard : (valeurs par défaut) 
 
 Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh.
 Le double boot n'est PAS activé dans ce mode.
@@ -48,7 +52,7 @@ ex.
         "root:${DEFAULT_FS_SIZE}:${DEFAULT_FS_TYPE}"
     )
 
-2- Mode Avancé : (configuration manuelle)
+### Mode Avancé : (configuration manuelle)
 
 Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme.
 Le double boot est possible dans ce mode.
