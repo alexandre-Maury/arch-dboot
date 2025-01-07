@@ -648,9 +648,11 @@ mount_partitions () {
                 if [[ "$label" == "root" ]]; then
                     local root_part=$part
                     local root_label="ext4"
-                else
+
+                elif [[ "$label" == "home" ]]; then
                     local home_part=$part
                     local home_fstype="ext4"
+
                 fi
                 ;;
 
@@ -663,10 +665,10 @@ mount_partitions () {
     # Monter et configurer la partition root avec BTRFS ou EXT4
     if [[ -n "$root_part" ]]; then
 
+        echo " Configuration de la partition root (/dev/$root_part)..."
+
         if [[ "$root_fstype" == "btrfs" ]]; then
 
-            echo " Configuration de la partition root (/dev/$root_part)..."
-        
             # Montage initial pour création des sous-volumes
             mount --mkdir "/dev/$root_part" "${MOUNT_POINT}"
             
@@ -699,7 +701,7 @@ mount_partitions () {
             done
 
         elif [[ "$root_fstype" == "ext4" ]]; then
-        
+
             mount --mkdir "/dev/$root_part" "${MOUNT_POINT}"
 
         fi
