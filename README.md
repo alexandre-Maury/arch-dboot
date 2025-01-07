@@ -56,9 +56,10 @@ Le double boot est possible dans ce mode.
 
 ## Partitions typiques :
 
-### Liste des partitions pour un dual boot:
 
-    Ex. disque principal : sda
+Ex. disque principal : sda
+
+### Pour un Dual Boot :
 
     sda1 <-- EFI Partition
     sda2 <-- MSR
@@ -67,29 +68,30 @@ Le double boot est possible dans ce mode.
     sda5 <-- Linux Racine
     sda6 <-- Linux Home (facultatif)
 
-- Partition 'EFI' : Taille minimun de 512 MiB.
+### Pour une installation simple
 
+    sda1 <-- EFI Partition
+    sda2 <-- Linux Swap (facultatif)
+    sda3 <-- Linux Racine
+    sda4 <-- Linux Home (facultatif)
+
+- Partition 'EFI' : Taille minimun de 512 MiB.
 LORS D'UN DUAL BOOT, au cours de la sélection des partitions durant l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). 
 Celle de Windows sera utilisé. Cette partition doit donc être créée avant l'installation de Windows.
 
 - Partition 'MSR' : Taille recommandé 16 MiB
-
 Zone réservée pour Windows, afin d'y stocker des données système spécifiques.
 
 - Partition 'WINDOWS' : (Taille facultatif - Selon vos préférences)
-
 La partition Windows sera utilisée pour l'installation du système de Windows. 
 
 - Partition 'SWAP' : (Taille facultatif - Selon vos préférences)
-
 Espace de stockage utilisé comme mémoire virtuelle lorsque la mémoire vive (RAM) est insuffisante pour répondre aux besoins du système.
 
 - Partition 'RACINE' : 
-
 La partition Racine 'root' sera utilisée pour l'installation du système de Linux.
 
 - Partition 'HOME' : (facultatif) 
-
 La partition 'home' sera utilisée pour stocker les données personnelles des utilisateurs. 
 
 
