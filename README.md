@@ -27,7 +27,7 @@ Ses Options (liste des sous-volumes et options de montage) sont modifiable dans 
     # Options de montage BTRFS par défaut
     BTRFS_MOUNT_OPTIONS="defaults,noatime,compress=zstd,commit=120"
     
-1- <u> Mode Standard : (valeurs par défaut) </u>
+1- Mode Standard : (valeurs par défaut) 
 
 Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh.
 Le double boot n'est PAS activé dans ce mode.
@@ -48,7 +48,7 @@ ex.
         "root:${DEFAULT_FS_SIZE}:${DEFAULT_FS_TYPE}"
     )
 
-2- <u> Mode Avancé : (configuration manuelle) </u>
+2- Mode Avancé : (configuration manuelle)
 
 Vous pouvez configurer les partitions selon vos besoins, dans la limite des contraintes du programme.
 Le double boot est possible dans ce mode.
@@ -59,29 +59,37 @@ Le double boot est possible dans ce mode.
 Liste des partitions :
 
     Ex. disque principal : sda
-    
+
     sda1 <-- EFI Partition
     sda2 <-- MSR
     sda3 <-- Windows
-    sda4 <-- Empty Partition for Linux
+    sda4 <-- Linux Swap (facultatif)
+    sda5 <-- Linux Racine
+    sda6 <-- Linux Home (facultatif)
 
-<u> - Partition 'EFI' : </u>
+- Partition 'EFI' : Taille minimun de 512 MiB.
 
-Lors de la sélection des partitions durant l'éxécution de se script, LORS D'UN DUAL BOOT, il est important de ne pas créer de nouveau une partition boot (efi). 
-Celle de Windows sera utilisé. Cette partition doit donc être créée avant l'installation de Windows d'une taille minimun de 512 MiB.
+LORS D'UN DUAL BOOT, au cours de la sélection des partitions durant l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). 
+Celle de Windows sera utilisé. Cette partition doit donc être créée avant l'installation de Windows.
+
+- Partition 'MSR' : Taille recommandé 16 MiB
+
+Zone réservée pour Windows, afin d'y stocker des données système spécifiques.
+
+- Partition 'SWAP' : (Taille facultatif - Selon vos préférences)
+
+Espace de stockage utilisé comme mémoire virtuelle lorsque la mémoire vive (RAM) est insuffisante pour répondre aux besoins du système.
+
+- Partition 'RACINE' : 
+
+La partition Racine 'root' sera utilisée pour le système Arch Linux. 
+
+- Partition 'HOME' : (facultatif) 
+
+La partition 'home' sera utilisée pour stocker les données personnelles des utilisateurs. 
 
 
-<u> - Partition 'SWAP' : Selon vos préférences</u>
-
-
-<u> - Partition 'RACINE' : </u>
-
-Réduisez la taille d'une partition existante pour libérer de l'espace.
-La nouvelle partition 'root' sera utilisée pour le système Arch Linux.
-Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions.
-
-
-    Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows.
+    Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows pour la création des partitions.
 
 
 Exemple : (diskpart)
