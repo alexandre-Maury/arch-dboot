@@ -140,6 +140,13 @@ install_packages() {
 
     fi
 
+    sed -i 's/^#\?COMPRESSION="xz"/COMPRESSION="xz"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
+
 }
 
 install_bootloader() {
@@ -258,13 +265,6 @@ install_bootloader() {
 install_mkinitcpio() {
 
     log_prompt "INFO" && echo " Modification du fichier mkinitcpio"
-
-    sed -i 's/^#\?COMPRESSION="xz"/COMPRESSION="xz"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
     arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
         echo "$line"

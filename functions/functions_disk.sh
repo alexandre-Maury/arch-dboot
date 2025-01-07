@@ -698,11 +698,15 @@ mount_partitions () {
                 mount -o "${BTRFS_MOUNT_OPTIONS},subvol=${subvol}" "/dev/$root_part" "$mount_point"
             done
 
+        elif [[ "$root_fstype" == "ext4" ]]; then
+        
+            mount --mkdir "/dev/$root_part" "${MOUNT_POINT}"
+
         fi
 
-        if [[ "$root_fstype" == "ext4" ]]; then
-            mount --mkdir "/dev/$root_part" "${MOUNT_POINT}"
-        fi
+
+        
+
     fi
 
     # Monter la partition boot

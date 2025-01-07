@@ -30,7 +30,7 @@ Ses Options (liste des sous-volumes et options de montage) sont modifiable dans 
 ## Mode de partitionnement
 
 Pour créer vos partitions, vous avez le choix entre deux modes de partitionnement.
-    
+
 ### Mode Standard : (valeurs par défaut) 
 
 Les partitions seront créées en fonction des valeurs par défaut définies dans le fichier config.sh.
@@ -99,7 +99,7 @@ La partition Racine 'root' sera utilisée pour l'installation du système de Lin
 La partition 'home' sera utilisée pour stocker les données personnelles des utilisateurs. 
 
 
-    Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows pour la création des partitions.
+Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows pour la création des partitions.
 
 
 Exemple : (diskpart)
