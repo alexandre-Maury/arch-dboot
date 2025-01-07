@@ -56,11 +56,14 @@ Le double boot est possible dans ce mode.
 
 ## Partitions typiques pour le double boot :
 
-sda
-├─sda1 <-- EFI Partition
-├─sda2 <-- MSR
-├─sda3 <-- Windows
-└─sda4 <-- Empty Partition for Linux
+Liste des partitions :
+
+    Ex. disque principal : sda
+    
+    sda1 <-- EFI Partition
+    sda2 <-- MSR
+    sda3 <-- Windows
+    sda4 <-- Empty Partition for Linux
 
 <u> - Partition 'EFI' : </u>
 
