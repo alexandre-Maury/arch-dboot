@@ -135,7 +135,7 @@ while true; do
             config_user
             config_ssh
             activate_service
-            install_mkinitcpio
+            # install_mkinitcpio
 
             clear
             echo
