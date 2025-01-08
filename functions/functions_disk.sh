@@ -634,12 +634,10 @@ mount_partitions () {
         # Configurer et formater la partition
         case "$fs_type" in
             "vfat")  
-
                 if [[ "$label" == "boot" ]]; then
-                    local boot_part=$part 
-                else
-                    local efi_part=$part
+                    local boot_part=$part
                 fi
+                 
                 ;;
 
             "btrfs") 
@@ -708,20 +706,17 @@ mount_partitions () {
             mount --mkdir "/dev/$root_part" "${MOUNT_POINT}"
 
         fi
-
-
-        
-
     fi
 
     # Monter la partition boot
     if [[ -n "$boot_part" ]]; then
-        mount --mkdir "/dev/$boot_part" "${MOUNT_POINT}/boot"
-    fi
 
-    # Monter la partition efi
-    if [[ -n "$efi_part" ]]; then
-        mount --mkdir "/dev/$efi_part" "${MOUNT_POINT}/efi"
+        if [[ "$BOOTLOADER" == "systemd-boot" ]]; then
+            mount --mkdir "/dev/$boot_part" "${MOUNT_POINT}/boot"
+        elif [[ "$BOOTLOADER" == "grub" ]]; then
+            mount --mkdir "/dev/$boot_part" "${MOUNT_POINT}/boot/efi"
+        fi
+
     fi
 
     # Monter la partition home
