@@ -19,16 +19,19 @@ MOUNT_POINT="/mnt" # Point de montage
 
 DEFAULT_BOOT_TYPE="fat32"
 DEFAULT_SWAP_TYPE="linux-swap"
-DEFAULT_FS_TYPE="btrfs"
+DEFAULT_ROOT_TYPE="ext4"
+DEFAULT_HOME_TYPE="ext4"
 
 DEFAULT_BOOT_SIZE="512MiB"
 DEFAULT_SWAP_SIZE="8GiB"
-DEFAULT_FS_SIZE="100%"
+DEFAULT_ROOT_SIZE="55GiB"
+DEFAULT_HOME_SIZE="100%"
 
 PARTITIONS_CREATE=(
     "boot:${DEFAULT_BOOT_SIZE}:${DEFAULT_BOOT_TYPE}"
     "swap:${DEFAULT_SWAP_SIZE}:${DEFAULT_SWAP_TYPE}"
-    "root:${DEFAULT_FS_SIZE}:${DEFAULT_FS_TYPE}"
+    "root:${DEFAULT_ROOT_SIZE}:${DEFAULT_ROOT_TYPE}"
+    "home:${DEFAULT_HOME_SIZE}:${DEFAULT_HOME_TYPE}"
 )
 
 PARTITIONS_TYPE=(
@@ -38,7 +41,7 @@ PARTITIONS_TYPE=(
     "fat32"
 )
 
-BOOTLOADER="grub"  # systemd-boot ou grub
+BOOTLOADER="systemd-boot"  # systemd-boot ou grub
 
 # Liste des sous-volumes BTRFS à créer
 BTRFS_SUBVOLUMES=("@" "@root" "@home" "@srv" "@log" "@cache" "@tmp" "@snapshots")
