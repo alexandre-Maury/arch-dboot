@@ -170,7 +170,7 @@ install_bootloader() {
                 ;;
         esac
 
-        arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot/EFI --bootloader-id=Arch
+        arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot/EFI --bootloader-id=ArchLinux
 
         log_prompt "INFO" && echo "arch-chroot - configuration de grub"
 
@@ -199,28 +199,8 @@ install_bootloader() {
         esac
 
         root_uuid=$(blkid -s UUID -o value /dev/${root_part})
-        root_options="root=UUID=${root_uuid} rootflags=subvol=@ rw"
 
         arch-chroot ${MOUNT_POINT} bootctl --path=/boot install
-
-        {
-            echo "title   Arch Linux"
-            echo "linux   /vmlinuz-linux"
-            echo "initrd  /${PROC_UCODE}"
-            echo "initrd  /initramfs-linux.img"
-
-            if [[ -n "${GPU_OPTION}" ]]; then
-                echo "options ${root_options} $GPU_OPTION"
-            else
-                echo "options ${root_options}"
-            fi
-        } > "${MOUNT_POINT}/boot/loader/entries/arch.conf"
-
-        {
-            echo "title   Windows Boot Manager"
-            echo "efi     /EFI/Microsoft/Boot/bootmgfw.efi"
-
-        } > "${MOUNT_POINT}/boot/loader/entries/windows.conf"
 
         {
             echo "default arch.conf"
@@ -228,6 +208,31 @@ install_bootloader() {
             echo "console-mode max"
             echo "editor no"
         } > "${MOUNT_POINT}/boot/loader/loader.conf"
+
+        {
+            echo "title   Arch Linux"
+            echo "linux   /vmlinuz-linux"
+            echo "initrd  /${PROC_UCODE}"
+            echo "initrd  /initramfs-linux.img"
+            echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw"
+
+        } > "${MOUNT_POINT}/boot/loader/entries/arch.conf"
+
+        {
+            echo "title   Arch Linux"
+            echo "linux   /vmlinuz-linux"
+            echo "initrd  /initramfs-linux-fallback.img"
+            echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw"
+
+        } > "${MOUNT_POINT}/boot/loader/entries/arch-fallback.conf"
+
+        {
+            echo "title   Windows Boot Manager"
+            echo "efi     /EFI/Microsoft/Boot/bootmgfw.efi"
+
+        } > "${MOUNT_POINT}/boot/loader/entries/windows.conf"
+
+
 
         clear
 
