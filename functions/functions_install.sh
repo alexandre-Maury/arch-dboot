@@ -224,42 +224,43 @@ install_bootloader() {
         } > "${MOUNT_POINT}/boot/loader/loader.conf"
 
         clear
-
-        # Détection automatique des entrées UEFI
-        log_prompt "INFO" && echo " Recherche des entrées UEFI..."
-
-        # Récupère toutes les entrées UEFI avec leurs identifiants
-        all_boot=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
-
-        # Identifiant de l'entrée Windows Boot Manager
-        windows_id=$(echo "$all_boot" | grep -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
-
-        # Vérification si l'entrée Windows est trouvée
-        if [[ -z "$windows_id" ]]; then
-            log_prompt "ERROR" && echo " Erreur : Impossible de trouver l'entrée Windows Boot Manager."
-            exit 1
-        fi
-
-        log_prompt "INFO" && echo " Identifiant de l'entrée Windows : $windows_id"
-
-        # Liste des autres entrées (hors Windows)
-        other_ids=$(echo "$all_boot" | grep -v -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
-
-        # Construction de l'ordre de démarrage
-        new_boot_order=$(echo "$other_ids" | tr '\n' ',' | sed 's/,$//'),$windows_id
-
-        # Affichage pour vérification
-        log_prompt "INFO" && echo " Nouvel ordre de démarrage : $new_boot_order"
-
-        # Application de l'ordre de démarrage
-        efibootmgr -o $new_boot_order
-
-        # Vérification finale
-        log_prompt "INFO" && echo " Ordre de démarrage mis à jour :"
-        echo
-        efibootmgr
-
     fi
+}
+
+install_efibootmgr() {
+    # Détection automatique des entrées UEFI
+    log_prompt "INFO" && echo " Recherche des entrées UEFI..."
+
+    # Récupère toutes les entrées UEFI avec leurs identifiants
+    all_boot=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
+
+    # Identifiant de l'entrée Windows Boot Manager
+    windows_id=$(echo "$all_boot" | grep -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+
+    # Vérification si l'entrée Windows est trouvée
+    if [[ -z "$windows_id" ]]; then
+        log_prompt "ERROR" && echo " Erreur : Impossible de trouver l'entrée Windows Boot Manager."
+        exit 1
+    fi
+
+    log_prompt "INFO" && echo " Identifiant de l'entrée Windows : $windows_id"
+
+    # Liste des autres entrées (hors Windows)
+    other_ids=$(echo "$all_boot" | grep -v -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+
+    # Construction de l'ordre de démarrage
+    new_boot_order=$(echo "$other_ids" | tr '\n' ',' | sed 's/,$//'),$windows_id
+
+    # Affichage pour vérification
+    log_prompt "INFO" && echo " Nouvel ordre de démarrage : $new_boot_order"
+
+    # Application de l'ordre de démarrage
+    efibootmgr -o $new_boot_order
+
+    # Vérification finale
+    log_prompt "INFO" && echo " Ordre de démarrage mis à jour :"
+    echo
+    efibootmgr
 }
 
 install_mkinitcpio() {

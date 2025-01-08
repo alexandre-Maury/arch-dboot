@@ -129,6 +129,7 @@ while true; do
             install_packages
             install_mkinitcpio
             install_bootloader "$disk"
+            install_efibootmgr
             config_passwdqc
             config_root
             config_user
