@@ -170,7 +170,7 @@ install_bootloader() {
                 ;;
         esac
 
-        arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Arch
+        arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot/EFI --bootloader-id=Arch
 
         log_prompt "INFO" && echo "arch-chroot - configuration de grub"
 
@@ -235,7 +235,7 @@ install_bootloader() {
         log_prompt "INFO" && echo " Recherche des entrées UEFI..."
 
         # Récupère toutes les entrées UEFI avec leurs identifiants
-        all_boot=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
+        all_boot=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}')
 
         # Identifiant de l'entrée Windows Boot Manager
         windows_id=$(echo "$all_boot" | grep -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
