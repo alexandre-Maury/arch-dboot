@@ -264,7 +264,7 @@ install_bootloader() {
 
 install_mkinitcpio() {
 
-    log_prompt "INFO" && echo " Modification du fichier mkinitcpio"
+    log_prompt "INFO" && echo " Mise à jour du fichier mkinitcpio"
 
     arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
         echo "$line"
