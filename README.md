@@ -9,9 +9,9 @@ Le script est optimisé pour un système de fichiers btrfs, tout en maintenant l
 ## Processus automatisé
 
 Assure la compatibilité avec UEFI et les environnements dual boot. Préserve les partitions Windows existantes et crée les partitions nécessaires pour Arch Linux à l'aide de deux modes de partitionnement.
-Système de fichiers conseillé pour la partition racine (root):
 
-    btrfs : 
+Système de fichiers conseillé pour la partition racine (root): btrfs
+
     
     Exploite les fonctionnalités modernes telles que la compression, les sous-volumes et les snapshots.
 
