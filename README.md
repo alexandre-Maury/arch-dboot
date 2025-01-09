@@ -152,7 +152,9 @@ Chargeur de démarrage intégré : Systemd-boot simplifie la gestion des systèm
 
     Le script évolue pour intégrer des fonctionnalités supplémentaires et renforcer sa stabilité.
 
-## Trouble shooting
+## Dépannage (Troubleshooting)
+
+Windows peut être un système assez capricieux lorsqu'il cohabite avec d'autres systèmes d'exploitation. Il n’est pas rare que des ajustements soient nécessaires pour assurer un fonctionnement fluide en dual boot.
 
 ### Disparition de l'entrée de démarrage pour Windows dans le chargeur GRUB
 
@@ -170,7 +172,7 @@ Cela devrait détecter Windows et ajouter son entrée au chargeur de démarrage 
 
 ### Corriger Grub ou systemd-boot qui ne s'affiche pas pour un dual boot (démarrage direct sur windows)
 
-Lors de la configuration d'un système en dual boot (Windows et Linux), il peut arriver que Windows prenne le dessus sur le gestionnaire de démarrage Linux, tel que Grub ou systemd-boot. Ce problème survient souvent après une mise à jour de Windows ou une mauvaise configuration UEFI/BIOS.
+Lors de la configuration d'un système en dual boot (Windows et Linux), il peut arriver que Windows prenne le dessus sur le gestionnaire de démarrage Linux (Grub ou systemd-boot). Ce problème survient fréquemment après une mise à jour de Windows ou une configuration incorrecte dans le BIOS/UEFI.
 
 1- Démarrez sur une session Windows.
 2- Lancez une invite de commandes en tant qu'administrateur.
@@ -180,6 +182,20 @@ Lors de la configuration d'un système en dual boot (Windows et Linux), il peut 
 
     bcdedit /set '{bootmgr}' path \EFI\Boot\bootx64.efi
 
+#### grub
+
+    bcdedit /set '{bootmgr}' path \EFI\GRUB\grubx64.efi
+
+## Conseils supplémentaires
+
+Vérifiez l’ordre de démarrage dans le BIOS/UEFI : Assurez-vous que la partition EFI contenant Grub ou systemd-boot est prioritaire dans les paramètres UEFI.
+
+Désactivez le démarrage rapide de Windows : Cette option peut interférer avec le dual boot. Pour la désactiver :
+
+1- Allez dans le Panneau de configuration > Options d’alimentation > Choisir l'action des boutons d'alimentation.
+2- Décochez "Activer le démarrage rapide".
+
+Ces solutions devraient permettre de corriger les problèmes courants liés au dual boot avec Windows et Linux. Si le problème persiste, vérifiez les logs ou partagez des informations supplémentaires pour obtenir une aide plus spécifique.
 
 ## Auteur : 
 
