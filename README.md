@@ -168,22 +168,6 @@ Créer un espace non alloué :
 
 ## Installation et configuration système :
 
-Installation des paquets essentiels d'Arch Linux (base, linux, linux-firmware, etc.).
-Configuration de locales, fuseau horaire, clavier, réseau et nom d'hôte via config.sh.
-
-## Chargeur de démarrage :
-
-### Systemd-boot
-
-Systemd-boot est configuré pour détecter et gérer les systèmes existants, y compris Windows. Il inclut des options prédéfinies pour faciliter le démarrage de Windows depuis son menu, avec une configuration simple et directe via des fichiers texte dans le répertoire /boot/loader/entries.
-
-### Grub
-
-Grub est un gestionnaire de démarrage robuste et polyvalent. Lorsqu’il est correctement configuré avec os-prober et la commande grub-mkconfig, il détecte automatiquement les systèmes installés, y compris Windows, et les ajoute au menu de démarrage. 
-GRUB offre également des options avancées, telles que la personnalisation de l’apparence et des options de démarrage.
-
-## Instructions d'utilisation
-
 Clonez le dépôt contenant le script :
 
     git clone https://github.com/alexandre-Maury/arch-dboot.git
@@ -196,6 +180,7 @@ Modifiez le fichier config.sh selon vos besoins :
 Lancez le script d'installation :
 
     chmod +x install.sh && ./install.sh
+
 
 ## Points forts
 
