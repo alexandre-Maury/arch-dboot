@@ -239,6 +239,8 @@ manage_partitions() {
                     echo
                     if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
 
+                        clear
+
                         echo "====================================================="
                         echo "            Configuration pour un Dual Boot"
                         echo "====================================================="
@@ -292,6 +294,8 @@ manage_partitions() {
 
     if [[ "$dboot" == "True" && "$mode_partitions" == "mode_avance" ]]; then
 
+        clear
+
         partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
 
         # Lister les espaces libres disponibles
@@ -322,6 +326,8 @@ manage_partitions() {
 
     else
 
+        clear
+
         parted --script /dev/$disk mklabel gpt
 
         local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print " Start="$1", End="$2", Size="$3}')
@@ -333,6 +339,7 @@ manage_partitions() {
     fi
 
     if [[ $total -le 0 ]]; then
+        clear
         log_prompt "ERROR" && echo " L'espace sélectionné est insuffisant pour créer des partitions."
         exit 1
     fi
@@ -350,6 +357,7 @@ manage_partitions() {
 
             # Boucle pour demander l'ensembles des informations à l'utilisateur pour la création des partitions
             while true; do
+            
                 clear
                 # boucle pour la saisi du nom de la partition
                 while true; do
