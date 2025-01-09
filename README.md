@@ -131,7 +131,7 @@ Une fois terminé, quittez l'invite de commandes en saisissant :
 
 Cliquez ensuite sur "Actualiser" dans l'interface de l'installation de Windows pour voir apparaître les partitions créées.
 
-
+![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/3.png)
 
     
 
