@@ -166,7 +166,7 @@ Réduire le disque :
 
 Créer un espace non alloué :
 
-    Une fois la réduction effectuée, vous verrez une zone marquée Espace non alloué dans le Gestionnaire de disque. Cet espace sera utilisé pour installer Linux.
+    Une fois la réduction effectuée, vous verrez une zone marquée "non alloué" dans le Gestionnaire de disque. Cet espace sera utilisé pour installer Linux.
 
 ![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/5.png)
 
