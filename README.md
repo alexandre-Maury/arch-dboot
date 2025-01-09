@@ -160,15 +160,25 @@ Même si os-prober est installé et que la ligne suivante est correctement confi
 
     GRUB_DISABLE_OS_PROBER=false
 
-il peut arriver que Windows n'apparaisse pas parmi les options de démarrage.
+il peut arriver que Windows n'apparaisse pas parmi les options de démarrage de grub.
 
-Pas de panique !
-
-Au prochain redémarrage du système, exécutez la commande suivante pour régénérer le fichier de configuration de GRUB :
+Pas de panique ! Au prochain redémarrage du système de arch, exécutez la commande suivante pour régénérer le fichier de configuration de GRUB :
 
     sudo grub-mkconfig -o /boot/grub/grub.cfg
 
 Cela devrait détecter Windows et ajouter son entrée au chargeur de démarrage GRUB.
+
+### Corriger Grub ou systemd-boot qui ne s'affiche pas pour un dual boot (démarrage direct sur windows)
+
+Lors de la configuration d'un système en dual boot (Windows et Linux), il peut arriver que Windows prenne le dessus sur le gestionnaire de démarrage Linux, tel que Grub ou systemd-boot. Ce problème survient souvent après une mise à jour de Windows ou une mauvaise configuration UEFI/BIOS.
+
+1- Démarrez sur une session Windows.
+2- Lancez une invite de commandes en tant qu'administrateur.
+3- Réglez le gestionnaire de démarrage pour pointer vers systemd-boot ou grub selon votre choix :
+
+#### systemd-boot
+
+    bcdedit /set '{bootmgr}' path \EFI\Boot\bootx64.efi
 
 
 ## Auteur : 
