@@ -218,54 +218,38 @@ install_bootloader() {
 
         } > "${MOUNT_POINT}/boot/loader/entries/arch.conf"
 
-        # {
-        #     echo "title   Arch Linux"
-        #     echo "linux   /vmlinuz-linux"
-        #     echo "initrd  /initramfs-linux-fallback.img"
-        #     echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw"
-
-        # } > "${MOUNT_POINT}/boot/loader/entries/arch-fallback.conf"
-
-        # {
-        #     echo "title   Windows Boot Manager"
-        #     echo "efi     /EFI/Microsoft/Boot/bootmgfw.efi"
-
-        # } > "${MOUNT_POINT}/boot/loader/entries/windows.conf"
-
-
-
         clear
 
-        # # Détection automatique des entrées UEFI
-        # log_prompt "INFO" && echo " Recherche des entrées UEFI..."
+        # Détection automatique des entrées UEFI
+        log_prompt "INFO" && echo " Recherche des entrées UEFI..."
 
-        # # Récupère toutes les entrées UEFI avec leurs identifiants
-        # all_boot=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}')
+        # Récupère toutes les entrées UEFI avec leurs identifiants
+        all_boot=$(efibootmgr | grep -E '^Boot[0-9A-Fa-f]{4}\*')
 
-        # # Identifiant de l'entrée Windows Boot Manager
-        # windows_id=$(echo "$all_boot" | grep -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+        # Identifiant de l'entrée Windows Boot Manager
+        windows_id=$(echo "$all_boot" | grep -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
 
-        # # Vérification si l'entrée Windows est trouvée
-        # if [[ -n "$windows_id" ]]; then
-        #     log_prompt "INFO" && echo " Identifiant de l'entrée Windows : $windows_id"
+        # Vérification si l'entrée Windows est trouvée
+        if [[ -n "$windows_id" ]]; then
+            log_prompt "INFO" && echo " Identifiant de l'entrée Windows : $windows_id"
 
-        #     # Liste des autres entrées (hors Windows)
-        #     other_ids=$(echo "$all_boot" | grep -v -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
+            # Liste des autres entrées (hors Windows)
+            other_ids=$(echo "$all_boot" | grep -v -i "Windows" | awk '{print $1}' | sed 's/Boot//;s/\*//')
 
-        #     # Construction de l'ordre de démarrage
-        #     new_boot_order=$(echo "$other_ids" | tr '\n' ',' | sed 's/,$//'),$windows_id
+            # Construction de l'ordre de démarrage
+            new_boot_order=$(echo "$other_ids" | tr '\n' ',' | sed 's/,$//'),$windows_id
 
-        #     # Affichage pour vérification
-        #     log_prompt "INFO" && echo " Nouvel ordre de démarrage : $new_boot_order"
+            # Affichage pour vérification
+            log_prompt "INFO" && echo " Nouvel ordre de démarrage : $new_boot_order"
 
-        #     # Application de l'ordre de démarrage
-        #     efibootmgr -o $new_boot_order
+            # Application de l'ordre de démarrage
+            efibootmgr -o $new_boot_order
 
-        #     # Vérification finale
-        #     log_prompt "INFO" && echo " Ordre de démarrage mis à jour :"
-        #     echo
-        #     efibootmgr
-        # fi
+            # Vérification finale
+            log_prompt "INFO" && echo " Ordre de démarrage mis à jour :"
+            echo
+            efibootmgr
+        fi
     fi
 }
 
