@@ -162,9 +162,13 @@ Réduire le disque :
     Saisissez la quantité d’espace à libérer (en Mo) dans le champ correspondant. Par exemple, pour libérer 150 Go, entrez 150000 (1 Go = 1024 Mo).
     Cliquez sur Réduire.
 
+![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/4.png)
+
 Créer un espace non alloué :
 
     Une fois la réduction effectuée, vous verrez une zone marquée Espace non alloué dans le Gestionnaire de disque. Cet espace sera utilisé pour installer Linux.
+
+![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/5.png)
 
 ## Installation et configuration système :
 
