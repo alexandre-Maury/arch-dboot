@@ -186,6 +186,7 @@ Lancez le script d'installation :
 
 Optimisé pour le double boot : Maintient la compatibilité avec Windows tout en utilisant les fonctionnalités modernes de Linux.
 Support btrfs : Compression, snapshots et sous-volumes pour un système flexible.
+
 Personnalisable : Les paramètres sont ajustables via un fichier de configuration simple.
 
     ##############################################################################
