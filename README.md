@@ -181,7 +181,9 @@ Cela devrait détecter Windows et ajouter son entrée au chargeur de démarrage 
 Lors de la configuration d'un système en dual boot (Windows et Linux), il peut arriver que Windows prenne le dessus sur le gestionnaire de démarrage Linux (Grub ou systemd-boot). Ce problème survient fréquemment après une mise à jour de Windows ou une configuration incorrecte dans le BIOS/UEFI.
 
 1- Démarrez sur une session Windows.
+
 2- Lancez une invite de commandes en tant qu'administrateur.
+
 3- Réglez le gestionnaire de démarrage pour pointer vers systemd-boot ou grub selon votre choix :
 
 #### systemd-boot
@@ -199,6 +201,7 @@ Vérifiez l’ordre de démarrage dans le BIOS/UEFI : Assurez-vous que la partit
 Désactivez le démarrage rapide de Windows : Cette option peut interférer avec le dual boot. Pour la désactiver :
 
 1- Allez dans le Panneau de configuration > Options d’alimentation > Choisir l'action des boutons d'alimentation.
+
 2- Décochez "Activer le démarrage rapide".
 
 Ces solutions devraient permettre de corriger les problèmes courants liés au dual boot avec Windows et Linux. Si le problème persiste, vérifiez les logs ou partagez des informations supplémentaires pour obtenir une aide plus spécifique.
