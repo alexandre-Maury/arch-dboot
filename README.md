@@ -102,11 +102,36 @@ La partition 'home' sera utilisée pour stocker les données personnelles des ut
 Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows pour la création des partitions.
 
 
-Exemple : (diskpart)
+Exemple :
 
-    Illustration a venir
+Lorsque vous arrivez à l'écran de sélection du disque d'installation de Windows, appuyez sur les touches Maj + F10 pour ouvrir l'invite de commandes.
 
-    <!-- ![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/config.png) -->
+Ensuite, procédez comme suit : Saisissez les commandes suivantes pour accéder à l'outil Diskpart et sélectionner le disque à partitionner :
+
+    diskpart  
+    list disk  
+    select disk X  (remplacez **X** par le numéro du disque, par exemple **0**)
+
+![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/1.png)
+
+![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/2.png)
+
+Créez les partitions nécessaires en exécutant ces commandes :
+
+    create partition efi size=512  
+    create partition msr size=16  
+    create partition primary  
+
+Une fois terminé, quittez l'invite de commandes en saisissant :
+
+    exit  
+    exit  
+
+Cliquez ensuite sur "Actualiser" dans l'interface de l'installation de Windows pour voir apparaître les partitions créées.
+
+
+
+    
 
     
 
