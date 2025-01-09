@@ -18,9 +18,9 @@ SSH_PORT=2222  # Remplacez 2222 par le port que vous souhaitez utiliser
 MOUNT_POINT="/mnt" # Point de montage   
 
 DEFAULT_BOOT_TYPE="fat32"
-DEFAULT_SWAP_TYPE="linux-swap"
-DEFAULT_ROOT_TYPE="ext4"
-DEFAULT_HOME_TYPE="ext4"
+DEFAULT_SWAP_TYPE="linux-swap" # falcultatif
+DEFAULT_ROOT_TYPE="ext4" # ext4 ou btrfs
+DEFAULT_HOME_TYPE="ext4" # falcultatif
 
 DEFAULT_BOOT_SIZE="512MiB"
 DEFAULT_SWAP_SIZE="8GiB"
