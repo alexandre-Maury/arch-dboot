@@ -34,14 +34,7 @@ PARTITIONS_CREATE=(
     "home:${DEFAULT_HOME_SIZE}:${DEFAULT_HOME_TYPE}"
 )
 
-PARTITIONS_TYPE=(
-    "linux-swap"
-    "ext4"
-    "btrfs"
-    "fat32"
-)
-
-BOOTLOADER="grub"  # systemd-boot ou grub
+BOOTLOADER="systemd-boot"  # systemd-boot ou grub
 
 # Liste des sous-volumes BTRFS à créer
 BTRFS_SUBVOLUMES=("@" "@root" "@home" "@srv" "@log" "@cache" "@tmp" "@snapshots")

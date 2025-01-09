@@ -454,26 +454,14 @@ manage_partitions() {
                     esac
                 done
 
-
-                clear
-                echo
-                echo " Taille de la partition : $partition_name"
-                echo
-                echo " Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
-                echo " Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
-                echo
-                log_prompt "PROMPT" && read -p " Votre Choix (unité obligatoire ex. [ MiB | GiB ] ou [ % ] ) : " partition_size
-                partition_size="${partition_size}"
-
                 clear
                 echo
                 echo " Types disponibles pour la partition $partition_name:"
                 echo
-                local index=1
-                for type in "${PARTITIONS_TYPE[@]}"; do
-                    echo "$index. $type"
-                    ((index++))
-                done
+                echo "1 - linux-swap"
+                echo "2 - ext4"
+                echo "3 - btrfs"
+                echo "4 - fat32"
                 echo
                 log_prompt "PROMPT" && read -p " Choisissez un type de fichier : " partition_type
                 case "$partition_type" in
@@ -494,6 +482,17 @@ manage_partitions() {
                         continue
                         ;;
                 esac
+
+                clear
+                echo
+                echo " Taille de la partition : $partition_name"
+                echo
+                echo " Vous souhaiter une partition de 1GiB saisir : 1024MiB ou 1GiB"
+                echo " Vous souhaiter que la partition occupe l'espace restante saisir : 100% "
+                echo
+                log_prompt "PROMPT" && read -p " Votre Choix (unité obligatoire ex. [ MiB | GiB ] ou [ % ] ) : " partition_size
+                partition_size="${partition_size}"
+                
 
                 # Ajouter la partition au tableau
                 PARTITIONS_CREATE+=("${partition_name}:${partition_size}:${partition_type}")
