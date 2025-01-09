@@ -72,7 +72,7 @@ Ex. disque principal : sda
     sda5 <-- Linux Racine
     sda6 <-- Linux Home (facultatif)
 
-### Pour une installation simple
+### Pour une installation simple boot
 
     sda1 <-- EFI Partition
     sda2 <-- Linux Swap (facultatif)
