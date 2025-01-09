@@ -145,6 +145,27 @@ Soyez extrêmement prudent lors du redimensionnement des partitions existantes."
 Une mauvaise manipulation peut entraîner une perte de données."
 Assurez-vous d'avoir effectué une sauvegarde complète de vos données avant de continuer."
 
+Ouvrir le Gestionnaire de disque :
+
+    Appuyez sur Win + R pour ouvrir la boîte de dialogue "Exécuter".
+    Tapez diskmgmt.msc et appuyez sur Entrée.
+
+Identifier le disque à réduire :
+
+    Repérez le disque ou la partition principale (souvent le disque C: contenant Windows).
+    Vérifiez que le disque a suffisamment d’espace libre pour être réduit.
+
+Réduire le disque :
+
+    Faites un clic droit sur la partition que vous souhaitez réduire, puis cliquez sur Réduire le volume.
+    Windows calculera automatiquement l’espace disponible pour la réduction.
+    Saisissez la quantité d’espace à libérer (en Mo) dans le champ correspondant. Par exemple, pour libérer 150 Go, entrez 150000 (1 Go = 1024 Mo).
+    Cliquez sur Réduire.
+
+Créer un espace non alloué :
+
+    Une fois la réduction effectuée, vous verrez une zone marquée Espace non alloué dans le Gestionnaire de disque. Cet espace sera utilisé pour installer Linux.
+
 ## Installation et configuration système :
 
 Installation des paquets essentiels d'Arch Linux (base, linux, linux-firmware, etc.).
