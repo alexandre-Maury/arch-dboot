@@ -111,16 +111,18 @@ Ensuite, procédez comme suit : Saisissez les commandes suivantes pour accéder 
     diskpart  
     list disk  
     select disk X  (remplacez **X** par le numéro du disque, par exemple **0**)
+    clean
+    convert gpt
 
 ![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/1.png)
-
-![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/2.png)
 
 Créez les partitions nécessaires en exécutant ces commandes :
 
     create partition efi size=512  
     create partition msr size=16  
     create partition primary  
+
+![image description](https://github.com/alexandre-Maury/arch-dboot/blob/main/assets/2.png)
 
 Une fois terminé, quittez l'invite de commandes en saisissant :
 
