@@ -131,11 +131,11 @@ while true; do
             # install_packages
             install_mkinitcpio
             install_bootloader "$disk"
-            config_passwdqc
-            config_root
-            config_user
-            config_ssh
-            activate_service
+            # config_passwdqc
+            # config_root
+            # config_user
+            # config_ssh
+            # activate_service
 
             clear
             echo

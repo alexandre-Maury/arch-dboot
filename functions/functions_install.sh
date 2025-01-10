@@ -219,8 +219,6 @@ install_bootloader() {
 
         } > "${MOUNT_POINT}/boot/loader/entries/arch.conf"
 
-        clear
-
         # Détection automatique des entrées UEFI
         log_prompt "INFO" && echo " Recherche des entrées UEFI..."
 
