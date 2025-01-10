@@ -44,7 +44,7 @@ show_disk_partitions() {
     log_prompt "INFO" && echo "$status" && echo ""
     echo " Device : /dev/$disk"
     echo " Taille : $(lsblk -n -o SIZE "/dev/$disk" | head -1)"
-    echo " Type : $(lsblk -n -o TRAN "/dev/$disk")"
+    echo
     echo -e "\n Informations des partitions :"
     echo "----------------------------------------"
     # En-tête
@@ -241,25 +241,20 @@ manage_partitions() {
                         echo
                         echo " Vous avez choisi de procéder à une installation en Dual Boot."
                         echo
-                        echo " Avant de continuer, assurez-vous d'avoir préparé les partitions nécessaires."
-                        echo
-                        echo " Voici les étapes à suivre :"
-                        echo
-                        log_prompt "INFO" && echo " Création de la partition '[EFI]' :"
-                        echo
                         echo " ATTENTION : En cas de dual boot, lors de la sélection des partitions pendant l'exécution de ce script, il est crucial de ne pas recréer une partition de boot (EFI)."
                         echo " La partition EFI existante utilisée par Windows sera réutilisée."
                         echo
                         echo " OBLIGATOIRE : Cette partition doit être créée avant l'installation de Windows."
                         echo " Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows."
-                        echo " Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP)."
-                        echo " Taille minimale requise : 512 MiB."
+                        echo " Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP) et d'une Taille minimale de : 512 MiB."
                         echo
-                        log_prompt "INFO" && echo " Création de la partition '[root]' :"
+                        echo "Ex."
                         echo
-                        echo " Réduisez la taille d'une partition existante pour libérer de l'espace."
-                        echo " La nouvelle partition 'root' sera utilisée pour le système Arch Linux."
-                        echo " Vous pouvez utiliser des outils de partitionnement pour redimensionner les partitions."
+                        echo " nvme0n1 "
+                        echo " ├─nvme0n1p1 <-- Partition EFI - Taille minimale requise : 512 MiB. "
+                        echo " ├─nvme0n1p2 <-- Partition MSR - Taille minimale requise : 16 MiB. "
+                        echo " ├─nvme0n1p3 <-- Partition Windows - Taille : Selon votre choix. "
+                        echo " └─nvme0n1p4 <-- Partition reduite pour Linux - Taille : Selon votre choix."
                         echo
                         echo "====================================================="
                         echo
