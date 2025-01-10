@@ -137,7 +137,7 @@ while true; do
             # config_ssh
             # activate_service
 
-            clear
+            # clear
             echo
             log_prompt "INFO" && echo "Installation terminée ==> redémarrer votre systeme"
             break
