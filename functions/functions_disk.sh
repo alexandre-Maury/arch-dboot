@@ -290,7 +290,8 @@ manage_partitions() {
 
         clear
 
-        partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
+        # partition_num=$(lsblk -n -o NAME "/dev/$disk$" | grep -E "$(basename "/dev/$disk")[0-9]+" | wc -l)
+        partition_num=$(lsblk -n -o NAME "/dev/$disk" | grep -E "$(basename "/dev/$disk")${partition_prefix}[0-9]+" | wc -l)
 
         # Lister les espaces libres disponibles
         local available_spaces=$(parted "/dev/$disk" unit MiB print free | awk '/Free Space/ {print NR": Start="$1", End="$2", Size="$3}')
@@ -625,7 +626,8 @@ manage_partitions() {
 mount_partitions () {
 
     local disk="$1"
-    local partitions=($(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p"))
+    local disk_prefix=$(get_disk_prefix "$disk")
+    local partitions=($(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}${disk_prefix}\([0-9]*\)$/${disk}${disk_prefix}\1/p"))
 
     for part in "${partitions[@]}"; do
 

@@ -84,9 +84,6 @@ while true; do
     disk_prefix=$(get_disk_prefix "$disk")
     partitions=$(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}${disk_prefix}\([0-9]*\)$/${disk}${disk_prefix}\1/p")
 
-    echo "les partitions : $partitions"
-
-
     # Vérifie si des partitions existent
     if [ -z "$partitions" ]; then
         echo
@@ -127,7 +124,7 @@ while true; do
             clear
             echo
             manage_partitions "$disk" "$dboot"
-            mount_partitions "$disk"
+            # mount_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk" 
             # install_base 
             # config_system
