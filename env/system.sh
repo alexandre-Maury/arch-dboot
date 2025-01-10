@@ -49,6 +49,10 @@ else
     GPU_DRIVERS="default"
 fi
 
+get_disk_prefix() {
+    [[ "$1" == nvme* ]] && echo "p" || echo ""
+}
+
 
 
 

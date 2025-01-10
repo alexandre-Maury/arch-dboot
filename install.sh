@@ -80,7 +80,10 @@ while true; do
     echo
     echo "----------------------------------------"
 
-    partitions=$(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p")
+    # partitions=$(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p")
+    disk_prefix=$(get_disk_prefix "$disk")
+    partitions=$(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}${disk_prefix}\([0-9]*\)$/${disk}${disk_prefix}\1/p")
+
 
     # Vérifie si des partitions existent
     if [ -z "$partitions" ]; then
@@ -124,16 +127,16 @@ while true; do
             manage_partitions "$disk" "$dboot"
             mount_partitions "$disk"
             show_disk_partitions "Montage des partitions terminée" "$disk" 
-            install_base 
-            config_system
-            install_packages
-            install_mkinitcpio
-            install_bootloader "$disk"
-            config_passwdqc
-            config_root
-            config_user
-            config_ssh
-            activate_service
+            # install_base 
+            # config_system
+            # install_packages
+            # install_mkinitcpio
+            # install_bootloader "$disk"
+            # config_passwdqc
+            # config_root
+            # config_user
+            # config_ssh
+            # activate_service
 
             clear
             echo

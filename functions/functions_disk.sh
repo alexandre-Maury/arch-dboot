@@ -25,13 +25,6 @@ convert_to_mib() {
 }
 
 ##############################################################################
-## get_disk_prefix : Détermine le type de disque                                                         
-##############################################################################
-get_disk_prefix() {
-    [[ "$1" == nvme* ]] && echo "p" || echo ""
-}
-
-##############################################################################
 ## show_disk_partitions : Fonction pour afficher les informations des partitions                                                        
 ##############################################################################
 show_disk_partitions() {
@@ -357,7 +350,7 @@ manage_partitions() {
 
             # Boucle pour demander l'ensembles des informations à l'utilisateur pour la création des partitions
             while true; do
-            
+
                 clear
                 # boucle pour la saisi du nom de la partition
                 while true; do
