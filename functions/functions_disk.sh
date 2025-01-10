@@ -31,6 +31,7 @@ show_disk_partitions() {
     
     local status="$1"
     local disk="$2"
+    local disk_prefix=$(get_disk_prefix "$disk")
     local partitions
     local NAME
     local SIZE
@@ -53,7 +54,7 @@ show_disk_partitions() {
 
     while IFS= read -r partition; do
         partitions+=("$partition")
-    done < <(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}\([0-9]*\)$/${disk}\1/p")
+    done < <(lsblk -n -o NAME "/dev/$disk" | grep -v "^$disk$" | sed -n "s/^[[:graph:]]*${disk}${disk_prefix}\([0-9]*\)$/${disk}${disk_prefix}\1/p")
 
     # Affiche les informations de chaque partition
     for partition in "${partitions[@]}"; do  # itérer sur le tableau des partitions
