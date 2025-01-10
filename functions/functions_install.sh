@@ -154,7 +154,8 @@ install_bootloader() {
     clear
     
     local disk="$1"
-    local root_part=$(lsblk -n -o NAME,LABEL | grep "root" | awk '{print $1}' | sed "s/.*\(${disk}[0-9]*\)/\1/")
+    local disk_prefix=$(get_disk_prefix "$disk")
+    local root_part=$(lsblk -n -o NAME,LABEL | grep "root" | awk '{print $1}' | sed "s/.*\(${disk}${disk_prefix}[0-9]*\)/\1/")
     local root_fs=$(blkid -s TYPE -o value /dev/${root_part})
 
 
@@ -257,7 +258,7 @@ install_mkinitcpio() {
 
     log_prompt "INFO" && echo " Mise à jour du fichier mkinitcpio"
 
-    arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
+    arch-chroot "${MOUNT_POINT}" mkinitcpio -p linux | while IFS= read -r line; do
         echo "$line"
     done
 
