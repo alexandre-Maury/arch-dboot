@@ -85,7 +85,7 @@ while true; do
     disk_prefix=$(get_disk_prefix "$disk")
     partitions=$(lsblk -n -o NAME "/dev/$disk" | \
         grep -v "^$disk$" | \
-        tee /dev/stderr | \
+        tr -d '|-' | \
         sed -n "s/^${disk}${disk_prefix}\([0-9]*\)$/${disk}${disk_prefix}\1/p")
 
 
