@@ -128,7 +128,7 @@ while true; do
             # show_disk_partitions "Montage des partitions terminée" "$disk" 
             # install_base 
             # config_system
-            # install_packages
+            install_packages
             install_mkinitcpio
             install_bootloader "$disk"
             # config_passwdqc
