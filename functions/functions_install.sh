@@ -254,15 +254,36 @@ install_bootloader() {
 
 install_mkinitcpio() {
 
-    log_prompt "INFO" && echo " Mise à jour du fichier mkinitcpio"
+    log_prompt "INFO" && echo " Mise à jour du fichier mkinitcpio et nettoyage des fichiers inutiles"
 
+    # Chemin vers le fichier preset de mkinitcpio
+    local mkinitcpio_preset="${MOUNT_POINT}/etc/mkinitcpio.d/linux.preset"
+
+    # Désactiver la génération du fichier fallback si le fichier preset existe
+    if [[ -f "${mkinitcpio_preset}" ]]; then
+        log_prompt "INFO" && echo " Désactivation de la génération du fichier fallback dans ${mkinitcpio_preset}"
+
+        sed -i '/fallback_config=/s/^/#/' "${mkinitcpio_preset}"
+    else
+        log_prompt "WARNING" && echo " Fichier preset ${mkinitcpio_preset} introuvable. Vérifiez votre configuration."
+    fi
+
+    # Nettoyage des fichiers initramfs temporaires ou obsolètes
+    log_prompt "INFO" && echo " Nettoyage des fichiers temporaires dans /boot"
+    find "${MOUNT_POINT}/boot" -type f -name "*.tmp" -exec rm -f {} +
+
+    # Mise à jour du fichier mkinitcpio
     arch-chroot "${MOUNT_POINT}" mkinitcpio -p linux | while IFS= read -r line; do
         echo "$line"
     done
 
-    log_prompt "SUCCESS" && echo " mkinitcpio terminé avec succès."
+    # Vérification et nettoyage des fichiers fallback (s'ils existent encore)
+    log_prompt "INFO" && echo " Suppression du fichier initramfs-linux-fallback.img si présent"
+    rm -f "${MOUNT_POINT}/boot/initramfs-linux-fallback.img"
 
+    log_prompt "SUCCESS" && echo " mkinitcpio terminé avec succès et configuration nettoyée."
 }
+
 
 config_passwdqc() {
 
