@@ -102,6 +102,8 @@ erase_disk() {
     echo " Cette opération est IRRÉVERSIBLE !"
     echo " Toutes les données seront DÉFINITIVEMENT PERDUES !"
     echo 
+    log_prompt "WARNING" && echo "Fonctionnalité toujours en cours de test"
+    echo
     log_prompt "PROMPT" && read -p " Êtes-vous vraiment sûr ? (Y/n) : " choice_shred && echo
     
     if [[ "$choice_shred" =~ ^[yY]$ ]]; then
