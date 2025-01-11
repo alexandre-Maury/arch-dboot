@@ -49,6 +49,7 @@ else
     GPU_DRIVERS="default"
 fi
 
+## détermine le suffixe utilisé pour les partitions d'un disque en fonction de son type (NVMe ou non).
 get_disk_prefix() {
     [[ "$1" == nvme* ]] && echo "p" || echo ""
 }
