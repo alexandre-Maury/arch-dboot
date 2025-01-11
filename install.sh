@@ -121,21 +121,21 @@ while true; do
             log_prompt "INFO" && echo "Suppression des données terminé"
             ;;
         2)
-            # clear
-            # echo
-            # manage_partitions "$disk" "$dboot"
-            # mount_partitions "$disk"
-            # show_disk_partitions "Montage des partitions terminée" "$disk" 
-            # install_base 
-            # config_system
+            clear
+            echo
+            manage_partitions "$disk" "$dboot"
+            mount_partitions "$disk"
+            show_disk_partitions "Montage des partitions terminée" "$disk" 
+            install_base 
+            config_system
             install_packages
             install_mkinitcpio
             install_bootloader "$disk"
-            # config_passwdqc
-            # config_root
-            # config_user
-            # config_ssh
-            # activate_service
+            config_passwdqc
+            config_root
+            config_user
+            config_ssh
+            activate_service
 
             # clear
             echo
