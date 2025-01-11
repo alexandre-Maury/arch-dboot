@@ -634,7 +634,7 @@ mount_partitions () {
         # Configurer et formater la partition
         case "$fs_type" in
             "vfat")  
-                local boot_part=$part                 
+                local boot_part=$part          
                 ;;
 
             "btrfs") 
