@@ -238,6 +238,7 @@ install_packages() {
         if [ -f "$kernel" ]; then
             kernel_name=$(basename "$kernel" | sed 's/vmlinuz-//')
             arch-chroot "${MOUNT_POINT}" mkinitcpio -p "$kernel_name"
+            log_prompt "SUCCESS" && echo " mkinitcpio -p $kernel_name"
         fi
     done
 
