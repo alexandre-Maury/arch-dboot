@@ -29,26 +29,6 @@ case "$CPU_VENDOR" in
         ;;
 esac
 
-## Installation des pilotes GPU                                          
-if [[ "$GPU_VENDOR" == *"nvidia"* ]]; then
-    GPU_MODULES="nvidia nvidia_modeset nvidia_uvm nvidia_drm"
-    GPU_OPTION="nvidia_drm.modeset=1"
-    GPU_DRIVERS="nvidia"
-
-elif [[ "$GPU_VENDOR" == *"amd"* || "$GPU_VENDOR" == *"radeon"* ]]; then
-    GPU_MODULES="amdgpu"
-    GPU_OPTION="amdgpu.dc=1"
-    GPU_DRIVERS="amd_radeon"
-
-elif [[ "$GPU_VENDOR" == *"intel"* ]]; then
-    GPU_MODULES="i915"
-    GPU_OPTION="i915.enable_psr=1"
-    GPU_DRIVERS="intel"
-
-else
-    GPU_DRIVERS="default"
-fi
-
 ## détermine le suffixe utilisé pour les partitions d'un disque en fonction de son type (NVMe ou non).
 get_disk_prefix() {
     [[ "$1" == nvme* ]] && echo "p" || echo ""

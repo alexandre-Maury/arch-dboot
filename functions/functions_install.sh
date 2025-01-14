@@ -94,12 +94,18 @@ config_system() {
 install_packages() {
 
     clear
+
+    local gpu_modules=""
+    local has_multiple_gpus=false
                                                
     log_prompt "INFO" && echo " Installation des paquages de bases"
+
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
     arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
 
     # CPU Microcode
+    log_prompt "INFO" && echo " Installation du Microcode"
+    
     if [[ "$PROC_UCODE" == "intel-ucode.img" ]]; then
         arch-chroot "${MOUNT_POINT}" pacman -S --needed intel-ucode --noconfirm
     elif [[ "$PROC_UCODE" == "amd-ucode.img" ]]; then
@@ -108,12 +114,23 @@ install_packages() {
         log_prompt "INFO" && echo " Installation du microcode impossible"
     fi
 
-    # GPU Driver
-    if [[ "$GPU_DRIVERS" == "nvidia" ]]; then
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia mesa --noconfirm
+    # Création des répertoires nécessaires
+    mkdir -p "${MOUNT_POINT}/etc/modprobe.d"
+    mkdir -p "${MOUNT_POINT}/etc/pacman.d/hooks"
 
-        [ ! -d "${MOUNT_POINT}/etc/pacman.d/hooks" ] && mkdir -p ${MOUNT_POINT}/etc/pacman.d/hooks
+    # Installation des paquets de base pour tous les systèmes
+    arch-chroot "${MOUNT_POINT}" pacman -S --needed mesa vulkan-icd-loader lib32-vulkan-icd-loader --noconfirm
 
+    # Configuration pour NVIDIA
+    if echo "$GPU_VENDORS" | grep -q "nvidia"; then
+
+        has_multiple_gpus=true
+        gpu_modules="${gpu_modules:+$gpu_modules }nvidia nvidia_modeset nvidia_uvm nvidia_drm"
+        
+        # Installation des paquets NVIDIA
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms libglvnd nvidia-utils opencl-nvidia nvidia-settings lib32-nvidia-utils lib32-opencl-nvidia egl-wayland --noconfirm
+
+        # Création du hook pacman
         {
             echo "[Trigger]" 
             echo "Operation=Install" 
@@ -121,24 +138,110 @@ install_packages() {
             echo "Operation=Remove" 
             echo "Type=Package" 
             echo "Target=nvidia" 
+            echo "Target=linux" 
             echo 
             echo "[Action]"
+            echo "Description=Mise à jour du module nvidia dans initramfs"
             echo "Depends=mkinitcpio" 
             echo "When=PostTransaction"
+            echo "NeedsTargets"
             echo "Exec=/usr/bin/mkinitcpio -P" 
+
         } > "${MOUNT_POINT}/etc/pacman.d/hooks/nvidia.hook"
 
-    elif [[ "$GPU_DRIVERS" == "amd_radeon" ]]; then
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-amdgpu xf86-video-ati mesa --noconfirm 
+        # Configuration modprobe NVIDIA
+        {
+            echo "options nvidia_drm modeset=1" 
+            echo "options nvidia NVreg_UsePageAttributeTable=1" 
+            echo "options nvidia NVreg_EnablePCIeGen3=1"
+            echo "options nvidia NVreg_DynamicPowerManagement=0x02"
+            echo "options nvidia_drm fbdev=1"
+            
+        } > "${MOUNT_POINT}/etc/modprobe.d/nvidia.conf"
+    
+    fi
 
-    elif [[ "$GPU_DRIVERS" == "intel" ]]; then
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-intel mesa --noconfirm 
+    # Configuration pour AMD
+    if echo "$GPU_VENDORS" | grep -q "amd\|radeon"; then
+        has_multiple_gpus=true
+        gpu_modules="${gpu_modules:+$gpu_modules }amdgpu radeon"
+        
+        # Installation des paquets AMD
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-amdgpu xf86-video-ati vulkan-radeon lib32-vulkan-radeon --noconfirm
 
-    else
-        log_prompt "WARNING" && echo "GPU non-reconnu, installation des pilottes générique : xf86-video-vesa mesa"
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-vesa mesa --noconfirm
+        # Configuration modprobe AMD
+        {
+            echo "options amdgpu si_support=1" 
+            echo "options amdgpu cik_support=1" 
+            echo "options amdgpu modeset=1"
+            echo "options amdgpu ppfeaturemask=0xffffffff"
+            echo "options amdgpu dpm=1"
+            
+        } > "${MOUNT_POINT}/etc/modprobe.d/amdgpu.conf"
 
     fi
+
+    # Configuration pour Intel
+    if echo "$GPU_VENDORS" | grep -q "intel"; then
+        has_multiple_gpus=true
+        gpu_modules="${gpu_modules:+$gpu_modules }i915"
+        
+        # Installation des paquets Intel
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-intel vulkan-intel lib32-vulkan-intel intel-media-driver --noconfirm
+
+        # Configuration modprobe Intel
+        {
+            echo "options i915 modeset=1" 
+            echo "options i915 enable_guc=2" 
+            echo "options i915 enable_fbc=1"
+            echo "options i915 fastboot=1"
+            echo "options i915 enable_psr=1"
+            
+        } > "${MOUNT_POINT}/etc/modprobe.d/i915.conf"
+
+    fi
+
+    # Si aucun GPU spécifique n'est détecté
+    if [ -z "$gpu_modules" ]; then
+        log_prompt "WARNING" && echo "GPU non reconnu, installation des pilotes génériques"
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-vesa --noconfirm
+        gpu_modules="vesa"
+    fi
+
+    # Configuration pour systèmes multi-GPU
+    if $has_multiple_gpus; then
+
+        {
+            echo "softdep nvidia pre: i915 amdgpu radeon" 
+            echo "softdep i915 pre: amdgpu radeon" 
+            
+        } > "${MOUNT_POINT}/etc/modprobe.d/gpu-multi.conf"
+
+    fi
+
+    # Mise à jour de mkinitcpio.conf
+    sed -i "s/^#\?MODULES=.*/MODULES=($gpu_modules)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
+
+    if ! grep -q "^FILES=" "${MOUNT_POINT}/etc/mkinitcpio.conf"; then
+        echo "FILES=(/etc/modprobe.d/*.conf /boot/$PROC_UCODE)" >> "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    else
+        sed -i "s|^FILES=.*|FILES=(/etc/modprobe.d/*.conf /boot/$PROC_UCODE)|" "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    fi
+
+    # Ajout du hook KMS
+    if ! grep -q "kms" "${MOUNT_POINT}/etc/mkinitcpio.conf"; then
+        sed -i 's/\(^HOOKS=.*\))/\1 kms)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    fi
+
+    # Régénération des initramfs pour tous les kernels installés
+    for kernel in "${MOUNT_POINT}"/boot/vmlinuz-*; do
+        if [ -f "$kernel" ]; then
+            kernel_name=$(basename "$kernel" | sed 's/vmlinuz-//')
+            arch-chroot "${MOUNT_POINT}" mkinitcpio -p "$kernel_name"
+        fi
+    done
+
+    log_prompt "SUCCESS" && echo " mkinitcpio terminé avec succès."
 }
 
 install_bootloader() {
@@ -166,10 +269,6 @@ install_bootloader() {
         arch-chroot ${MOUNT_POINT} grub-install --target=x86_64-efi --efi-directory=/boot/EFI --bootloader-id=ArchLinux
 
         log_prompt "INFO" && echo "arch-chroot - configuration de grub"
-
-        if [[ -n "${GPU_OPTION}" ]]; then
-            sed -i -E "/^#?GRUB_CMDLINE_LINUX_DEFAULT=/ {s/^#//; /$GPU_OPTION/! s/(GRUB_CMDLINE_LINUX_DEFAULT=\"[^\"]*)/\1 $GPU_OPTION/}" "${MOUNT_POINT}/etc/default/grub"
-        fi
 
         sed -i 's/^#\?GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' "${MOUNT_POINT}/etc/default/grub"
 
@@ -200,6 +299,7 @@ install_bootloader() {
             echo "timeout 10"
             echo "console-mode max"
             echo "editor no"
+
         } > "${MOUNT_POINT}/boot/loader/loader.conf"
 
         {
@@ -208,6 +308,7 @@ install_bootloader() {
             echo "initrd  /${PROC_UCODE}"
             echo "initrd  /initramfs-linux.img"
             echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw"
+
         } > "${MOUNT_POINT}/boot/loader/entries/arch.conf"
 
         # Détection automatique des entrées UEFI
@@ -241,28 +342,6 @@ install_bootloader() {
             efibootmgr
         fi
     fi
-}
-
-install_mkinitcpio() {
-
-    log_prompt "INFO" && echo " Mise à jour du fichier mkinitcpio"
-
-    sed -i 's/^#\?COMPRESSION="xz"/COMPRESSION="xz"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-
-    # sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    # sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    # sed -i "s/^#\?MODULES=.*/MODULES=($GPU_MODULES)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
-
-    mkinitcpio -p linux
-
-    # # Mise à jour du fichier mkinitcpio
-    # arch-chroot "${MOUNT_POINT}" mkinitcpio -p linux | while IFS= read -r line; do
-    #     echo "$line"
-    # done
-
-    log_prompt "SUCCESS" && echo " mkinitcpio terminé avec succès."
 }
 
 
