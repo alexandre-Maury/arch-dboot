@@ -248,12 +248,12 @@ manage_partitions() {
                         echo
                         echo " OBLIGATOIRE : Cette partition doit être créée avant l'installation de Windows."
                         echo " Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows."
-                        echo " Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP) et d'une Taille minimale de : 512 MiB."
+                        echo " Assurez-vous de définir le type de partition sur 'EFI System Partition' (ESP) et d'une Taille minimale de : 1024 MiB."
                         echo
                         echo "Ex."
                         echo
                         echo " nvme0n1 "
-                        echo " ├─nvme0n1p1 <-- Partition EFI - Taille minimale requise : 512 MiB. "
+                        echo " ├─nvme0n1p1 <-- Partition EFI - Taille minimale requise : 1024 MiB. "
                         echo " ├─nvme0n1p2 <-- Partition MSR - Taille minimale requise : 16 MiB. "
                         echo " ├─nvme0n1p3 <-- Partition Windows - Taille : Selon votre choix. "
                         echo " └─nvme0n1p4 <-- Partition reduite pour Linux - Taille : Selon votre choix."

@@ -79,7 +79,7 @@ Ex. disque principal : sda
     sda3 <-- Linux Racine
     sda4 <-- Linux Home (facultatif)
 
-- Partition 'EFI' : Taille minimun de 512 MiB.
+- Partition 'EFI' : Taille minimun de 1024 MiB.
 LORS D'UN DUAL BOOT, au cours de la sélection des partitions durant l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). 
 Celle de Windows sera utilisé. Cette partition doit donc être créée avant l'installation de Windows.
 

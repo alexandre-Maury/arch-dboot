@@ -238,35 +238,25 @@ install_packages() {
     fi
 
     # Régénération des initramfs pour tous les kernels installés
-    # for kernel in "${MOUNT_POINT}"/boot/vmlinuz-*; do
-    #     if [ -f "$kernel" ]; then
-    #         kernel_name=$(basename "$kernel" | sed 's/vmlinuz-//')
-    #         arch-chroot "${MOUNT_POINT}" mkinitcpio -p "$kernel_name"
-    #         log_prompt "SUCCESS" && echo " mkinitcpio -p $kernel_name"
-    #     fi
-    # done
-
-    # arch-chroot "${MOUNT_POINT}" mkinitcpio -P | while IFS= read -r line; do
-    #     echo "$line"
-    # done
-
-    kernels=("${MOUNT_POINT}/boot/vmlinuz-"*) # Expansion de globbing
+    kernels=("${MOUNT_POINT}/boot/vmlinuz-"*) 
 
     if [ -e "${kernels[0]}" ]; then
+
         for kernel in "${kernels[@]}"; do
-            log_prompt "SUCCESS" && echo " 1- Traitement du kernel $kernel"
 
             if [ -f "$kernel" ]; then
                 # Extrait le nom du preset depuis le nom du fichier kernel
                 kernel_name=$(basename "$kernel" | sed 's/vmlinuz-//')
-                log_prompt "SUCCESS" && echo " 2- Traitement du kernel $kernel_name"
+                log_prompt "INFO" && echo " Traitement du kernel $kernel_name"
 
                 # Génère l'initramfs pour ce kernel et capture la sortie
                 arch-chroot "${MOUNT_POINT}" mkinitcpio -p "$kernel_name" | while IFS= read -r line; do
                     echo "[$kernel_name] $line"
                 done
             fi
+
         done
+
     else
         log_prompt "ERROR" && echo "Aucun fichier vmlinuz-* trouvé dans ${MOUNT_POINT}/boot"
     fi
