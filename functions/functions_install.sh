@@ -122,7 +122,7 @@ install_packages() {
     arch-chroot "${MOUNT_POINT}" pacman -S --needed mesa vulkan-icd-loader lib32-vulkan-icd-loader --noconfirm
 
     # Configuration pour NVIDIA
-    if echo "$GPU_VENDORS" | grep -q "nvidia"; then
+    if echo "$GPU_VENDOR" | grep -q "nvidia"; then
 
         has_multiple_gpus=true
         gpu_modules="${gpu_modules:+$gpu_modules }nvidia nvidia_modeset nvidia_uvm nvidia_drm"
@@ -162,7 +162,7 @@ install_packages() {
     fi
 
     # Configuration pour AMD
-    if echo "$GPU_VENDORS" | grep -q "amd\|radeon"; then
+    if echo "$GPU_VENDOR" | grep -q "amd\|radeon"; then
         has_multiple_gpus=true
         gpu_modules="${gpu_modules:+$gpu_modules }amdgpu radeon"
         
@@ -182,7 +182,7 @@ install_packages() {
     fi
 
     # Configuration pour Intel
-    if echo "$GPU_VENDORS" | grep -q "intel"; then
+    if echo "$GPU_VENDOR" | grep -q "intel"; then
         has_multiple_gpus=true
         gpu_modules="${gpu_modules:+$gpu_modules }i915"
         
