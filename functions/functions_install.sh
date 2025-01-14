@@ -251,11 +251,14 @@ install_packages() {
     # done
 
     for kernel in "${MOUNT_POINT}/boot/vmlinuz-*"; do
+        
+        log_prompt "SUCCESS" && echo " 1- Traitement du kernel $kernel"
+
         if [ -f "$kernel" ]; then
             # Extrait le nom du preset depuis le nom du fichier kernel
             kernel_name=$(basename "$kernel" | sed 's/vmlinuz-//')
 
-            log_prompt "SUCCESS" && echo " Traitement du kernel $kernel_name"
+            log_prompt "SUCCESS" && echo " 2- Traitement du kernel $kernel_name"
 
             # Génère l'initramfs pour ce kernel et capture la sortie
             arch-chroot "${MOUNT_POINT}" mkinitcpio -p "$kernel_name" | while IFS= read -r line; do
