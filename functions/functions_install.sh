@@ -305,7 +305,6 @@ install_bootloader() {
         {
             echo "title   Arch Linux"
             echo "linux   /vmlinuz-linux"
-            echo "initrd  /${PROC_UCODE}"
             echo "initrd  /initramfs-linux.img"
             echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw"
 
