@@ -222,9 +222,9 @@ install_packages() {
     # Mise à jour de mkinitcpio.conf
     sed -i "s/^#\?MODULES=.*/MODULES=($gpu_modules)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
-    # sed -i 's/^#\?COMPRESSION="xz"/COMPRESSION="xz"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    # sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
-    # sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i 's/^#\?COMPRESSION="xz"/COMPRESSION="xz"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i 's/^#\?COMPRESSION_OPTIONS=(.*)/COMPRESSION_OPTIONS=(-9e)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+    sed -i 's/^#\?MODULES_DECOMPRESS=".*"/MODULES_DECOMPRESS="yes"/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
 
     if ! grep -q "^FILES=" "${MOUNT_POINT}/etc/mkinitcpio.conf"; then
         echo "FILES=(/etc/modprobe.d/*.conf /boot/$PROC_UCODE)" >> "${MOUNT_POINT}/etc/mkinitcpio.conf"
