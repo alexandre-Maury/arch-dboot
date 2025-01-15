@@ -107,7 +107,6 @@ while true; do
 
     echo "1) Nettoyage du disque (shred)   "
     echo "2) Installation de Arch Linux    "
-    echo "3) Réinstallation de Arch Linux  "
     echo
     echo "0) Annuler"
     echo
@@ -140,11 +139,6 @@ while true; do
             echo
             log_prompt "INFO" && echo "Installation terminée ==> redémarrer votre systeme"
             break
-            ;;
-
-        3)
-            clear
-            echo "PAS ENCORE DISPONIBLE"
             ;;
 
         0)
