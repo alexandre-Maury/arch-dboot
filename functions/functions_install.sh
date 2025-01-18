@@ -103,6 +103,17 @@ install_packages() {
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
     arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
 
+    
+    log_prompt "INFO" && echo "Installation de YAY" && echo ""
+
+    arch-chroot ${MOUNT_POINT} git clone https://aur.archlinux.org/yay-bin.git /home/$(whoami)/yay-git
+    arch-chroot ${MOUNT_POINT} bash -c "cd /home/$(whoami)/yay-git && makepkg -si --noconfirm"
+
+    log_prompt "INFO" && echo "Mise à jour du système avec yay" && echo ""
+    arch-chroot ${MOUNT_POINT} yay -Syu --noconfirm
+
+    log_prompt "SUCCESS" && echo "Système mis à jour" && echo ""
+
     # CPU Microcode
     log_prompt "INFO" && echo " Installation du Microcode"
     
@@ -118,9 +129,6 @@ install_packages() {
     mkdir -p "${MOUNT_POINT}/etc/modprobe.d"
     mkdir -p "${MOUNT_POINT}/etc/pacman.d/hooks"
 
-    # Installation des paquets de base pour tous les systèmes
-    arch-chroot "${MOUNT_POINT}" pacman -S --needed mesa vulkan-icd-loader lib32-vulkan-icd-loader --noconfirm
-
     # Configuration pour NVIDIA
     if echo "$GPU_VENDOR" | grep -q "nvidia"; then
 
@@ -128,8 +136,9 @@ install_packages() {
         gpu_modules="${gpu_modules:+$gpu_modules }nvidia nvidia_modeset nvidia_uvm nvidia_drm"
         
         # Installation des paquets NVIDIA
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms libglvnd nvidia-utils opencl-nvidia nvidia-settings lib32-nvidia-utils lib32-opencl-nvidia egl-wayland libva-nvidia-driver nvidia-lts optimus-manager --noconfirm
-        
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms nvidia-utils nvidia-settings qt5-wayland qt5ct qt6-wayland qt6ct libva --noconfirm
+        arch-chroot "${MOUNT_POINT}" yay -S libva-nvidia-driver-git --noconfirm 
+
         # Création du hook pacman
         {
             echo "[Trigger]" 
@@ -164,7 +173,7 @@ install_packages() {
         gpu_modules="${gpu_modules:+$gpu_modules }amdgpu radeon"
         
         # Installation des paquets AMD
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-amdgpu xf86-video-ati vulkan-radeon lib32-vulkan-radeon --noconfirm
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-amdgpu mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon libva-mesa-driver lib32-libva-mesa-driver mesa-vdpau lib32-mesa-vdpau --noconfirm
 
         # Configuration modprobe AMD
         {
@@ -184,8 +193,8 @@ install_packages() {
         gpu_modules="${gpu_modules:+$gpu_modules }i915"
         
         # Installation des paquets Intel
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-intel vulkan-intel lib32-vulkan-intel intel-media-driver --noconfirm
-
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-intel mesa lib32-mesa lib32-vulkan-intel vulkan-intel --noconfirm
+        
         # Configuration modprobe Intel
         {
             echo "options i915 modeset=1" 
@@ -201,8 +210,9 @@ install_packages() {
     # Si aucun GPU spécifique n'est détecté
     if [ -z "$gpu_modules" ]; then
         log_prompt "WARNING" && echo "GPU non reconnu, installation des pilotes génériques"
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-vesa --noconfirm
-        gpu_modules="vesa"
+
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed xf86-video-amdgpu mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon libva-mesa-driver lib32-libva-mesa-driver mesa-vdpau lib32-mesa-vdpau --noconfirm
+        gpu_modules="amdgpu"
     fi
 
     # Configuration pour systèmes multi-GPU
@@ -233,6 +243,8 @@ install_packages() {
     if ! grep -q "kms" "${MOUNT_POINT}/etc/mkinitcpio.conf"; then
         sed -i 's/\(^HOOKS=.*\))/\1 kms)/' "${MOUNT_POINT}/etc/mkinitcpio.conf"
     fi
+
+    # arch-chroot "${MOUNT_POINT}" mkinitcpio --config /etc/mkinitcpio.conf --generate /boot/initramfs-custom.img;
 
     # Régénération des initramfs pour tous les kernels installés
     kernels=("${MOUNT_POINT}/boot/vmlinuz-"*) 
