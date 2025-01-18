@@ -89,6 +89,10 @@ config_system() {
         echo "FallbackDNS=8.8.8.8"
     } > "${MOUNT_POINT}/etc/systemd/resolved.conf"
 
+    arch-chroot ${MOUNT_POINT} systemctl enable systemd-homed
+    arch-chroot ${MOUNT_POINT} systemctl enable systemd-networkd 
+    arch-chroot ${MOUNT_POINT} systemctl enable systemd-resolved 
+
 }
 
 install_packages() {
@@ -102,17 +106,6 @@ install_packages() {
 
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
     arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
-
-    
-    log_prompt "INFO" && echo "Installation de YAY" && echo ""
-
-    arch-chroot ${MOUNT_POINT} git clone https://aur.archlinux.org/yay-bin.git /home/$(whoami)/yay-git
-    arch-chroot ${MOUNT_POINT} bash -c "cd /home/$(whoami)/yay-git && makepkg -si --noconfirm"
-
-    log_prompt "INFO" && echo "Mise à jour du système avec yay" && echo ""
-    arch-chroot ${MOUNT_POINT} yay -Syu --noconfirm
-
-    log_prompt "SUCCESS" && echo "Système mis à jour" && echo ""
 
     # CPU Microcode
     log_prompt "INFO" && echo " Installation du Microcode"
@@ -136,8 +129,7 @@ install_packages() {
         gpu_modules="${gpu_modules:+$gpu_modules }nvidia nvidia_modeset nvidia_uvm nvidia_drm"
         
         # Installation des paquets NVIDIA
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms nvidia-utils nvidia-settings qt5-wayland qt5ct qt6-wayland qt6ct libva --noconfirm
-        arch-chroot "${MOUNT_POINT}" yay -S libva-nvidia-driver-git --noconfirm 
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms nvidia-utils lib32-nvidia-utils egl-wayland libva-nvidia-driver --noconfirm
 
         # Création du hook pacman
         {
@@ -160,10 +152,15 @@ install_packages() {
 
         # Configuration modprobe NVIDIA
         {
-            echo "options nvidia_drm modeset=1 fbdev=1" 
+            echo "options nvidia_drm modeset=1 fbdev=1"
             echo "options nvidia NVreg_RegistryDwords=\"PowerMizerEnable=0x1; PerfLevelSrc=0x2222; PowerMizerLevel=0x3; PowerMizerDefault=0x3; PowerMizerDefaultAC=0x3\""            
         
         } > "${MOUNT_POINT}/etc/modprobe.d/nvidia.conf"
+
+        arch-chroot ${MOUNT_POINT} systemctl enable nvidia-suspend.service 
+        arch-chroot ${MOUNT_POINT} systemctl enable nvidia-hibernate.service 
+        arch-chroot ${MOUNT_POINT} systemctl enable nvidia-resume.service
+
     
     fi
 
@@ -517,17 +514,7 @@ config_ssh() {
     sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' "${MOUNT_POINT}$ssh_config_file"
     sed -i 's/#PermitEmptyPasswords no/PermitEmptyPasswords no/' "${MOUNT_POINT}$ssh_config_file"
 
-}
-
-activate_service() {
-    clear
-    echo
-    log_prompt "INFO" && echo " arch-chroot - Activation des services"
-    echo
     arch-chroot ${MOUNT_POINT} systemctl enable sshd
-    arch-chroot ${MOUNT_POINT} systemctl enable systemd-homed
-    arch-chroot ${MOUNT_POINT} systemctl enable systemd-networkd 
-    arch-chroot ${MOUNT_POINT} systemctl enable systemd-resolved 
-    arch-chroot ${MOUNT_POINT} systemctl enable optimus-manager.service
+
 }
 
