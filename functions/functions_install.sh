@@ -128,7 +128,7 @@ install_packages() {
         gpu_modules="${gpu_modules:+$gpu_modules }nvidia nvidia_modeset nvidia_uvm nvidia_drm"
         
         # Installation des paquets NVIDIA
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms libglvnd nvidia-utils opencl-nvidia nvidia-settings lib32-nvidia-utils lib32-opencl-nvidia egl-wayland --noconfirm
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms libglvnd nvidia-utils opencl-nvidia nvidia-settings lib32-nvidia-utils lib32-opencl-nvidia egl-wayland libva-nvidia-driver --noconfirm
 
         # Création du hook pacman
         {
