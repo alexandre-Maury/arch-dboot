@@ -320,6 +320,7 @@ install_bootloader() {
 
         arch-chroot ${MOUNT_POINT} bootctl --path=/boot install
 
+        # Création du fichier loader.conf
         {
             echo "default arch.conf"
             echo "timeout 10"
@@ -328,6 +329,7 @@ install_bootloader() {
 
         } > "${MOUNT_POINT}/boot/loader/loader.conf"
 
+        # Configuration de l'entrée principale pour Arch Linux
         {
             echo "title   Arch Linux"
             echo "linux   /vmlinuz-linux"
@@ -335,6 +337,14 @@ install_bootloader() {
             echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw"
 
         } > "${MOUNT_POINT}/boot/loader/entries/arch.conf"
+
+        # Ajouter l'entrée pour l'invite de commande (mode single-user)
+        {
+            echo "title   Arch Linux (Single User Mode)"
+            echo "linux   /vmlinuz-linux"
+            echo "initrd  /initramfs-linux.img"
+            echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw single"
+        } > "${MOUNT_POINT}/boot/loader/entries/arch-single-user.conf"
 
         # Détection automatique des entrées UEFI
         log_prompt "INFO" && echo " Recherche des entrées UEFI..."
