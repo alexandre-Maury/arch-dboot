@@ -128,8 +128,8 @@ install_packages() {
         gpu_modules="${gpu_modules:+$gpu_modules }nvidia nvidia_modeset nvidia_uvm nvidia_drm"
         
         # Installation des paquets NVIDIA
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms libglvnd nvidia-utils opencl-nvidia nvidia-settings lib32-nvidia-utils lib32-opencl-nvidia egl-wayland libva-nvidia-driver --noconfirm
-
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms libglvnd nvidia-utils opencl-nvidia nvidia-settings lib32-nvidia-utils lib32-opencl-nvidia egl-wayland libva-nvidia-driver nvidia-lts optimus-manager --noconfirm
+        
         # Création du hook pacman
         {
             echo "[Trigger]" 
@@ -151,12 +151,9 @@ install_packages() {
 
         # Configuration modprobe NVIDIA
         {
-            echo "options nvidia_drm modeset=1" 
-            echo "options nvidia NVreg_UsePageAttributeTable=1" 
-            echo "options nvidia NVreg_EnablePCIeGen3=1"
-            echo "options nvidia NVreg_DynamicPowerManagement=0x02"
-            echo "options nvidia_drm fbdev=1"
-            
+            echo "options nvidia_drm modeset=1 fbdev=1" 
+            echo "options nvidia NVreg_RegistryDwords=\"PowerMizerEnable=0x1; PerfLevelSrc=0x2222; PowerMizerLevel=0x3; PowerMizerDefault=0x3; PowerMizerDefaultAC=0x3\""            
+        
         } > "${MOUNT_POINT}/etc/modprobe.d/nvidia.conf"
     
     fi
@@ -519,5 +516,6 @@ activate_service() {
     arch-chroot ${MOUNT_POINT} systemctl enable systemd-homed
     arch-chroot ${MOUNT_POINT} systemctl enable systemd-networkd 
     arch-chroot ${MOUNT_POINT} systemctl enable systemd-resolved 
+    arch-chroot ${MOUNT_POINT} systemctl enable optimus-manager.service
 }
 
