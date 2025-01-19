@@ -101,6 +101,11 @@ install_packages() {
 
     local gpu_modules=""
     local has_multiple_gpus=false
+
+    # Vérifie si les modules sont présents dans le système
+    check_module_exists() {
+        modprobe -n -v "$1" &>/dev/null
+    }
                                                
     log_prompt "INFO" && echo " Installation des paquages de bases"
 
@@ -126,40 +131,54 @@ install_packages() {
     if echo "$GPU_VENDOR" | grep -q "nvidia"; then
 
         has_multiple_gpus=true
-        gpu_modules="${gpu_modules:+$gpu_modules }nvidia nvidia_modeset nvidia_uvm nvidia_drm"
-        
-        # Installation des paquets NVIDIA
-        arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms nvidia-utils nvidia-settings lib32-nvidia-utils egl-wayland libva-nvidia-driver --noconfirm
 
-        # Création du hook pacman
-        {
-            echo "[Trigger]" 
-            echo "Operation=Install" 
-            echo "Operation=Upgrade" 
-            echo "Operation=Remove" 
-            echo "Type=Package" 
-            echo "Target=nvidia" 
-            echo "Target=linux" 
-            echo 
-            echo "[Action]"
-            echo "Description=Mise à jour du module nvidia dans initramfs"
-            echo "Depends=mkinitcpio" 
-            echo "When=PostTransaction"
-            echo "NeedsTargets"
-            echo "Exec=/usr/bin/mkinitcpio -P" 
+        # gpu_modules="${gpu_modules:+$gpu_modules }nvidia nvidia_modeset nvidia_uvm nvidia_drm"
+        # arch-chroot "${MOUNT_POINT}" pacman -S --needed nvidia-dkms nvidia-utils nvidia-settings lib32-nvidia-utils egl-wayland libva-nvidia-driver --noconfirm
 
-        } > "${MOUNT_POINT}/etc/pacman.d/hooks/nvidia.hook"
+        # # Création du hook pacman
+        # {
+            # echo "[Trigger]" 
+            # echo "Operation=Install" 
+            # echo "Operation=Upgrade" 
+            # echo "Operation=Remove" 
+            # echo "Type=Package" 
+            # echo "Target=nvidia" 
+            # echo "Target=linux" 
+            
+            # Adjust line(6) above to match your driver, e.g. Target=nvidia-470xx-dkms
+            # Change line(7) above, if you are not using the regular kernel For example, Target=linux-lts
+            
+            # echo 
+            # echo "[Action]"
+            # echo "Description=Mise à jour du module nvidia dans initramfs"
+            # echo "Depends=mkinitcpio" 
+            # echo "When=PostTransaction"
+            # echo "NeedsTargets"
+            # echo "Exec=/bin/sh -c 'while read -r trg; do case $trg in linux) exit 0; esac; done; /usr/bin/mkinitcpio -P'" 
+
+        # } > "${MOUNT_POINT}/etc/pacman.d/hooks/nvidia.hook"
 
         # Configuration modprobe NVIDIA
-        {
-            echo "options nvidia_drm modeset=1 fbdev=1"
-            echo "options nvidia NVreg_RegistryDwords=\"PowerMizerEnable=0x1; PerfLevelSrc=0x2222; PowerMizerLevel=0x3; PowerMizerDefault=0x3; PowerMizerDefaultAC=0x3\""            
-        
-        } > "${MOUNT_POINT}/etc/modprobe.d/nvidia.conf"
+        # {
+            # echo "options nvidia_drm modeset=1 fbdev=1"     
+            # echo "options nvidia NVreg_RegistryDwords=\"PowerMizerEnable=0x1; PerfLevelSrc=0x2222; PowerMizerLevel=0x3; PowerMizerDefault=0x3; PowerMizerDefaultAC=0x3\""     
 
-        arch-chroot ${MOUNT_POINT} systemctl enable nvidia-suspend.service 
-        arch-chroot ${MOUNT_POINT} systemctl enable nvidia-hibernate.service 
-        arch-chroot ${MOUNT_POINT} systemctl enable nvidia-resume.service
+        # } > "${MOUNT_POINT}/etc/modprobe.d/nvidia.conf"
+
+        # sed -i 's/ kms / /g' "${MOUNT_POINT}/etc/mkinitcpio.conf"
+
+        # arch-chroot ${MOUNT_POINT} systemctl enable nvidia-suspend.service 
+        # arch-chroot ${MOUNT_POINT} systemctl enable nvidia-hibernate.service 
+        # arch-chroot ${MOUNT_POINT} systemctl enable nvidia-resume.service
+
+        gpu_modules="${gpu_modules:+$gpu_modules }nouveau"
+        arch-chroot "${MOUNT_POINT}" pacman -S --needed mesa xf86-video-nouveau vulkan-nouveau lib32-mesa --noconfirm
+
+        {
+            echo "options nouveau modeset=1"     
+            echo "options nouveau config=NvGspRm=1"     
+        
+        } > "${MOUNT_POINT}/etc/modprobe.d/nouveau.conf"
 
     
     fi
@@ -176,11 +195,19 @@ install_packages() {
         {
             echo "options amdgpu si_support=1" 
             echo "options amdgpu cik_support=1" 
+            echo "options amdgpu dc=1"
             echo "options amdgpu modeset=1"
-            echo "options amdgpu ppfeaturemask=0xffffffff"
-            echo "options amdgpu dpm=1"
             
         } > "${MOUNT_POINT}/etc/modprobe.d/amdgpu.conf"
+
+        # Configuration modprobe RADEON
+        {
+            echo "options radeon si_support=0" 
+            echo "options radeon cik_support=0" 
+            echo "options radeon dc=0"
+            echo "options radeon modeset=1"
+
+        } > "${MOUNT_POINT}/etc/modprobe.d/radeon.conf"
 
     fi
 
@@ -195,7 +222,7 @@ install_packages() {
         # Configuration modprobe Intel
         {
             echo "options i915 modeset=1" 
-            echo "options i915 enable_guc=2" 
+            echo "options i915 enable_guc=3" 
             echo "options i915 enable_fbc=1"
             echo "options i915 fastboot=1"
             echo "options i915 enable_psr=1"
@@ -214,14 +241,23 @@ install_packages() {
 
     # Configuration pour systèmes multi-GPU
     if $has_multiple_gpus; then
-
+        # Crée ou modifie le fichier gpu-multi.conf
         {
-            echo "softdep nvidia pre: i915 amdgpu radeon" 
-            echo "softdep i915 pre: amdgpu radeon" 
-            
-        } > "${MOUNT_POINT}/etc/modprobe.d/gpu-multi.conf"
+            if check_module_exists "nvidia"; then
+                echo "softdep nvidia pre: i915 amdgpu radeon"
+            fi
 
+            if check_module_exists "nouveau"; then
+                echo "softdep nouveau pre: i915 amdgpu radeon"
+            fi
+
+            if check_module_exists "amdgpu"; then
+                echo "softdep amdgpu pre: i915 radeon"
+            fi
+
+        } > "${MOUNT_POINT}/etc/modprobe.d/gpu-multi.conf"
     fi
+
 
     # Mise à jour de mkinitcpio.conf
     sed -i "s/^#\?MODULES=.*/MODULES=($gpu_modules)/" "${MOUNT_POINT}/etc/mkinitcpio.conf"
