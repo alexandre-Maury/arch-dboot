@@ -340,7 +340,7 @@ install_bootloader() {
 
         # Ajouter l'entrée pour l'invite de commande (mode single-user)
         {
-            echo "title   Arch Linux (Single User Mode)"
+            echo "title   Recovery Mode"
             echo "linux   /vmlinuz-linux"
             echo "initrd  /initramfs-linux.img"
             echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw single"
