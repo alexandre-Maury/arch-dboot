@@ -26,10 +26,10 @@ fi
 ##############################################################################
 ## Valide la connexion internet                                                          
 ##############################################################################
-# echo
-# log_prompt "INFO" && echo "Vérification de la connexion Internet"
-# $(ping -c 3 archlinux.org &>/dev/null) || (log_prompt "ERROR" && echo "Pas de connexion Internet" && echo)
-# sleep 2
+echo
+log_prompt "INFO" && echo "Vérification de la connexion Internet"
+$(ping -c 3 archlinux.org &>/dev/null) || (log_prompt "ERROR" && echo "Pas de connexion Internet" && echo)
+sleep 2
 
 ##############################################################################
 ## Récupération des disques disponibles                                                      

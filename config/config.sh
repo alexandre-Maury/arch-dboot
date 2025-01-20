@@ -42,6 +42,8 @@ BTRFS_SUBVOLUMES=("@" "@root" "@home" "@srv" "@log" "@cache" "@tmp" "@snapshots"
 # Options de montage BTRFS par défaut
 BTRFS_MOUNT_OPTIONS="defaults,noatime,compress=zstd,commit=120"
 
+DRIVERS="Open-Source" # Open-Source ou Closed-Source
+
 
 
 
