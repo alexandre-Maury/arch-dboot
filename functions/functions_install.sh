@@ -102,7 +102,7 @@ install_packages() {
     log_prompt "INFO" && echo " Installation des paquages de bases"
 
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
-    arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget --noconfirm
+    arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget pacman-contrib --noconfirm
 
 }
 
