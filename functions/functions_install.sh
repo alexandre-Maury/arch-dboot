@@ -49,6 +49,21 @@ config_system() {
     sed -i "/\[multilib\]/,/Include/"'s/^#//' "${MOUNT_POINT}/etc/pacman.conf"
     arch-chroot ${MOUNT_POINT} pacman -Sy --noconfirm
 
+}
+
+install_packages() {
+
+    clear
+                                               
+    log_prompt "INFO" && echo " Installation des paquages de bases"
+
+    arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
+    arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget pacman-contrib networkmanager --noconfirm
+
+}
+
+config_reseau() {
+
     ## Configuration du réseau                                             
     log_prompt "INFO" && echo " Génération du hostname" 
     echo "${HOSTNAME}" > "${MOUNT_POINT}/etc/hostname"
@@ -62,47 +77,72 @@ config_system() {
     } > "${MOUNT_POINT}/etc/hosts"
 
 
-    log_prompt "INFO" && echo " Configuration du fichier 20-wired.network" && echo
+    # log_prompt "INFO" && echo " Configuration du fichier 20-wired.network" && echo
 
-    {
-        echo "[Match]"
-        echo "Name=${INTERFACE}"
-        echo "MACAddress=${MAC_ADDRESS}"
-        echo
-        echo "[Network]" 
-        echo "DHCP=yes" 
-        echo 
-        echo "[DHCPv4]" 
-        echo "RouteMetric=10" 
-        echo "UseDNS=false" 
-    } > "${MOUNT_POINT}/etc/systemd/network/20-wired.network"
+    # {
+        # echo "[Match]"
+        # echo "Name=${INTERFACE}"
+        # echo "MACAddress=${MAC_ADDRESS}"
+        # echo
+        # echo "[Network]" 
+        # echo "DHCP=yes" 
+        # echo 
+        # echo "[DHCPv4]" 
+        # echo "RouteMetric=10" 
+        # echo "UseDNS=false" 
+    # } > "${MOUNT_POINT}/etc/systemd/network/20-wired.network"
 
     
-    log_prompt "INFO" && echo " Configuration de /etc/resolv.conf pour utiliser systemd-resolved" && echo 
-    ln -sf /run/systemd/resolve/stub-resolv.conf "${MOUNT_POINT}/etc/resolv.conf"
+    # log_prompt "INFO" && echo " Configuration de /etc/resolv.conf pour utiliser systemd-resolved" && echo 
+    # ln -sf /run/systemd/resolve/stub-resolv.conf "${MOUNT_POINT}/etc/resolv.conf"
 
-    log_prompt "INFO" && echo " Écrire la configuration DNS dans /etc/systemd/resolved.conf" && echo 
+    # log_prompt "INFO" && echo " Écrire la configuration DNS dans /etc/systemd/resolved.conf" && echo 
+
+    # {
+        # echo "[Resolve]" 
+        # echo "DNS=1.1.1.1 9.9.9.9" 
+        # echo "FallbackDNS=8.8.8.8"
+    # } > "${MOUNT_POINT}/etc/systemd/resolved.conf"
+
+    # arch-chroot ${MOUNT_POINT} systemctl enable systemd-homed
+    # arch-chroot ${MOUNT_POINT} systemctl enable systemd-networkd 
+    # arch-chroot ${MOUNT_POINT} systemctl enable systemd-resolved 
+
+    log_prompt "INFO" && echo "Préparation de /etc/resolv.conf pour NetworkManager"
+    ln -sf /run/NetworkManager/resolv.conf "${MOUNT_POINT}/etc/resolv.conf"
+
+    # Créer un fichier de configuration NetworkManager pour les DNS
+    log_prompt "INFO" && echo "Configuration de NetworkManager avec vos serveurs DNS personnalisés"
+    {
+        echo "[main]"
+        echo "dns=default"
+        echo
+        echo "[ipv4]"
+        echo "dns=1.1.1.1;9.9.9.9"
+        echo "ignore-auto-dns=true"
+        echo
+    } > "${MOUNT_POINT}/etc/NetworkManager/conf.d/dns-custom.conf"
+
+    # Désactiver IPv6 globalement sur le système
+    log_prompt "INFO" && echo "Désactivation d'IPv6 sur le système"
 
     {
-        echo "[Resolve]" 
-        echo "DNS=1.1.1.1 9.9.9.9" 
-        echo "FallbackDNS=8.8.8.8"
-    } > "${MOUNT_POINT}/etc/systemd/resolved.conf"
+        echo "net.ipv6.conf.all.disable_ipv6 = 1"
+        echo "net.ipv6.conf.default.disable_ipv6 = 1"
+        echo "net.ipv6.conf.lo.disable_ipv6 = 1"
+    } > "${MOUNT_POINT}/etc/sysctl.d/99-disable-ipv6.conf"
 
-    arch-chroot ${MOUNT_POINT} systemctl enable systemd-homed
-    arch-chroot ${MOUNT_POINT} systemctl enable systemd-networkd 
-    arch-chroot ${MOUNT_POINT} systemctl enable systemd-resolved 
+    # Appliquer les changements de sysctl (désactivation d'IPv6)
+    arch-chroot ${MOUNT_POINT} sysctl --system
 
-}
+    # Désactivation des services conflictuels
+    log_prompt "INFO" && echo "Désactivation de systemd-networkd et systemd-resolved"
+    arch-chroot ${MOUNT_POINT} systemctl disable systemd-networkd
+    arch-chroot ${MOUNT_POINT} systemctl disable systemd-resolved
 
-install_packages() {
-
-    clear
-                                               
-    log_prompt "INFO" && echo " Installation des paquages de bases"
-
-    arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
-    arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget pacman-contrib --noconfirm
+    # Activer NetworkManager
+    log_prompt "INFO" && echo "Activation de NetworkManager"
+    arch-chroot ${MOUNT_POINT} systemctl enable NetworkManager
 
 }
 

@@ -128,6 +128,7 @@ while true; do
             install_base 
             config_system
             install_packages
+            config_reseau
             install_bootloader "$disk"
             config_passwdqc
             config_root
