@@ -134,6 +134,7 @@ while true; do
             config_root
             config_user
             config_ssh
+            activate_service
 
             # clear
             echo

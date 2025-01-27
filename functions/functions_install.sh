@@ -64,6 +64,8 @@ install_packages() {
 
 config_reseau() {
 
+    clear
+
     ## Configuration du réseau                                             
     log_prompt "INFO" && echo " Génération du hostname" 
     echo "${HOSTNAME}" > "${MOUNT_POINT}/etc/hostname"
@@ -132,17 +134,7 @@ config_reseau() {
         echo "net.ipv6.conf.lo.disable_ipv6 = 1"
     } > "${MOUNT_POINT}/etc/sysctl.d/99-disable-ipv6.conf"
 
-    # Appliquer les changements de sysctl (désactivation d'IPv6)
-    arch-chroot ${MOUNT_POINT} sysctl --system
 
-    # Désactivation des services conflictuels
-    log_prompt "INFO" && echo "Désactivation de systemd-networkd et systemd-resolved"
-    arch-chroot ${MOUNT_POINT} systemctl disable systemd-networkd
-    arch-chroot ${MOUNT_POINT} systemctl disable systemd-resolved
-
-    # Activer NetworkManager
-    log_prompt "INFO" && echo "Activation de NetworkManager"
-    arch-chroot ${MOUNT_POINT} systemctl enable NetworkManager
 
 }
 
@@ -400,6 +392,24 @@ config_ssh() {
     sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' "${MOUNT_POINT}$ssh_config_file"
     sed -i 's/#PermitEmptyPasswords no/PermitEmptyPasswords no/' "${MOUNT_POINT}$ssh_config_file"
 
+}
+
+activate_service() {
+
+    # Désactivation des services conflictuels
+    log_prompt "INFO" && echo "Désactivation de systemd-networkd et systemd-resolved"
+    arch-chroot ${MOUNT_POINT} systemctl disable systemd-networkd
+    arch-chroot ${MOUNT_POINT} systemctl disable systemd-resolved
+
+    # Activer NetworkManager
+    log_prompt "INFO" && echo "Activation de NetworkManager"
+    arch-chroot ${MOUNT_POINT} systemctl enable NetworkManager
+
+    # Appliquer les changements de sysctl (désactivation d'IPv6)
+    arch-chroot ${MOUNT_POINT} sysctl --system
+
+    # Activer sshd
+    log_prompt "INFO" && echo "Activation de sshd"
     arch-chroot ${MOUNT_POINT} systemctl enable sshd
 
 }
