@@ -78,38 +78,6 @@ config_reseau() {
         echo "127.0.1.1 $HOSTNAME.localdomain $HOSTNAME"
     } > "${MOUNT_POINT}/etc/hosts"
 
-
-    # log_prompt "INFO" && echo " Configuration du fichier 20-wired.network" && echo
-
-    # {
-        # echo "[Match]"
-        # echo "Name=${INTERFACE}"
-        # echo "MACAddress=${MAC_ADDRESS}"
-        # echo
-        # echo "[Network]" 
-        # echo "DHCP=yes" 
-        # echo 
-        # echo "[DHCPv4]" 
-        # echo "RouteMetric=10" 
-        # echo "UseDNS=false" 
-    # } > "${MOUNT_POINT}/etc/systemd/network/20-wired.network"
-
-    
-    # log_prompt "INFO" && echo " Configuration de /etc/resolv.conf pour utiliser systemd-resolved" && echo 
-    # ln -sf /run/systemd/resolve/stub-resolv.conf "${MOUNT_POINT}/etc/resolv.conf"
-
-    # log_prompt "INFO" && echo " Écrire la configuration DNS dans /etc/systemd/resolved.conf" && echo 
-
-    # {
-        # echo "[Resolve]" 
-        # echo "DNS=1.1.1.1 9.9.9.9" 
-        # echo "FallbackDNS=8.8.8.8"
-    # } > "${MOUNT_POINT}/etc/systemd/resolved.conf"
-
-    # arch-chroot ${MOUNT_POINT} systemctl enable systemd-homed
-    # arch-chroot ${MOUNT_POINT} systemctl enable systemd-networkd 
-    # arch-chroot ${MOUNT_POINT} systemctl enable systemd-resolved 
-
     log_prompt "INFO" && echo "Préparation de /etc/resolv.conf pour NetworkManager"
     ln -sf /run/NetworkManager/resolv.conf "${MOUNT_POINT}/etc/resolv.conf"
 
@@ -133,6 +101,11 @@ config_reseau() {
         echo "net.ipv6.conf.default.disable_ipv6 = 1"
         echo "net.ipv6.conf.lo.disable_ipv6 = 1"
     } > "${MOUNT_POINT}/etc/sysctl.d/99-disable-ipv6.conf"
+
+    {
+        echo "[connection]"
+        echo "ipv6.method=disabled"
+    } > "${MOUNT_POINT}/etc/NetworkManager/conf.d/disable-ipv6.conf"
 
 
 
