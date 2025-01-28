@@ -1,4 +1,4 @@
-# arch-dboot [EN COURS]
+# arch-dboot
 
 Un script d'installation d'Arch Linux en mode UEFI, conçu pour automatiser les étapes critiques du processus d'installation et faciliter le double boot avec Windows.
 Il prend en charge le partitionnement GPT, l'installation des paquets de base, la configuration du système et le déploiement du chargeur de démarrage systemd-boot.
@@ -284,6 +284,16 @@ Désactivez le démarrage rapide de Windows : Cette option peut interférer avec
 2- Décochez "Activer le démarrage rapide".
 
 Ces solutions devraient permettre de corriger les problèmes courants liés au dual boot avec Windows et Linux. Si le problème persiste, vérifiez les logs ou partagez des informations supplémentaires pour obtenir une aide plus spécifique.
+
+Si vous souhaitez nettoyer votre disque manuellement pour une installation en simple boot :
+
+Lancez cfdisk sur le disque que vous souhaitez nettoyer (par exemple, /dev/sda ou /dev/nvme0n1).
+
+    cfdisk /dev/sda
+    cfdisk /dev/nvme0n1
+
+Supprimez toutes les partitions existantes en utilisant l'option "delete".
+Illustration à venir
 
 ## Auteur : 
 
