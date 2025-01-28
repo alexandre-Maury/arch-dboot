@@ -285,6 +285,8 @@ Désactivez le démarrage rapide de Windows : Cette option peut interférer avec
 
 Ces solutions devraient permettre de corriger les problèmes courants liés au dual boot avec Windows et Linux. Si le problème persiste, vérifiez les logs ou partagez des informations supplémentaires pour obtenir une aide plus spécifique.
 
+## Autres
+
 Si vous souhaitez nettoyer votre disque manuellement pour une installation en simple boot :
 
 Lancez cfdisk sur le disque que vous souhaitez nettoyer (par exemple, /dev/sda ou /dev/nvme0n1).
