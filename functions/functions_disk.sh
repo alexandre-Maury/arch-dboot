@@ -388,7 +388,7 @@ manage_partitions() {
                     else
                         echo " Partition Boot (EFI)"
                         echo "   - Type : fat32"
-                        echo "   - Taille recommandée : 512MiB"
+                        echo "   - Taille recommandée : 1GiB"
                         echo "   - Appellation recommandée : [boot] (obligatoire pour l'exécution correcte de l'installation)"
                     fi
                     echo
