@@ -100,14 +100,7 @@ config_reseau() {
         echo "net.ipv6.conf.all.disable_ipv6 = 1"
         echo "net.ipv6.conf.default.disable_ipv6 = 1"
         echo "net.ipv6.conf.lo.disable_ipv6 = 1"
-    } > "${MOUNT_POINT}/etc/sysctl.d/99-disable-ipv6.conf"
-
-    {
-        echo "[connection]"
-        echo "ipv6.method=disabled"
-    } > "${MOUNT_POINT}/etc/NetworkManager/conf.d/disable-ipv6.conf"
-
-
+    } > "${MOUNT_POINT}/etc/sysctl.d/40-ipv6.conf"
 
 }
 
@@ -379,7 +372,7 @@ activate_service() {
     arch-chroot ${MOUNT_POINT} systemctl enable NetworkManager
 
     # Appliquer les changements de sysctl (désactivation d'IPv6)
-    arch-chroot ${MOUNT_POINT} sysctl --system
+    arch-chroot ${MOUNT_POINT} sysctl --system 
 
     # Activer sshd
     log_prompt "INFO" && echo "Activation de sshd"
