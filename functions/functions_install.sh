@@ -93,15 +93,6 @@ config_reseau() {
         echo
     } > "${MOUNT_POINT}/etc/NetworkManager/conf.d/dns-custom.conf"
 
-    # Désactiver IPv6 globalement sur le système
-    log_prompt "INFO" && echo "Désactivation d'IPv6 sur le système"
-
-    {
-        echo "net.ipv6.conf.all.disable_ipv6 = 1"
-        echo "net.ipv6.conf.default.disable_ipv6 = 1"
-        echo "net.ipv6.conf.lo.disable_ipv6 = 1"
-    } > "${MOUNT_POINT}/etc/sysctl.d/40-ipv6.conf"
-
 }
 
 install_bootloader() {
@@ -370,9 +361,6 @@ activate_service() {
     # Activer NetworkManager
     log_prompt "INFO" && echo "Activation de NetworkManager"
     arch-chroot ${MOUNT_POINT} systemctl enable NetworkManager
-
-    # Appliquer les changements de sysctl (désactivation d'IPv6)
-    arch-chroot ${MOUNT_POINT} sysctl --system 
 
     # Activer sshd
     log_prompt "INFO" && echo "Activation de sshd"
