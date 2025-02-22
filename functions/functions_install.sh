@@ -58,7 +58,7 @@ install_packages() {
     log_prompt "INFO" && echo " Installation des paquages de bases"
 
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
-    arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget pacman-contrib networkmanager --noconfirm
+    arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget pacman-contrib networkmanager network-manager-applet nm-connection-editor wpa_supplicant iwd iw bluez bluez-utils blueman ntfs-3g --noconfirm
 
 }
 
@@ -358,9 +358,10 @@ activate_service() {
     arch-chroot ${MOUNT_POINT} systemctl disable systemd-networkd
     arch-chroot ${MOUNT_POINT} systemctl disable systemd-resolved
 
-    # Activer NetworkManager
+    # Activer reseau
     log_prompt "INFO" && echo "Activation de NetworkManager"
-    arch-chroot ${MOUNT_POINT} systemctl enable NetworkManager
+    arch-chroot ${MOUNT_POINT} systemctl enable NetworkManager.service
+    arch-chroot ${MOUNT_POINT} systemctl enable bluetooth.service
 
     # Activer sshd
     log_prompt "INFO" && echo "Activation de sshd"
