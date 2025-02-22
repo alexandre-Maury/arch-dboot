@@ -133,7 +133,7 @@ while true; do
             config_passwdqc
             config_root
             config_user
-            config_ssh
+            # config_ssh
             activate_service
 
             # clear
