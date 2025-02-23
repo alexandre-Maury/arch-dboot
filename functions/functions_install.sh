@@ -58,7 +58,7 @@ install_packages() {
     log_prompt "INFO" && echo " Installation des paquages de bases"
 
     arch-chroot ${MOUNT_POINT} pacman -Syu --noconfirm
-    arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget pacman-contrib networkmanager network-manager-applet nm-connection-editor wpa_supplicant iwd iw bluez bluez-utils blueman ntfs-3g --noconfirm
+    arch-chroot ${MOUNT_POINT} pacman -S --needed nano vim sudo pambase sshpass xdg-user-dirs git curl tar wget pacman-contrib networkmanager network-manager-applet nm-connection-editor networkmanager-openvpn wpa_supplicant iwd iw bluez bluez-utils blueman ntfs-3g --noconfirm
 
 }
 
