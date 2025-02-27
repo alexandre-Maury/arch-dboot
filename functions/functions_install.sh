@@ -338,16 +338,36 @@ config_ssh() {
 
     clear
 
-    local ssh_config_file="/etc/ssh/sshd_config"
-
     echo
     log_prompt "INFO" && echo " arch-chroot - Configuration du SSH"
     echo
-    sed -i "s/#Port 22/Port $SSH_PORT/" "${MOUNT_POINT}$ssh_config_file"
-    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' "${MOUNT_POINT}$ssh_config_file"
-    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' "${MOUNT_POINT}$ssh_config_file"
-    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' "${MOUNT_POINT}$ssh_config_file"
-    sed -i 's/#PermitEmptyPasswords no/PermitEmptyPasswords no/' "${MOUNT_POINT}$ssh_config_file"
+
+    # Configurer le port SSH personnalisé
+    sed -i "s/#\s*Port 22/Port $SSH_PORT/" "${MOUNT_POINT}/etc/ssh/sshd_config"
+    
+    # Désactiver l'accès root
+    sed -i 's/#\s*PermitRootLogin prohibit-password/PermitRootLogin no/' "${MOUNT_POINT}/etc/ssh/sshd_config"
+    
+    # Désactiver l'authentification par mot de passe
+    sed -i 's/#\s*PasswordAuthentication yes/PasswordAuthentication no/' "${MOUNT_POINT}/etc/ssh/sshd_config"
+
+    # Forcer l'authentification par clé publique
+    sed -i 's/#\s*PubkeyAuthentication yes/PubkeyAuthentication yes/' "${MOUNT_POINT}/etc/ssh/sshd_config"
+    
+    # Désactiver les mots de passe vides
+    sed -i 's/#\s*PermitEmptyPasswords no/PermitEmptyPasswords no/' "${MOUNT_POINT}/etc/ssh/sshd_config"
+    
+    # Limiter les tentatives d'authentification
+    sed -i 's/#\s*MaxAuthTries 6/MaxAuthTries 3/' "${MOUNT_POINT}/etc/ssh/sshd_config"
+    
+    # Modifier ou ajouter les lignes HostKey pour RSA, ECDSA, ED25519
+    sed -i 's/#\s*HostKey \/etc\/ssh\/ssh_host_rsa_key/HostKey \/etc\/ssh\/ssh_host_rsa_key/' "${MOUNT_POINT}/etc/ssh/sshd_config"
+    sed -i 's/#\s*HostKey \/etc\/ssh\/ssh_host_ecdsa_key/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/' "${MOUNT_POINT}/etc/ssh/sshd_config"
+    sed -i 's/#\s*HostKey \/etc\/ssh\/ssh_host_ed25519_key/HostKey \/etc\/ssh\/ssh_host_ed25519_key/' "${MOUNT_POINT}/etc/ssh/sshd_config"
+
+    # (Optionnel) Sécuriser avec TCPWrappers
+    echo "sshd : ALL : deny" | tee -a "${MOUNT_POINT}/etc/hosts.deny" 
+    echo "sshd : 192.168.1.0/24 : allow" | tee -a "${MOUNT_POINT}/etc/hosts.allow" 
 
 }
 
