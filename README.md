@@ -106,10 +106,10 @@ Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 
 
 Pour l'exécution correcte de l'installation lors de l'éxécution du script il vous sera demandé de saisir le nom de la partition à créer.
 
-[efi|boot] ==> pour une partition de démarrage.
-[swap] ==> pour une partition de swap.
-[racine|root] ==> pour une partition racine.
-[home] ==> pour une partition utilisateur.
+    [efi|boot] ==> pour une partition de démarrage.
+    [swap] ==> pour une partition de swap.
+    [racine|root] ==> pour une partition racine.
+    [home] ==> pour une partition utilisateur.
 
 Elle sera ensuite renommer avec arch_ ex. arch_boot, arch_swap ...
 
