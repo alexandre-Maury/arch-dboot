@@ -386,13 +386,13 @@ manage_partitions() {
                     if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
                         echo " Rappel : Partition boot, lors d'un dual boot, celle de Windows sera utilisé."
                     else
-                        echo " Partition Boot (EFI)"
+                        echo " Partition EFI (OBLIGATOIRE)"
                         echo "   - Type : fat32"
                         echo "   - Taille recommandée : 1GiB"
                         echo "   - Appellation recommandée : [boot] (obligatoire pour l'exécution correcte de l'installation)"
                     fi
                     echo
-                    echo " Partition Swap"
+                    echo " Partition Swap (Facultative)"
                     echo
                     echo "   -  Type : linux-swap => Taille recommandée : Selon vos besoins (ex. 2 à 4GiB pour la plupart des cas)"
                     echo "   -  Appellation recommandée : [swap]"
@@ -401,7 +401,7 @@ manage_partitions() {
                     echo
                     echo "   - a. Type : btrfs => Taille recommandée : 100% (pour occuper tout l'espace restant)"
                     echo "   - b. Type : ext4  => Taille recommandée : Selon vos besoins (ex. 20-50GiB pour la racine)"
-                    echo "   - Appellation recommandée : [root] (obligatoire pour l'exécution correcte de l'installation)"
+                    echo "   - Appellation recommandée : [racine|root] (obligatoire pour l'exécution correcte de l'installation)"
                     echo
                     echo " Partition Home (Facultative)"
                     echo
@@ -411,45 +411,53 @@ manage_partitions() {
 
                     log_prompt "PROMPT" && read -p " Nom de la partition à créer : " partition_name
                     partition_name=$(echo "$partition_name" | tr '[:upper:]' '[:lower:]') # Conversion en minuscule
-
+                    
                     case $partition_name in
-                        boot)
-                            echo " Création de la partition Boot..."
-                            echo " Type : fat32"
-                            echo " Taille recommandée : 512MiB"
-                            echo " Assurez-vous de sélectionner une partition EFI System Partition (ESP) dans l'outil de partitionnement."
-                            part_error=""
-                            break # Sortir de la boucle si le nom est valide
+
+                        "efi"|"boot")
+
+                            if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
+                                part_error=" Rappel : Lors d'un dual boot, la partition efi de Windows sera utilisé."
+                            else
+                                partition_name="arch_boot"
+                                echo " Création de la partition $partition_name..."
+                                echo " Type : fat32"
+                                echo " Taille recommandée : 512MiB"
+                                echo " Assurez-vous de sélectionner une partition EFI System Partition (ESP) dans l'outil de partitionnement."
+                                part_error=""
+                                break # Sortir de la boucle si le nom est valide
+                            fi
                             ;;
-                        swap)
-                            echo " Création de la partition Swap..."
+
+                        "swap")
+                            partition_name="arch_swap"
+                            echo " Création de la partition $partition_name..."
                             echo " Type : linux-swap"
                             echo " Taille recommandée : selon vos besoins (ex. 2-4GiB)"
                             part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
-                        root)
-                            echo " Création de la partition Racine..."
+
+                        "racine"|"root")
+                            partition_name="arch_racine"
+                            echo " Création de la partition $partition_name..."
                             echo " Type recommandé : btrfs ou ext4"
                             echo " Si vous choisissez btrfs, configurez les subvolumes selon config.sh."
                             echo " Taille recommandée : 100% pour btrfs ou selon vos besoins pour ext4 (ex. 20-50GiB)"
                             part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
-                        home)
-                            echo " Création de la partition Home..."
+
+                        "home")
+                            partition_name="arch_home"
+                            echo " Création de la partition $partition_name..."
                             echo " Type : ext4"
                             echo " Taille recommandée : selon vos besoins"
                             part_error=""
                             break # Sortir de la boucle si le nom est valide
                             ;;
                         *)
-                            if [[ "$dual_boot" =~ ^[Yy]$ ]]; then
-                                part_error=" Nom de partition : $partition_name non valide. Veuillez choisir parmi [swap, root, home]."
-                            else
-                                part_error=" Nom de partition : $partition_name non valide. Veuillez choisir parmi [boot, swap, root, home]."
-                            fi
-                            
+                            part_error=" Nom de partition invalide."
                             ;;
                     esac
                 done
@@ -638,14 +646,14 @@ mount_partitions () {
                 ;;
 
             "btrfs") 
-                if [[ "$label" == "root" ]]; then
+                if [[ "$label" == "arch_racine" ]]; then
                     local root_part=$part
                     local root_fstype="btrfs"
                 fi
                 ;;
 
             "ext4")
-                if [[ "$label" == "root" ]]; then
+                if [[ "$label" == "arch_racine" ]]; then
                     local root_part=$part
                     local root_fstype="ext4"
                 else
@@ -663,7 +671,7 @@ mount_partitions () {
     # Monter et configurer la partition root avec BTRFS ou EXT4
     if [[ -n "$root_part" ]]; then
 
-        echo " Configuration de la partition root (/dev/$root_part)..."
+        echo " Configuration de la partition (/dev/$root_part)..."
 
         if [[ "$root_fstype" == "btrfs" ]]; then
 
