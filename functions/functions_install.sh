@@ -164,12 +164,12 @@ install_bootloader() {
         } > "${MOUNT_POINT}/boot/loader/entries/arch.conf"
 
         # Ajouter l'entrée pour l'invite de commande (mode single-user)
-        {
-            echo "title   Recovery Mode"
-            echo "linux   /vmlinuz-linux"
-            echo "initrd  /initramfs-linux.img"
-            echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw single"
-        } > "${MOUNT_POINT}/boot/loader/entries/arch-single-user.conf"
+        # {
+            # echo "title   Recovery Mode"
+            # echo "linux   /vmlinuz-linux"
+            # echo "initrd  /initramfs-linux.img"
+            # echo "options root=UUID=${root_uuid} rootflags=subvol=@ rw single"
+        # } > "${MOUNT_POINT}/boot/loader/entries/arch-single-user.conf"
 
         # Détection automatique des entrées UEFI
         log_prompt "INFO" && echo " Recherche des entrées UEFI..."
