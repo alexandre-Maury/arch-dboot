@@ -111,6 +111,8 @@ Pour l'exécution correcte de l'installation lors de l'éxécution du script il 
 [racine|root] ==> pour une partition racine.
 [home] ==> pour une partition utilisateur.
 
+Elle sera ensuite renommer avec arch_ ex. arch_boot, arch_swap ...
+
 ## Exemple :
 
 ### Création des partitions avec diskpart :
