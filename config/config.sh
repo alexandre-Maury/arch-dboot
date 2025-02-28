@@ -18,9 +18,9 @@ SSH_PORT=2222  # Remplacez 2222 par le port que vous souhaitez utiliser
 MOUNT_POINT="/mnt" # Point de montage   
 
 DEFAULT_BOOT_TYPE="fat32"
-DEFAULT_SWAP_TYPE="linux-swap" # falcultatif
-DEFAULT_ROOT_TYPE="ext4" # ext4 ou btrfs
-DEFAULT_HOME_TYPE="ext4" # falcultatif
+DEFAULT_SWAP_TYPE="linux-swap"
+DEFAULT_ROOT_TYPE="ext4" 
+DEFAULT_HOME_TYPE="ext4" 
 
 DEFAULT_BOOT_SIZE="512MiB"
 DEFAULT_SWAP_SIZE="8GiB"
@@ -28,10 +28,10 @@ DEFAULT_ROOT_SIZE="55GiB"
 DEFAULT_HOME_SIZE="100%"
 
 PARTITIONS_CREATE=(
-    "boot:${DEFAULT_BOOT_SIZE}:${DEFAULT_BOOT_TYPE}"
-    "swap:${DEFAULT_SWAP_SIZE}:${DEFAULT_SWAP_TYPE}"
-    "root:${DEFAULT_ROOT_SIZE}:${DEFAULT_ROOT_TYPE}"
-    "home:${DEFAULT_HOME_SIZE}:${DEFAULT_HOME_TYPE}"
+    "arch_boot:${DEFAULT_BOOT_SIZE}:${DEFAULT_BOOT_TYPE}"
+    "arch_swap:${DEFAULT_SWAP_SIZE}:${DEFAULT_SWAP_TYPE}"
+    "arch_racine:${DEFAULT_ROOT_SIZE}:${DEFAULT_ROOT_TYPE}"
+    "arch_home:${DEFAULT_HOME_SIZE}:${DEFAULT_HOME_TYPE}"
 )
 
 BOOTLOADER="systemd-boot"  # systemd-boot ou grub
