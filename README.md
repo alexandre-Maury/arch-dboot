@@ -47,9 +47,9 @@ ex.
     DEFAULT_FS_SIZE="100%"
 
     PARTITIONS_CREATE=(
-        "boot:${DEFAULT_BOOT_SIZE}:${DEFAULT_BOOT_TYPE}"
-        "swap:${DEFAULT_SWAP_SIZE}:${DEFAULT_SWAP_TYPE}"
-        "root:${DEFAULT_FS_SIZE}:${DEFAULT_FS_TYPE}"
+        "arch_boot:${DEFAULT_BOOT_SIZE}:${DEFAULT_BOOT_TYPE}"
+        "arch_swap:${DEFAULT_SWAP_SIZE}:${DEFAULT_SWAP_TYPE}"
+        "arch_root:${DEFAULT_FS_SIZE}:${DEFAULT_FS_TYPE}"
     )
 
 ### Mode Avancé : (configuration manuelle)
@@ -62,6 +62,28 @@ Le double boot est possible dans ce mode.
 
 
 Ex. disque principal : sda
+
+- Partition 'EFI' : Taille minimun de 1024 MiB.
+LORS D'UN DUAL BOOT, au cours de la sélection des partitions durant l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). 
+Celle de Windows sera utilisé. Cette partition doit donc être créée avant l'installation de Windows.
+
+- Partition 'MSR' : Taille recommandé 16 MiB
+Zone réservée pour Windows, afin d'y stocker des données système spécifiques.
+
+- Partition 'WINDOWS' : (Taille facultatif - Selon vos préférences)
+La partition Windows sera utilisée pour l'installation du système de Windows. 
+
+- Partition 'SWAP' : (Taille facultatif - Selon vos préférences)
+Espace de stockage utilisé comme mémoire virtuelle lorsque la mémoire vive (RAM) est insuffisante pour répondre aux besoins du système.
+
+- Partition 'RACINE' : 
+La partition Racine sera utilisée pour l'installation du système de Linux.
+
+- Partition 'HOME' : (facultatif) 
+La partition home sera utilisée pour stocker les données personnelles des utilisateurs. 
+
+
+Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows pour la création des partitions.
 
 ### Pour un Dual Boot :
 
@@ -79,28 +101,15 @@ Ex. disque principal : sda
     sda3 <-- Linux Racine
     sda4 <-- Linux Home (facultatif)
 
-- Partition 'EFI' : Taille minimun de 1024 MiB.
-LORS D'UN DUAL BOOT, au cours de la sélection des partitions durant l'éxécution de se script, il est important de ne pas créer de nouveau une partition boot (efi). 
-Celle de Windows sera utilisé. Cette partition doit donc être créée avant l'installation de Windows.
 
-- Partition 'MSR' : Taille recommandé 16 MiB
-Zone réservée pour Windows, afin d'y stocker des données système spécifiques.
+### Appellation obligatoire : 
 
-- Partition 'WINDOWS' : (Taille facultatif - Selon vos préférences)
-La partition Windows sera utilisée pour l'installation du système de Windows. 
+Pour l'exécution correcte de l'installation lors de l'éxécution du script il vous sera demandé de saisir le nom de la partition à créer.
 
-- Partition 'SWAP' : (Taille facultatif - Selon vos préférences)
-Espace de stockage utilisé comme mémoire virtuelle lorsque la mémoire vive (RAM) est insuffisante pour répondre aux besoins du système.
-
-- Partition 'RACINE' : 
-La partition Racine 'root' sera utilisée pour l'installation du système de Linux.
-
-- Partition 'HOME' : (facultatif) 
-La partition 'home' sera utilisée pour stocker les données personnelles des utilisateurs. 
-
-
-Utilisez l'outil de votre choix, comme le live CD d'Arch Linux avec 'cfdisk' ou 'diskpart' de Windows pour la création des partitions.
-
+[efi|boot] ==> pour une partition de démarrage.
+[swap] ==> pour une partition de swap.
+[racine|root] ==> pour une partition racine.
+[home] ==> pour une partition utilisateur.
 
 ## Exemple :
 
