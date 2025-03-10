@@ -37,10 +37,18 @@ PARTITIONS_CREATE=(
 BOOTLOADER="systemd-boot"  # systemd-boot ou grub
 
 # Liste des sous-volumes BTRFS à créer
-BTRFS_SUBVOLUMES=("@" "@root" "@home" "@srv" "@log" "@cache" "@tmp" "@snapshots")
+BTRFS_SUBVOLUMES=("@" "@home" "@log" "@pkg" "@.snapshots")
 
 # Options de montage BTRFS par défaut
 BTRFS_MOUNT_OPTIONS="defaults,noatime,compress=zstd,commit=120"
+
+# Créer et monter les points de montage pour chaque sous-volume
+declare -A SUB_VOLUMES=(
+    ["@home"]="/home"
+    ["@log"]="/var/log"
+    ["@pkg"]="/var/cache/pacman/pkg"
+    ["@.snapshots"]="/.snapshots"
+)
 
 DRIVERS="Open-Source" # Open-Source ou Closed-Source
 

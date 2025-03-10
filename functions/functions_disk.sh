@@ -689,19 +689,8 @@ mount_partitions () {
             # Monter le sous-volume principal
             mount -o "${BTRFS_MOUNT_OPTIONS},subvol=@" "/dev/$root_part" "${MOUNT_POINT}"
             
-            # Créer et monter les points de montage pour chaque sous-volume
-            declare -A mount_points=(
-                ["@root"]="/root"
-                ["@home"]="/home"
-                ["@srv"]="/srv"
-                ["@log"]="/var/log"
-                ["@cache"]="/var/cache"
-                ["@tmp"]="/tmp"
-                ["@snapshots"]="/snapshots"
-            )
-            
-            for subvol in "${!mount_points[@]}"; do
-                local mount_point="${MOUNT_POINT}${mount_points[$subvol]}"
+            for subvol in "${!SUB_VOLUMES[@]}"; do
+                local mount_point="${MOUNT_POINT}${SUB_VOLUMES[$subvol]}"
                 mkdir -p "$mount_point"
                 mount -o "${BTRFS_MOUNT_OPTIONS},subvol=${subvol}" "/dev/$root_part" "$mount_point"
             done
